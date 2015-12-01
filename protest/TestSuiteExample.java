@@ -50,7 +50,7 @@ public class TestSuiteExample {
 		sourceSentences_ = retrieveSentences(conn, srccorpus_, firstLine, lastLine);
 		targetSentences_ = retrieveSentences(conn, tgtcorpus_, firstLine, lastLine);
 
-		int nsent = lastLine - firstLine;
+		int nsent = lastLine - firstLine + 1;
 		anaphorSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 		anaphorTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 		antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
@@ -144,7 +144,7 @@ public class TestSuiteExample {
 	private List<Position> retrieveAnaphorTargetPositions(Connection conn) throws SQLException {
 		PreparedStatement stmt = conn.prepareStatement(
 			"select line, tgtpos from translations " +
-			"where tgtcorpus=? and example_no=? and ant_no is null" +
+			"where tgtcorpus=? and example_no=? and ant_no is null " +
 			"order by line, tgtpos");
 		stmt.setInt(1, tgtcorpus_);
 		stmt.setInt(2, example_no_);

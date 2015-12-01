@@ -31,6 +31,7 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 	public ProtestGUI(String dbfile) throws SQLException {
 		db_ = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
 
+		categoryNames_ = new ArrayList<String>();
 		examplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
 		Statement stmt = db_.createStatement();
 		ResultSet rs = stmt.executeQuery("select distinct s.name, t.name, categories.description, " +
