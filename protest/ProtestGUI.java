@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,9 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.SwingUtilities;
 
 public class ProtestGUI implements Runnable, ListSelectionListener {
@@ -37,7 +41,7 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 				"order by s.name, t.name, categories.description");
 		while(rs.next()) {
 			String name = rs.getString(1) + " - " + rs.getString(2) + " - " + rs.getString(3);
-			categoryNames_.append(name);
+			categoryNames_.add(name);
 			PreparedStatement ps = db_.prepareStatement("select distinct example_no from pro_examples " +
 					"where srccorpus=? and tgtcorpus=? and category_no=?");
 			int srccorpus = rs.getInt("srccorpus");
@@ -48,8 +52,8 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 			ResultSet exrs = ps.executeQuery();
 			ArrayList<TestSuiteExample> exs = new ArrayList<TestSuiteExample>();
 			while(exrs.next())
-				exs.append(new TestSuiteExample(srccorpus, tgtcorpus, exrs.getInt(1)));
-			examplesByCategory_.append(exs);
+				exs.add(new TestSuiteExample(db_, srccorpus, tgtcorpus, exrs.getInt(1)));
+			examplesByCategory_.add(exs);
 		}
 
 		instWindow_ = new InstanceWindow();
@@ -60,7 +64,7 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame.getContentPane().getLayout()).setVgap(15);
 
-		JList categoryList = new JList(categoryNames_);
+		JList categoryList = new JList(categoryNames_.toArray(new String[0]));
 		categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		categoryList.addListSelectionListener(this);
 		frame.getContentPane().add(categoryList, BorderLayout.PAGE_START);
@@ -80,7 +84,8 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 	public void valueChanged(ListSelectionEvent e) {
 		if(e.getValueIsAdjusting())
 			return;
-		instWindow_.setData(examplesByCategory_.get(e.getFirstIndex()));
+		int idx = e.getFirstIndex();
+		instWindow_.setData(categoryNames_.get(idx), examplesByCategory_.get(idx));
 		instWindow_.setVisible(true);
 	}
 

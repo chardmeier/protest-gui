@@ -24,7 +24,7 @@ public class TestSuiteExample {
 
 	private int currline_;
 
-	TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) 
+	public TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) 
 			throws SQLException {
 		srccorpus_ = srccorpus;
 		tgtcorpus_ = tgtcorpus;
@@ -56,8 +56,8 @@ public class TestSuiteExample {
 		antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 		antecedentTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 
-		anaphorSourceHighlight_.put(anaphorSource.getLine() - firstLine,
-				new int[1] { anaphorSource.getHead() });
+		anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine,
+				new int[] { anaphorSource.getHead() });
 
 		int[] buf = new int[100];
 
@@ -66,14 +66,14 @@ public class TestSuiteExample {
 			int i = 0;
 			for(Position p : anaphorTarget) {
 				if(p.getLine() != line) {
-					anaphorTargetHighlight_.put(line - firstLine,
+					anaphorTargetHighlight_.set(line - firstLine,
 							Arrays.copyOf(buf, i));
 					i = 0;
 				}
 				for(int j = p.getStart(); j <= p.getEnd(); j++)
 					buf[i++] = j;
 			}
-			anaphorTargetHighlight_.put(line - firstLine, Arrays.copyOf(buf, i));
+			anaphorTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
 		}
 
 		if(!antecedentSource.isEmpty()) {
@@ -81,14 +81,14 @@ public class TestSuiteExample {
 			int i = 0;
 			for(Position p : antecedentSource) {
 				if(p.getLine() != line) {
-					antecedentSourceHighlight_.put(line - firstLine,
+					antecedentSourceHighlight_.set(line - firstLine,
 							Arrays.copyOf(buf, i));
 					i = 0;
 				}
 				for(int j = p.getStart(); j <= p.getEnd(); j++)
 					buf[i++] = j;
 			}
-			antecedentSourceHighlight_.put(line - firstLine, Arrays.copyOf(buf, i));
+			antecedentSourceHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
 		}
 
 		if(!antecedentTarget.isEmpty()) {
@@ -96,14 +96,14 @@ public class TestSuiteExample {
 			int i = 0;
 			for(Position p : antecedentTarget) {
 				if(p.getLine() != line) {
-					antecedentTargetHighlight_.put(line - firstLine,
+					antecedentTargetHighlight_.set(line - firstLine,
 							Arrays.copyOf(buf, i));
 					i = 0;
 				}
 				for(int j = p.getStart(); j <= p.getEnd(); j++)
 					buf[i++] = j;
 			}
-			antecedentTargetHighlight_.put(line - firstLine, Arrays.copyOf(buf, i));
+			antecedentTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
 		}
 	}
 
@@ -136,7 +136,7 @@ public class TestSuiteExample {
 			int srcstartpos = res.getInt("srcstartpos");
 			int srcheadpos = res.getInt("srcheadpos");
 			int srcendpos = res.getInt("srcendpos");
-			out.append(new Position(line, srcstartpos, srcheadpos, srcendpos));
+			out.add(new Position(line, srcstartpos, srcheadpos, srcendpos));
 		}
 		return out;
 	}
@@ -153,7 +153,7 @@ public class TestSuiteExample {
 		while(res.next()) {
 			int line = res.getInt("line");
 			int tgtpos = res.getInt("tgtpos");
-			out.append(new Position(line, tgtpos, tgtpos, tgtpos));
+			out.add(new Position(line, tgtpos, tgtpos, tgtpos));
 		}
 		return out;
 	}
@@ -170,7 +170,7 @@ public class TestSuiteExample {
 		while(res.next()) {
 			int line = res.getInt("line");
 			int tgtpos = res.getInt("tgtpos");
-			out.append(new Position(line, tgtpos, tgtpos, tgtpos));
+			out.add(new Position(line, tgtpos, tgtpos, tgtpos));
 		}
 		return out;
 	}
@@ -185,30 +185,30 @@ public class TestSuiteExample {
 		ResultSet res = stmt.executeQuery();
 		ArrayList<String> out = new ArrayList<String>();
 		while(res.next())
-			out.append(res.getString(1));
+			out.add(res.getString(1));
 		return out;
 	}
 
-	private void reset() {
+	public void reset() {
 		currline_ = -1;
 	}
 
-	private void next() {
+	public void next() {
 		currline_++;
 	}
 
-	private boolean hasNext() {
+	public boolean hasNext() {
 		return currline_ < sourceSentences_.size();
 	}
 
-	private Sentence getSourceSentence() {
-		return new Sentence(sourceSentences_[currline_],
+	public Sentence getSourceSentence() {
+		return new Sentence(sourceSentences_.get(currline_),
 				anaphorSourceHighlight_.get(currline_),
 				antecedentSourceHighlight_.get(currline_));
 	}
 
-	private Sentence getTargetSentence() {
-		return new Sentence(targetSentences_[currline_],
+	public Sentence getTargetSentence() {
+		return new Sentence(targetSentences_.get(currline_),
 				anaphorTargetHighlight_.get(currline_),
 				antecedentTargetHighlight_.get(currline_));
 	}

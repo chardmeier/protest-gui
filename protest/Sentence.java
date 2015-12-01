@@ -18,19 +18,19 @@ public class Sentence {
 		i_ant_ = 0;
 	}
 
-	private void next() {
+	public void next() {
 		currtoken_++;
 	}
 
-	private boolean hasNext() {
+	public boolean hasNext() {
 		return currtoken_ < tokens_.length;
 	}
 
-	private String getToken() {
+	public String getToken() {
 		return tokens_[currtoken_];
 	}
 
-	private boolean highlightAsAnaphor() {
+	public boolean highlightAsAnaphor() {
 		while(i_ana_ < anaphorHighlight_.length && anaphorHighlight_[i_ana_] < currtoken_)
 			i_ana_++;
 
@@ -40,7 +40,7 @@ public class Sentence {
 			return false;
 	}
 
-	private boolean highlightAsAntecedent() {
+	public boolean highlightAsAntecedent() {
 		while(i_ant_ < antecedentHighlight_.length && antecedentHighlight_[i_ant_] < currtoken_)
 			i_ant_++;
 
