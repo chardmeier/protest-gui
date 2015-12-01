@@ -1,4 +1,4 @@
-package ch.rax.pviewer;
+package protest;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -42,19 +42,11 @@ public class InstanceWindow implements ActionListener {
 	private DefaultListModel antecedents_;
 	private JList antecedentList_;
 
-	private String[] pronouns_;
-	private List<Instance> instances_;
-	private Instance current_;
+	private List<TestSuiteExample> instances_;
+	private TestSuiteExample current_;
 	private int currentIdx_;
 
-	private int nclasses_;
-	private AlignedCorpus corpus_;
-
-	public InstanceWindow(String[] pronouns, AlignedCorpus corpus) {
-		pronouns_ = pronouns;
-		nclasses_ = pronouns.length;
-		corpus_ = corpus;
-
+	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		
@@ -113,10 +105,6 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void setContext() {
-		setContext(Integer.MIN_VALUE);
-	}
-
-	private void setContext(int highlight) {
 		String XHTML_HEADER =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 			"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
@@ -125,76 +113,78 @@ public class InstanceWindow implements ActionListener {
 			"<head><title/></head>\n" +
 			"<body style=\"font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;font:1.2em/1.5em\">\n";
 
-		int srcfrom = Math.max(0, current_.getFirstSourceIndex() - 10);
-		int srcto = Math.min(corpus_.getSource().getSize() - 1, current_.getLastSourceIndex() + 10);
-		int tgtfrom = Math.max(0, current_.getFirstTargetIndex() - 10);
-		int tgtto = Math.min(corpus_.getTarget().getSize() - 1, current_.getLastTargetIndex() + 10);
-
-		int[] ae;
-		ae = corpus_.getSource().getAlignedIDs(srcfrom);
-		for(int i = 0; i < ae.length; i++)
-			if(ae[i] < tgtfrom)
-				tgtfrom = ae[0];
-		ae = corpus_.getSource().getAlignedIDs(srcto);
-		for(int i = 0; i < ae.length; i++)
-			if(ae[i] > tgtto)
-				tgtto = ae[0];
-		ae = corpus_.getTarget().getAlignedIDs(tgtfrom);
-		for(int i = 0; i < ae.length; i++)
-			if(ae[i] < srcfrom)
-				srcfrom = ae[0];
-		ae = corpus_.getTarget().getAlignedIDs(tgtto);
-		for(int i = 0; i < ae.length; i++)
-			if(ae[i] > srcto)
-				srcto = ae[0];
-
 		StringBuilder srchtml = new StringBuilder();
 		srchtml.append(XHTML_HEADER);
-		for(int i = srcfrom; i <= srcto; i++) {
-			if(current_.getSourceWordLabel(i) > 0)
-				srchtml.append("<span style=\"font-weight:bold;color:red\">");
-			else if(current_.getSourceWordLabel(i) < 0)
-				srchtml.append("<span style=\"font-weight:bold;" +
-					"border-color:red;border-style:solid;border-width:medium\">");
+		current_.reset();
+		while(current_.hasNext()) {
+			current_.next();
+			Sentence snt = current_.getSourceSentence();
+			while(snt.hasNext()) {
+				snt.next();
+				if(snt.highlightAsAnaphor())
+					srchtml.append("<span style=\"font-weight:bold;" +
+						"border-color:red;border-style:solid;border-width:medium\">");
+				if(snt.highlightAsAntecedent())
+					srchtml.append("<span style=\"font-weight:bold;color:red\">");
 
-			if(current_.getSourceWordLabel(i) == highlight)
-				srchtml.append("<span style=\"border-bottom-color:black;" +
-					"border-bottom-style:solid;border-bottom-width:medium\">");
+				srchtml.append(escapeXml(snt.getToken()));
 
-			srchtml.append(escapeXml(corpus_.getSource().getElement(i)));
-
-			if(current_.getSourceWordLabel(i) == highlight)
-				srchtml.append("</span>");
-
-			if(current_.getSourceWordLabel(i) != 0)
-				srchtml.append("</span>");
-			srchtml.append(' ');
+				if(snt.highlightAsAnaphor())
+					srchtml.append("</span>");
+				if(snt.highlightAsAntecedent())
+					srchtml.append("</span>");
+			}
+			srchtml.append("<br/>\n");
 		}
+
+//		for(int i = srcfrom; i <= srcto; i++) {
+//			if(current_.getSourceWordLabel(i) > 0)
+//				srchtml.append("<span style=\"font-weight:bold;color:red\">");
+//			else if(current_.getSourceWordLabel(i) < 0)
+//				srchtml.append("<span style=\"font-weight:bold;" +
+//					"border-color:red;border-style:solid;border-width:medium\">");
+//
+//			if(current_.getSourceWordLabel(i) == highlight)
+//				srchtml.append("<span style=\"border-bottom-color:black;" +
+//					"border-bottom-style:solid;border-bottom-width:medium\">");
+//
+//			srchtml.append(escapeXml(corpus_.getSource().getElement(i)));
+//
+//			if(current_.getSourceWordLabel(i) == highlight)
+//				srchtml.append("</span>");
+//
+//			if(current_.getSourceWordLabel(i) != 0)
+//				srchtml.append("</span>");
+//			srchtml.append(' ');
+//		}
+
 		srchtml.append("</body></html>");
 		sourceContext_.setDocumentFromString(srchtml.toString(), "", new XhtmlNamespaceHandler());
 
 		StringBuilder tgthtml = new StringBuilder();
 		tgthtml.append(XHTML_HEADER);
-		for(int i = tgtfrom; i <= tgtto; i++) {
-			if(current_.getTargetWordLabel(i) > 0)
-				tgthtml.append("<span style=\"font-weight:bold;color:red\">");
-			else if(current_.getTargetWordLabel(i) < 0)
-				tgthtml.append("<span style=\"font-weight:bold;" +
-					"border-color:red;border-style:solid;border-width:medium\">");
+		current_.reset();
+		while(current_.hasNext()) {
+			current_.next();
+			Sentence snt = current_.getSourceSentence();
+			while(snt.hasNext()) {
+				snt.next();
+				if(snt.highlightAsAnaphor())
+					tgthtml.append("<span style=\"font-weight:bold;" +
+						"border-color:red;border-style:solid;border-width:medium\">");
+				if(snt.highlightAsAntecedent())
+					tgthtml.append("<span style=\"font-weight:bold;color:red\">");
 
-			if(current_.getTargetWordLabel(i) == highlight)
-				tgthtml.append("<span style=\"border-bottom-color:black;" +
-					"border-bottom-style:solid;border-bottom-width:medium\">");
+				tgthtml.append(escapeXml(snt.getToken()));
 
-			tgthtml.append(escapeXml(corpus_.getTarget().getElement(i)));
-
-			if(current_.getTargetWordLabel(i) == highlight)
-				tgthtml.append("</span>");
-
-			if(current_.getTargetWordLabel(i) != 0)
-				tgthtml.append("</span>");
-			tgthtml.append(' ');
+				if(snt.highlightAsAnaphor())
+					tgthtml.append("</span>");
+				if(snt.highlightAsAntecedent())
+					tgthtml.append("</span>");
+			}
+			tgthtml.append("<br/>\n");
 		}
+
 		tgthtml.append("</body></html>");
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
@@ -217,15 +207,15 @@ public class InstanceWindow implements ActionListener {
 		}
 	}
 
-	public void setData(String category, List<Instance> instances) {
+	public void setData(String title, List<TestSuiteExample> instances) {
 		instances_ = instances;
 		current_ = instances_.get(0);
 		currentIdx_ = 0;
-		frame_.setTitle(category);
+		frame_.setTitle(title);
 		showCurrentInstance();
 	}
 
 	public void setVisible(boolean visible) {
 		frame_.setVisible(visible);
 	}
-};
+}
