@@ -15,6 +15,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -68,7 +69,7 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 		JList categoryList = new JList(categoryNames_.toArray(new String[0]));
 		categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		categoryList.addListSelectionListener(this);
-		frame.getContentPane().add(categoryList, BorderLayout.PAGE_START);
+		frame.getContentPane().add(new JScrollPane(categoryList), BorderLayout.PAGE_START);
 
 		JButton quitButton = new JButton("Quit");
 		frame.getContentPane().add(quitButton, BorderLayout.CENTER);
