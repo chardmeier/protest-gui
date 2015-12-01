@@ -23,7 +23,7 @@ public class Sentence {
 	}
 
 	public boolean hasNext() {
-		return currtoken_ < tokens_.length;
+		return currtoken_ < tokens_.length - 1;
 	}
 
 	public String getToken() {

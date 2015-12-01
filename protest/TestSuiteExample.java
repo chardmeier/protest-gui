@@ -198,7 +198,7 @@ public class TestSuiteExample {
 	}
 
 	public boolean hasNext() {
-		return currline_ < sourceSentences_.size();
+		return currline_ < sourceSentences_.size() - 1;
 	}
 
 	public Sentence getSourceSentence() {
