@@ -155,6 +155,8 @@ public class InstanceWindow implements ActionListener {
 					srchtml.append("</span>");
 				if(snt.highlightAsAntecedent())
 					srchtml.append("</span>");
+
+				srchtml.append(' ');
 			}
 			srchtml.append("<br/>\n");
 		}
@@ -199,7 +201,7 @@ public class InstanceWindow implements ActionListener {
 		current_.reset();
 		while(current_.hasNext()) {
 			current_.next();
-			Sentence snt = current_.getSourceSentence();
+			Sentence snt = current_.getTargetSentence();
 			while(snt.hasNext()) {
 				snt.next();
 				if(snt.highlightAsAnaphor())
@@ -214,6 +216,8 @@ public class InstanceWindow implements ActionListener {
 					tgthtml.append("</span>");
 				if(snt.highlightAsAntecedent())
 					tgthtml.append("</span>");
+
+				tgthtml.append(' ');
 			}
 			tgthtml.append("<br/>\n");
 		}
@@ -223,7 +227,7 @@ public class InstanceWindow implements ActionListener {
 		InputSource tgtis = new InputSource();
 		tgtis.setCharacterStream(new StringReader(tgthtml.toString()));
 		try {
-			sourceContext_.setDocument(xml_.parse(tgtis));
+			targetContext_.setDocument(xml_.parse(tgtis));
 		} catch(Exception e) {
 			e.printStackTrace();
 			System.err.println("Error parsing target XHTML:\n" + tgthtml.toString());
