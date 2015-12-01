@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,10 +25,16 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
+import org.xhtmlrenderer.resource.FSEntityResolver;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
+
+import org.xml.sax.InputSource;
 
 public class InstanceWindow implements ActionListener {
 	private JFrame frame_;
@@ -45,6 +52,8 @@ public class InstanceWindow implements ActionListener {
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
 	private int currentIdx_;
+
+	private DocumentBuilder xml_;
 
 	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
@@ -94,6 +103,19 @@ public class InstanceWindow implements ActionListener {
 		browsePanel.add(nextButton_, BorderLayout.LINE_END);
 
 		frame_.pack();
+
+		try {
+			DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+			fac.setValidating(false);
+			fac.setFeature("http://xml.org/sax/features/validation", false);
+			fac.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+			fac.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			xml_ = fac.newDocumentBuilder();
+			xml_.setEntityResolver(FSEntityResolver.instance());
+		} catch(ParserConfigurationException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	private void showCurrentInstance() {
@@ -159,7 +181,18 @@ public class InstanceWindow implements ActionListener {
 //		}
 
 		srchtml.append("</body></html>");
-		sourceContext_.setDocumentFromString(srchtml.toString(), "", new XhtmlNamespaceHandler());
+
+		InputSource srcis = new InputSource();
+		srcis.setCharacterStream(new StringReader(srchtml.toString()));
+		try {
+			sourceContext_.setDocument(xml_.parse(srcis));
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("Error parsing source XHTML:\n" + srchtml.toString());
+			System.exit(1);
+		}
+
+		//sourceContext_.setDocumentFromString(srchtml.toString(), "", new XhtmlNamespaceHandler());
 
 		StringBuilder tgthtml = new StringBuilder();
 		tgthtml.append(XHTML_HEADER);
@@ -186,7 +219,18 @@ public class InstanceWindow implements ActionListener {
 		}
 
 		tgthtml.append("</body></html>");
-		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
+
+		InputSource tgtis = new InputSource();
+		tgtis.setCharacterStream(new StringReader(tgthtml.toString()));
+		try {
+			sourceContext_.setDocument(xml_.parse(tgtis));
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("Error parsing target XHTML:\n" + tgthtml.toString());
+			System.exit(1);
+		}
+
+		//targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
 
 	private String escapeXml(String s) {
