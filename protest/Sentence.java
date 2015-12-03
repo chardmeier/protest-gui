@@ -12,7 +12,7 @@ public class Sentence {
 	public Sentence(String line, int[] anaphorHighlight, int[] antecedentHighlight) {
 		tokens_ = line.split(" ");
 		anaphorHighlight_ = anaphorHighlight;
-		antecedentHighlight_ = anaphorHighlight;
+		antecedentHighlight_ = antecedentHighlight;
 		currtoken_ = -1;
 		i_ana_ = 0;
 		i_ant_ = 0;
