@@ -50,10 +50,11 @@ public class InstanceWindow implements ActionListener {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		
+		// Source and target context
+
 		JPanel contextPanel = new JPanel();
 		contextPanel.setPreferredSize(new Dimension(900, 750));
 		frame_.getContentPane().add(contextPanel, BorderLayout.LINE_START);
-		//contextPanel.setLayout(new BoxLayout(contextPanel, BoxLayout.PAGE_AXIS));
 		BorderLayout bl = new BorderLayout();
 		bl.setVgap(15);
 		contextPanel.setLayout(bl);
@@ -73,6 +74,8 @@ public class InstanceWindow implements ActionListener {
 		JPanel detailPanel = new JPanel(bl);
 		detailPanel.setPreferredSize(new Dimension(300, 750));
 		frame_.getContentPane().add(detailPanel, BorderLayout.CENTER);
+
+		// Browsing buttons
 
 		JPanel browsePanel = new JPanel(new BorderLayout());
 		detailPanel.add(browsePanel, BorderLayout.PAGE_START);
