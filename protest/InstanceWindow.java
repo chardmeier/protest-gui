@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,16 +24,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
-import org.xhtmlrenderer.resource.FSEntityResolver;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
-
-import org.xml.sax.InputSource;
 
 public class InstanceWindow implements ActionListener {
 	private JFrame frame_;
@@ -52,8 +45,6 @@ public class InstanceWindow implements ActionListener {
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
 	private int currentIdx_;
-
-	private DocumentBuilder xml_;
 
 	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
@@ -103,19 +94,6 @@ public class InstanceWindow implements ActionListener {
 		browsePanel.add(nextButton_, BorderLayout.LINE_END);
 
 		frame_.pack();
-
-		try {
-			DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-			fac.setValidating(false);
-			fac.setFeature("http://xml.org/sax/features/validation", false);
-			fac.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-			fac.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-			xml_ = fac.newDocumentBuilder();
-			xml_.setEntityResolver(FSEntityResolver.instance());
-		} catch(ParserConfigurationException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
 	}
 
 	private void showCurrentInstance() {
@@ -130,7 +108,7 @@ public class InstanceWindow implements ActionListener {
 		String XHTML_HEADER =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 			"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
-				"\"http://www.w3.org/TR/xthml1/DTD/xhtml1-strict.dtd\">\n" +
+				"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
 			"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
 			"<head><title/></head>\n" +
 			"<body style=\"font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;font:1.2em/1.5em\">\n";
@@ -141,13 +119,14 @@ public class InstanceWindow implements ActionListener {
 		while(current_.hasNext()) {
 			current_.next();
 			Sentence snt = current_.getSourceSentence();
+			srchtml.append("<p>\n");
 			while(snt.hasNext()) {
 				snt.next();
 				if(snt.highlightAsAnaphor())
 					srchtml.append("<span style=\"font-weight:bold;" +
 						"border-color:red;border-style:solid;border-width:medium\">");
 				if(snt.highlightAsAntecedent())
-					srchtml.append("<span style=\"font-weight:bold;color:red\">");
+					srchtml.append("<span style=\"font-weight:bold;color:blue\">");
 
 				srchtml.append(escapeXml(snt.getToken()));
 
@@ -158,7 +137,7 @@ public class InstanceWindow implements ActionListener {
 
 				srchtml.append(' ');
 			}
-			srchtml.append("<br/>\n");
+			srchtml.append("</p>\n");
 		}
 
 //		for(int i = srcfrom; i <= srcto; i++) {
@@ -184,17 +163,7 @@ public class InstanceWindow implements ActionListener {
 
 		srchtml.append("</body></html>");
 
-		InputSource srcis = new InputSource();
-		srcis.setCharacterStream(new StringReader(srchtml.toString()));
-		try {
-			sourceContext_.setDocument(xml_.parse(srcis));
-		} catch(Exception e) {
-			e.printStackTrace();
-			System.err.println("Error parsing source XHTML:\n" + srchtml.toString());
-			System.exit(1);
-		}
-
-		//sourceContext_.setDocumentFromString(srchtml.toString(), "", new XhtmlNamespaceHandler());
+		sourceContext_.setDocumentFromString(srchtml.toString(), "", new XhtmlNamespaceHandler());
 
 		StringBuilder tgthtml = new StringBuilder();
 		tgthtml.append(XHTML_HEADER);
@@ -202,6 +171,7 @@ public class InstanceWindow implements ActionListener {
 		while(current_.hasNext()) {
 			current_.next();
 			Sentence snt = current_.getTargetSentence();
+			tgthtml.append("<p>\n");
 			while(snt.hasNext()) {
 				snt.next();
 				if(snt.highlightAsAnaphor())
@@ -219,22 +189,12 @@ public class InstanceWindow implements ActionListener {
 
 				tgthtml.append(' ');
 			}
-			tgthtml.append("<br/>\n");
+			tgthtml.append("</p>\n");
 		}
 
 		tgthtml.append("</body></html>");
 
-		InputSource tgtis = new InputSource();
-		tgtis.setCharacterStream(new StringReader(tgthtml.toString()));
-		try {
-			targetContext_.setDocument(xml_.parse(tgtis));
-		} catch(Exception e) {
-			e.printStackTrace();
-			System.err.println("Error parsing target XHTML:\n" + tgthtml.toString());
-			System.exit(1);
-		}
-
-		//targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
+		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
 
 	private String escapeXml(String s) {
