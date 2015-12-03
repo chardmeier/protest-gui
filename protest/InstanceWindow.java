@@ -126,7 +126,7 @@ public class InstanceWindow implements ActionListener {
 					srchtml.append("<span style=\"font-weight:bold;" +
 						"border-color:red;border-style:solid;border-width:medium\">");
 				if(snt.highlightAsAntecedent())
-					srchtml.append("<span style=\"font-weight:bold;color:blue\">");
+					srchtml.append("<span style=\"font-weight:bold;color:red\">");
 
 				srchtml.append(escapeXml(snt.getToken()));
 
