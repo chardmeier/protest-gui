@@ -3,6 +3,7 @@ package protest;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,19 +12,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
@@ -36,11 +42,8 @@ public class InstanceWindow implements ActionListener {
 	private JButton prevButton_;
 	private JButton nextButton_;
 	private JLabel idxField_;
-	private JLabel[] outProbLabel_;
-	private JPanel[] outProbBox_;
-	private JTextField ngram_;
-	private DefaultListModel antecedents_;
-	private JList antecedentList_;
+	private JTextArea remarksField_;
+	private JButton saveButton_;
 
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
@@ -82,7 +85,7 @@ public class InstanceWindow implements ActionListener {
 		browsePanel.setMaximumSize(new Dimension(300, 20));
 
 		prevButton_ = new JButton("Previous");
-		prevButton_.setActionCommand("prev");
+		prevButton_.setActionCommand("browse prev");
 		prevButton_.addActionListener(this);
 		browsePanel.add(prevButton_, BorderLayout.LINE_START);
 		
@@ -92,9 +95,107 @@ public class InstanceWindow implements ActionListener {
 		browsePanel.add(idxField_, BorderLayout.CENTER);
 
 		nextButton_ = new JButton("Next");
-		nextButton_.setActionCommand("next");
+		nextButton_.setActionCommand("browse next");
 		nextButton_.addActionListener(this);
 		browsePanel.add(nextButton_, BorderLayout.LINE_END);
+
+		// Annotation buttons
+		
+		JPanel annotationPanel = new JPanel(new GridLayout(4,1));
+
+		// Antecedent correctness
+		JRadioButton antOK = new JRadioButton("yes");
+		antOK.setActionCommand("ant ok");
+		antOK.addActionListener(this);
+		JRadioButton antBad = new JRadioButton("no");
+		antBad.setActionCommand("ant bad");
+		antBad.addActionListener(this);
+		JRadioButton antNA = new JRadioButton("n/a");
+		antNA.setActionCommand("ant na");
+		antNA.addActionListener(this);
+		JRadioButton antUnset = new JRadioButton("unset");
+		antUnset.setActionCommand("ant unset");
+		antUnset.addActionListener(this);
+		antUnset.setSelected(true);
+
+		ButtonGroup antGroup = new ButtonGroup();
+		antGroup.add(antOK);
+		antGroup.add(antBad);
+		antGroup.add(antNA);
+		antGroup.add(antUnset);
+
+		JPanel antButtonPanel = new JPanel(new FlowLayout());
+		antButtonPanel.add(antOK);
+		antButtonPanel.add(antBad);
+		antButtonPanel.add(antNA);
+		antButtonPanel.add(antUnset);
+
+		annotationPanel.add(new JLabel("Antecedent correctly translated?", JLabel.CENTER));
+		annotationPanel.add(antButtonPanel);
+
+		// Pronoun correctness
+		JRadioButton prnOK = new JRadioButton("yes");
+		prnOK.setActionCommand("prn ok");
+		prnOK.addActionListener(this);
+		JRadioButton prnBad = new JRadioButton("no");
+		prnBad.setActionCommand("prn bad");
+		prnBad.addActionListener(this);
+		JRadioButton prnUnset = new JRadioButton("unset");
+		prnUnset.setActionCommand("prn unset");
+		prnUnset.addActionListener(this);
+		prnUnset.setSelected(true);
+
+		ButtonGroup prnGroup = new ButtonGroup();
+		prnGroup.add(prnOK);
+		prnGroup.add(prnBad);
+		prnGroup.add(prnUnset);
+
+		JPanel prnButtonPanel = new JPanel(new FlowLayout());
+		prnButtonPanel.add(prnOK);
+		prnButtonPanel.add(prnBad);
+		prnButtonPanel.add(prnUnset);
+
+		annotationPanel.add(new JLabel(
+					"<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
+					"(given antecedent)?</div></html>",
+					JLabel.CENTER));
+		annotationPanel.add(prnButtonPanel);
+
+		// Text field for annotator's notes
+		
+		remarksField_ = new JTextArea(10, 30);
+		//remarksField_.setBorder(BorderFactory.createLineBorder(Color.black));
+		remarksField_.setBorder(BorderFactory.createTitledBorder("Remarks:"));
+		remarksField_.setEditable(true);
+		remarksField_.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				update(e);
+			}
+			public void insertUpdate(DocumentEvent e) {
+				update(e);
+			}
+			public void removeUpdate(DocumentEvent e) {
+				update(e);
+			}
+			private void update(DocumentEvent e) {
+				saveButton_.setEnabled(true);
+			}
+		});
+
+		saveButton_ = new JButton("Save");
+		saveButton_.setEnabled(false);
+		saveButton_.setActionCommand("save remarks");
+		saveButton_.addActionListener(this);
+
+		JPanel remarksPanel = new JPanel(new BorderLayout());
+		remarksPanel.add(new JLabel("Remarks:", JLabel.CENTER), BorderLayout.PAGE_START);
+		remarksPanel.add(remarksField_, BorderLayout.CENTER);
+		remarksPanel.add(saveButton_, BorderLayout.PAGE_END);
+
+		JPanel wrapperPanel = new JPanel(new BorderLayout());
+		wrapperPanel.add(annotationPanel, BorderLayout.PAGE_START);
+		wrapperPanel.add(remarksPanel, BorderLayout.CENTER);
+		detailPanel.add(wrapperPanel, BorderLayout.CENTER);
 
 		frame_.pack();
 	}
@@ -207,14 +308,27 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if(e.getActionCommand().equals("prev")) {
-			currentIdx_--;
-			current_ = instances_.get(currentIdx_);
-			showCurrentInstance();
-		} else if(e.getActionCommand().equals("next")) {
-			currentIdx_++;
-			current_ = instances_.get(currentIdx_);
-			showCurrentInstance();
+		String[] cmd = e.getActionCommand().split(" ");
+		if(cmd[0].equals("browse")) {
+			if(cmd[1].equals("prev")) {
+				currentIdx_--;
+				current_ = instances_.get(currentIdx_);
+				showCurrentInstance();
+			} else if(cmd[1].equals("next")) {
+				currentIdx_++;
+				current_ = instances_.get(currentIdx_);
+				showCurrentInstance();
+			}
+		} else if(cmd[0].equals("ant")) {
+			System.err.println("Button change: " + e.getActionCommand());
+		} else if(cmd[0].equals("prn")) {
+			System.err.println("Button change: " + e.getActionCommand());
+		} else if(cmd[0].equals("save") && cmd[1].equals("remarks")) {
+			try {
+				System.err.println("Save remarks:\n" +
+					remarksField_.getDocument().getText(0, remarksField_.getDocument().getLength()));
+			} catch(BadLocationException ex) {}
+			saveButton_.setEnabled(false);
 		}
 	}
 
