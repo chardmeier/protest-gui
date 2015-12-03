@@ -27,6 +27,7 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 	private ArrayList<String> categoryNames_;
 	private ArrayList<ArrayList<TestSuiteExample>> examplesByCategory_;
 
+	private JList categoryList_;
 	private InstanceWindow instWindow_;
 
 	public ProtestGUI(String dbfile) throws SQLException {
@@ -66,10 +67,10 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame.getContentPane().getLayout()).setVgap(15);
 
-		JList categoryList = new JList(categoryNames_.toArray(new String[0]));
-		categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		categoryList.addListSelectionListener(this);
-		frame.getContentPane().add(new JScrollPane(categoryList), BorderLayout.PAGE_START);
+		categoryList_ = new JList(categoryNames_.toArray(new String[0]));
+		categoryList_.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		categoryList_.addListSelectionListener(this);
+		frame.getContentPane().add(new JScrollPane(categoryList_), BorderLayout.PAGE_START);
 
 		JButton quitButton = new JButton("Quit");
 		frame.getContentPane().add(quitButton, BorderLayout.CENTER);
@@ -86,7 +87,7 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 	public void valueChanged(ListSelectionEvent e) {
 		if(e.getValueIsAdjusting())
 			return;
-		int idx = e.getFirstIndex();
+		int idx = categoryList_.getMinSelectionIndex();
 		instWindow_.setData(categoryNames_.get(idx), examplesByCategory_.get(idx));
 		instWindow_.setVisible(true);
 	}
