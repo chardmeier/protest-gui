@@ -42,8 +42,16 @@ public class InstanceWindow implements ActionListener {
 	private JButton prevButton_;
 	private JButton nextButton_;
 	private JLabel idxField_;
-	private JTextArea remarksField_;
 	private JButton saveButton_;
+
+	private JTextArea remarksField_;
+	private JRadioButton antOK_;
+	private JRadioButton antBad_;
+	private JRadioButton antNA_;
+	private JRadioButton antUnset_;
+	private JRadioButton prnOK_;
+	private JRadioButton prnBad_;
+	private JRadioButton prnUnset_;
 
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
@@ -104,56 +112,56 @@ public class InstanceWindow implements ActionListener {
 		JPanel annotationPanel = new JPanel(new GridLayout(4,1));
 
 		// Antecedent correctness
-		JRadioButton antOK = new JRadioButton("yes");
-		antOK.setActionCommand("ant ok");
-		antOK.addActionListener(this);
-		JRadioButton antBad = new JRadioButton("no");
-		antBad.setActionCommand("ant bad");
-		antBad.addActionListener(this);
-		JRadioButton antNA = new JRadioButton("n/a");
-		antNA.setActionCommand("ant na");
-		antNA.addActionListener(this);
-		JRadioButton antUnset = new JRadioButton("unset");
-		antUnset.setActionCommand("ant unset");
-		antUnset.addActionListener(this);
-		antUnset.setSelected(true);
+		JRadioButton antOK_ = new JRadioButton("yes");
+		antOK_.setActionCommand("ant ok");
+		antOK_.addActionListener(this);
+		JRadioButton antBad_ = new JRadioButton("no");
+		antBad_.setActionCommand("ant bad");
+		antBad_.addActionListener(this);
+		JRadioButton antNA_ = new JRadioButton("n/a");
+		antNA_.setActionCommand("ant na");
+		antNA_.addActionListener(this);
+		JRadioButton antUnset_ = new JRadioButton("unset");
+		antUnset_.setActionCommand("ant unset");
+		antUnset_.addActionListener(this);
+		antUnset_.setSelected(true);
 
 		ButtonGroup antGroup = new ButtonGroup();
-		antGroup.add(antOK);
-		antGroup.add(antBad);
-		antGroup.add(antNA);
-		antGroup.add(antUnset);
+		antGroup.add(antOK_);
+		antGroup.add(antBad_);
+		antGroup.add(antNA_);
+		antGroup.add(antUnset_);
 
 		JPanel antButtonPanel = new JPanel(new FlowLayout());
-		antButtonPanel.add(antOK);
-		antButtonPanel.add(antBad);
-		antButtonPanel.add(antNA);
-		antButtonPanel.add(antUnset);
+		antButtonPanel.add(antOK_);
+		antButtonPanel.add(antBad_);
+		antButtonPanel.add(antNA_);
+		antButtonPanel.add(antUnset_);
 
 		annotationPanel.add(new JLabel("Antecedent correctly translated?", JLabel.CENTER));
 		annotationPanel.add(antButtonPanel);
 
 		// Pronoun correctness
-		JRadioButton prnOK = new JRadioButton("yes");
-		prnOK.setActionCommand("prn ok");
-		prnOK.addActionListener(this);
-		JRadioButton prnBad = new JRadioButton("no");
-		prnBad.setActionCommand("prn bad");
-		prnBad.addActionListener(this);
-		JRadioButton prnUnset = new JRadioButton("unset");
-		prnUnset.setActionCommand("prn unset");
-		prnUnset.addActionListener(this);
-		prnUnset.setSelected(true);
+		JRadioButton prnOK_ = new JRadioButton("yes");
+		prnOK_.setActionCommand("prn ok");
+		prnOK_.addActionListener(this);
+		JRadioButton prnBad_ = new JRadioButton("no");
+		prnBad_.setActionCommand("prn bad");
+		prnBad_.addActionListener(this);
+		JRadioButton prnUnset_ = new JRadioButton("unset");
+		prnUnset_.setActionCommand("prn unset");
+		prnUnset_.addActionListener(this);
+		prnUnset_.setSelected(true);
 
 		ButtonGroup prnGroup = new ButtonGroup();
-		prnGroup.add(prnOK);
-		prnGroup.add(prnBad);
-		prnGroup.add(prnUnset);
+		prnGroup.add(prnOK_);
+		prnGroup.add(prnBad_);
+		prnGroup.add(prnUnset_);
 
 		JPanel prnButtonPanel = new JPanel(new FlowLayout());
-		prnButtonPanel.add(prnOK);
-		prnButtonPanel.add(prnBad);
-		prnButtonPanel.add(prnUnset);
+		prnButtonPanel.add(prnOK_);
+		prnButtonPanel.add(prnBad_);
+		prnButtonPanel.add(prnUnset_);
 
 		annotationPanel.add(new JLabel(
 					"<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
