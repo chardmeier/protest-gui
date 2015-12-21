@@ -5,17 +5,17 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -32,6 +32,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import org.xhtmlrenderer.layout.LayoutContext;
+import org.xhtmlrenderer.layout.PaintingInfo;
+import org.xhtmlrenderer.render.Box;
+import org.xhtmlrenderer.swing.BasicPanel;
+import org.xhtmlrenderer.swing.DefaultFSMouseListener;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
@@ -62,10 +70,18 @@ public class InstanceWindow implements ActionListener {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame_.addWindowListener(new WindowAdapter() {
-			public void windowClosing() {
+			public void windowClosing(WindowEvent e) {
 				saveAnnotations();
 			}
 		});
+		// Make sure the annotations get saved if the annotation window is open
+		// and the application gets terminated without closing it first.
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				if(frame_.isVisible())
+					saveAnnotations();
+			}
+		}));
 		
 		// Source and target context
 
@@ -82,6 +98,13 @@ public class InstanceWindow implements ActionListener {
 		contextPanel.add(srcctxpane, BorderLayout.PAGE_START);
 
 		targetContext_ = new XHTMLPanel();
+		targetContext_.addMouseTrackingListener(new DefaultFSMouseListener() {
+			public void onMouseUp(BasicPanel panel, Box box) {
+				if(box == null || box.getElement() == null)
+					return;
+				targetWordClicked(panel, box);
+			}
+		});
 		FSScrollPane tgtctxpane = new FSScrollPane(targetContext_);
 		tgtctxpane.setPreferredSize(new Dimension(900, 367));
 		contextPanel.add(tgtctxpane, BorderLayout.CENTER);
@@ -223,9 +246,11 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void loadAnnotations() {
+		System.err.println("Loading annotations.");
 	}
 
 	private void saveAnnotations() {
+		System.err.println("Saving annotations.");
 	}
 
 	private void setContext() {
@@ -291,6 +316,11 @@ public class InstanceWindow implements ActionListener {
 
 		StringBuilder tgthtml = new StringBuilder();
 		tgthtml.append(XHTML_HEADER);
+		tgthtml.append(
+			"<style>\n" +
+			"highlight { color: red };\n" +
+			"nohighlight { color: green };\n" +
+			"</style>\n");
 		current_.reset();
 		while(current_.hasNext()) {
 			current_.next();
@@ -299,10 +329,13 @@ public class InstanceWindow implements ActionListener {
 			while(snt.hasNext()) {
 				snt.next();
 				if(snt.highlightAsAnaphor())
-					tgthtml.append("<span style=\"font-weight:bold;" +
+					tgthtml.append("<span id=\"ana." + snt.getIndex() + "\" " +
+						"style=\"font-weight:bold;" +
 						"border-color:red;border-style:solid;border-width:medium\">");
 				if(snt.highlightAsAntecedent())
-					tgthtml.append("<span style=\"font-weight:bold;color:red\">");
+					tgthtml.append("<span id=\"ant." + snt.getIndex() + "\" " +
+						"style=\"font-weight:bold;\">");
+						//"style=\"font-weight:bold;color:red\">");
 
 				tgthtml.append(escapeXml(snt.getToken()));
 
@@ -325,6 +358,49 @@ public class InstanceWindow implements ActionListener {
 		return s.replace("&", "&amp;").replace("\"", "&quot;")
 			.replace("<", "&lt;").replace(">", "&gt;")
 			.replace("'", "&apos;");
+	}
+
+	private void targetWordClicked(BasicPanel panel, Box box) {
+		String id = null;
+		Element celem = null;
+		for(Node node = box.getElement(); node.getNodeType() == Node.ELEMENT_NODE; node = node.getParentNode()) {
+			celem = (Element) node;
+			id = panel.getSharedContext().getNamespaceHandler().getID(celem);
+			if(id != null)
+				break;
+		}
+		String[] cc = id.split("\\.");
+		if(id == null)
+			return;
+		if(cc[0].equals("ant")) {
+			toggleHighlight(panel, box, celem, "highlight", "nohighlight");
+			System.err.println("Clicked on antecedent token " + cc[1]);
+		} else if(cc[0].equals("ana")) {
+			toggleHighlight(panel, box, celem, "highlight", "nohighlight");
+			System.err.println("Clicked on anaphor token " + cc[1]);
+		}
+	}
+
+	private void toggleHighlight(BasicPanel panel, Box box, Element e, String chl, String cnohl) {
+		LayoutContext ctx = panel.getLayoutContext();
+		if(ctx == null)
+			return;
+
+		String c = e.getAttribute("class");
+		if(c.equals(chl))
+			e.setAttribute("class", cnohl);
+		else
+			e.setAttribute("class", chl);
+
+		Box tgt = box.getRestyleTarget();
+
+		tgt.restyle(ctx);
+
+		PaintingInfo pinfo = tgt.getPaintingInfo();
+		if(pinfo != null)
+			panel.repaint(new Rectangle(pinfo.getAggregateBounds()));
+		else
+			panel.repaint();
 	}
 
 	public void actionPerformed(ActionEvent e) {

@@ -30,6 +30,10 @@ public class Sentence {
 		return tokens_[currtoken_];
 	}
 
+	public int getIndex() {
+		return currtoken_;
+	}
+
 	public boolean highlightAsAnaphor() {
 		while(i_ana_ < anaphorHighlight_.length && anaphorHighlight_[i_ana_] < currtoken_)
 			i_ana_++;
