@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +61,11 @@ public class InstanceWindow implements ActionListener {
 	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame_.addWindowListener(new WindowAdapter() {
+			public void windowClosing() {
+				saveAnnotations();
+			}
+		});
 		
 		// Source and target context
 
@@ -213,6 +219,13 @@ public class InstanceWindow implements ActionListener {
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
 
 		setContext();
+		loadAnnotations();
+	}
+
+	private void loadAnnotations() {
+	}
+
+	private void saveAnnotations() {
 	}
 
 	private void setContext() {
@@ -317,6 +330,7 @@ public class InstanceWindow implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String[] cmd = e.getActionCommand().split(" ");
 		if(cmd[0].equals("browse")) {
+			saveAnnotations();
 			if(cmd[1].equals("prev")) {
 				currentIdx_--;
 				current_ = instances_.get(currentIdx_);
