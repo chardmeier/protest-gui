@@ -188,7 +188,6 @@ public class InstanceWindow implements ActionListener {
 		saveButton_.addActionListener(this);
 
 		JPanel remarksPanel = new JPanel(new BorderLayout());
-		remarksPanel.add(new JLabel("Remarks:", JLabel.CENTER), BorderLayout.PAGE_START);
 		remarksPanel.add(remarksField_, BorderLayout.CENTER);
 		remarksPanel.add(saveButton_, BorderLayout.PAGE_END);
 
