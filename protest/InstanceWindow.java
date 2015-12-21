@@ -369,9 +369,9 @@ public class InstanceWindow implements ActionListener {
 			if(id != null)
 				break;
 		}
-		String[] cc = id.split("\\.");
 		if(id == null)
 			return;
+		String[] cc = id.split("\\.");
 		if(cc[0].equals("ant")) {
 			toggleHighlight(panel, box, celem, "highlight", "nohighlight");
 			System.err.println("Clicked on antecedent token " + cc[1]);
