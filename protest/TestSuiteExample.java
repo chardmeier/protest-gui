@@ -359,7 +359,8 @@ public class TestSuiteExample {
 	}
 
 	public String getTokenApproval(int line, int token) {
-		return approvedTokens_.get(line)[token];
+		String a = approvedTokens_.get(line)[token];
+		return a == null ? "" : a;
 	}
 
 	public void setTokenApproval(int line, int token, String approved) {
