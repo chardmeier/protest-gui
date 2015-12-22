@@ -235,20 +235,48 @@ public class InstanceWindow implements ActionListener {
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
 
 		setContext();
-		loadAnnotations();
+		setAnnotations();
 	}
 
-	private void loadAnnotations() {
+	private void setAnnotations() {
 		dirty_ = false;
-		System.err.println("Loading annotations.");
+
+		String antecedentAnnotation = current_.getAntecedentAnnotation();
+		if(antecedentAnnotation.equals("ok"))
+			antOK_.setSelected(true);
+		else if(antecedentAnnotation.equals("bad"))
+			antBad_.setSelected(true);
+		else if(antecedentAnnotation.equals("na"))
+			antNA_.setSelected(true);
+		else if(antecedentAnnotation.isEmpty())
+			antUnset_.setSelected(true);
+		else {
+			System.err.println("Unknown antecedent annotation: " + antecedentAnnotation);
+			antUnset_.setSelected(true);
+		}
+
+		String anaphorAnnotation = current_.getAnaphorAnnotation();
+		if(anaphorAnnotation.equals("ok"))
+			prnOK_.setSelected(true);
+		else if(anaphorAnnotation.equals("bad"))
+			prnBad_.setSelected(true);
+		else if(anaphorAnnotation.isEmpty())
+			prnUnset_.setSelected(true);
+		else {
+			System.err.println("Unknown anaphor annotation: " + anaphorAnnotation);
+			prnUnset_.setSelected(true);
+		}
+
+		remarksField_.setText(current_.getRemarks());
 	}
 
 	private void saveAnnotations() {
-		if(dirty_)
+		if(dirty_) {
 			System.err.println("Saving annotations.");
-		else
+			dirty_ = false; // set this now in case we get called again from an exit hook
+			current_.saveAnnotations();
+		} else
 			System.err.println("No need to save annotations.");
-		dirty_ = false;
 	}
 
 	private void setContext() {
@@ -330,11 +358,17 @@ public class InstanceWindow implements ActionListener {
 			tgthtml.append("<p>\n");
 			while(snt.hasNext()) {
 				snt.next();
+
+				String approval = current_.getTokenApproval(current_.getIndex(), snt.getIndex());
+				String state = approval.equals("ok") ? "highlight" : "nohighlight";
+
 				if(snt.highlightAsAnaphor())
-					tgthtml.append("<span id=\"ana." + snt.getIndex() + "\" class=\"nohighlight anaphor\">");
+					tgthtml.append(String.format("<span id=\"ana.%d.%d\" class=\"anaphor %s\">",
+							      current_.getIndex(), snt.getIndex(), state));
 
 				if(snt.highlightAsAntecedent())
-					tgthtml.append("<span id=\"ant." + snt.getIndex() + "\" class=\"nohighlight antecedent\">");
+					tgthtml.append(String.format("<span id=\"ant.%d.%d\" class=\"antecedent %s\">",
+							      current_.getIndex(), snt.getIndex(), state));
 
 				tgthtml.append(escapeXml(snt.getToken()));
 
@@ -372,26 +406,30 @@ public class InstanceWindow implements ActionListener {
 			return;
 		String[] cc = id.split("\\.");
 		if(cc[0].equals("ant")) {
-			toggleHighlight(panel, box, celem, "highlight", "nohighlight");
+			int line = Integer.parseInt(cc[1]);
+			int pos = Integer.parseInt(cc[2]);
+			String state = toggleHighlight(panel, box, celem, "highlight", "nohighlight");
+			current_.setTokenApproval(line, pos, state.equals("highlight") ? "ok" : "bad");
 			System.err.println("Clicked on antecedent token " + cc[1]);
 		} else if(cc[0].equals("ana")) {
-			toggleHighlight(panel, box, celem, "highlight", "nohighlight");
+			int line = Integer.parseInt(cc[1]);
+			int pos = Integer.parseInt(cc[2]);
+			String state = toggleHighlight(panel, box, celem, "highlight", "nohighlight");
+			current_.setTokenApproval(line, pos, state.equals("highlight") ? "ok" : "bad");
 			System.err.println("Clicked on anaphor token " + cc[1]);
 		}
 	}
 
-	private void toggleHighlight(BasicPanel panel, Box box, Element e, String chl, String cnohl) {
-		LayoutContext ctx = panel.getLayoutContext();
-		if(ctx == null)
-			return;
-
+	private String toggleHighlight(BasicPanel panel, Box box, Element e, String chl, String cnohl) {
 		ArrayList<String> classes = new ArrayList<String>(Arrays.asList(e.getAttribute("class").split(" ")));
+		String newstate;
 		if(classes.remove(chl))
-			classes.add(cnohl);
-		else {
-			classes.remove(cnohl);
-			classes.add(chl);
-		}
+			newstate = cnohl;
+		else
+			newstate = chl;
+
+		classes.remove(cnohl);
+		classes.add(newstate);
 
 		StringBuilder sb = new StringBuilder();
 		for(String c : classes)
@@ -401,6 +439,10 @@ public class InstanceWindow implements ActionListener {
 
 		Box tgt = box.getRestyleTarget();
 
+		LayoutContext ctx = panel.getLayoutContext();
+		if(ctx == null)
+			return newstate;
+
 		tgt.restyle(ctx);
 
 		PaintingInfo pinfo = tgt.getPaintingInfo();
@@ -408,6 +450,8 @@ public class InstanceWindow implements ActionListener {
 			panel.repaint(new Rectangle(pinfo.getAggregateBounds()));
 		else
 			panel.repaint();
+
+		return newstate;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -425,9 +469,11 @@ public class InstanceWindow implements ActionListener {
 			}
 		} else if(cmd[0].equals("ant")) {
 			dirty_ = true;
+			current_.setAntecedentAnnotation(cmd[1]);
 			System.err.println("Button change: " + e.getActionCommand());
 		} else if(cmd[0].equals("prn")) {
 			dirty_ = true;
+			current_.setAnaphorAnnotation(cmd[1]);
 			System.err.println("Button change: " + e.getActionCommand());
 		}
 	}

@@ -38,7 +38,7 @@ public class TestSuiteExample {
 	private String antecedentAnnotation_;
 	private String anaphorAnnotation_;
 	private String remarks_;
-	private List<boolean[]> approvedTokens_;
+	private List<String[]> approvedTokens_;
 
 	public TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) {
 		connection_ = conn;
@@ -227,18 +227,23 @@ public class TestSuiteExample {
 			"select ant_annotation, anaph_annotation, remarks from annotations where example=?");
 		stmt.setInt(1, example_id_);
 		ResultSet res = stmt.executeQuery();
-		res.next();
-		antecedentAnnotation_ = res.getString(1);
-		anaphorAnnotation_ = res.getString(2);
-		remarks_ = res.getString(3);
-		if(res.next())
-			System.err.println("Warning: Multiple annotation records for example ID " + example_id_);
+		if(res.next()) {
+			antecedentAnnotation_ = res.getString(1);
+			anaphorAnnotation_ = res.getString(2);
+			remarks_ = res.getString(3);
+			if(res.next())
+				System.err.println("Warning: Multiple annotation records for example ID " + example_id_);
+		} else {
+			antecedentAnnotation_ = "";
+			anaphorAnnotation_ = "";
+			remarks_ = "";
+		}
 
 		int nsent = lastLine_ - firstLine_ + 1;
-		approvedTokens_ = new ArrayList<boolean[]>(nsent);
+		approvedTokens_ = new ArrayList<String[]>(nsent);
 		for(int i = 0; i < nsent; i++) {
 			String[] t = targetSentences_.get(i).split(" ");
-			approvedTokens_.add(new boolean[t.length]);
+			approvedTokens_.add(new String[t.length]);
 		}
 
 		stmt = connection_.prepareStatement(
@@ -248,8 +253,7 @@ public class TestSuiteExample {
 		while(res.next()) {
 			int line = res.getInt(1) - firstLine_;
 			int token = res.getInt(2);
-			String annotation = res.getString(3);
-			approvedTokens_.get(line)[token] = annotation.equals("ok");
+			approvedTokens_.get(line)[token] = res.getString(3);
 		}
 	}
 
@@ -282,9 +286,11 @@ public class TestSuiteExample {
 			stmt.setInt(1, example_id_);
 			for(int i = 0; i < approvedTokens_.size(); i++)
 				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
+					if(approvedTokens_.get(i)[j].isEmpty())
+						continue;
 					stmt.setInt(2, firstLine_ + i);
 					stmt.setInt(3, j);
-					stmt.setString(4, approvedTokens_.get(i)[j] ? "ok" : "bad");
+					stmt.setString(4, approvedTokens_.get(i)[j]);
 					stmt.execute();
 				}
 
@@ -310,6 +316,10 @@ public class TestSuiteExample {
 	public boolean hasNext() {
 		load();
 		return currline_ < sourceSentences_.size() - 1;
+	}
+
+	public int getIndex() {
+		return currline_;
 	}
 
 	public Sentence getSourceSentence() {
@@ -348,11 +358,11 @@ public class TestSuiteExample {
 		remarks_ = remarks;
 	}
 
-	public boolean isTokenApproved(int line, int token) {
+	public String getTokenApproval(int line, int token) {
 		return approvedTokens_.get(line)[token];
 	}
 
-	public void setTokenApproved(int line, int token, boolean approved) {
+	public void setTokenApproval(int line, int token, String approved) {
 		approvedTokens_.get(line)[token] = approved;
 	}
 }
