@@ -52,7 +52,6 @@ public class InstanceWindow implements ActionListener {
 	private JButton prevButton_;
 	private JButton nextButton_;
 	private JLabel idxField_;
-	private JButton saveButton_;
 
 	private JTextArea remarksField_;
 	private JRadioButton antOK_;
@@ -66,6 +65,8 @@ public class InstanceWindow implements ActionListener {
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
 	private int currentIdx_;
+
+	private boolean dirty_;
 
 	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
@@ -216,18 +217,12 @@ public class InstanceWindow implements ActionListener {
 				update(e);
 			}
 			private void update(DocumentEvent e) {
-				saveButton_.setEnabled(true);
+				dirty_ = true;
 			}
 		});
 
-		saveButton_ = new JButton("Save");
-		saveButton_.setEnabled(false);
-		saveButton_.setActionCommand("save remarks");
-		saveButton_.addActionListener(this);
-
 		JPanel remarksPanel = new JPanel(new BorderLayout());
 		remarksPanel.add(remarksField_, BorderLayout.CENTER);
-		remarksPanel.add(saveButton_, BorderLayout.PAGE_END);
 
 		JPanel wrapperPanel = new JPanel(new BorderLayout());
 		wrapperPanel.add(annotationPanel, BorderLayout.PAGE_START);
@@ -247,11 +242,16 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void loadAnnotations() {
+		dirty_ = false;
 		System.err.println("Loading annotations.");
 	}
 
 	private void saveAnnotations() {
-		System.err.println("Saving annotations.");
+		if(dirty_)
+			System.err.println("Saving annotations.");
+		else
+			System.err.println("No need to save annotations.");
+		dirty_ = false;
 	}
 
 	private void setContext() {
@@ -428,15 +428,11 @@ public class InstanceWindow implements ActionListener {
 				showCurrentInstance();
 			}
 		} else if(cmd[0].equals("ant")) {
+			dirty_ = true;
 			System.err.println("Button change: " + e.getActionCommand());
 		} else if(cmd[0].equals("prn")) {
+			dirty_ = true;
 			System.err.println("Button change: " + e.getActionCommand());
-		} else if(cmd[0].equals("save") && cmd[1].equals("remarks")) {
-			try {
-				System.err.println("Save remarks:\n" +
-					remarksField_.getDocument().getText(0, remarksField_.getDocument().getLength()));
-			} catch(BadLocationException ex) {}
-			saveButton_.setEnabled(false);
 		}
 	}
 
