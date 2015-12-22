@@ -129,6 +129,8 @@ public class TestSuiteExample {
 				}
 				antecedentTargetHighlight_.set(line - firstLine_, Arrays.copyOf(buf, i));
 			}
+
+			loadAnnotations();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
