@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -259,8 +260,18 @@ public class InstanceWindow implements ActionListener {
 			"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
 				"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
 			"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
-			"<head><title/></head>\n" +
-			"<body style=\"font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;font:1.2em/1.5em\">\n";
+			"<head>\n" +
+			"<title/>\n" +
+			"<style type=\"text/css\">\n" +
+			"body { font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;" +
+				"font:1.2em/1.5em }\n" +
+			".anaphor { font-weight: bold; border-color: red; border-style: solid; border-width: medium }\n" +
+			".antecedent { font-weight: bold }\n" +
+			".highlight { color: red }\n" +
+			".nohighlight { color: green }\n" +
+			"</style>\n" +
+			"</head>\n" +
+			"<body>\n";
 
 		StringBuilder srchtml = new StringBuilder();
 		srchtml.append(XHTML_HEADER);
@@ -272,10 +283,9 @@ public class InstanceWindow implements ActionListener {
 			while(snt.hasNext()) {
 				snt.next();
 				if(snt.highlightAsAnaphor())
-					srchtml.append("<span style=\"font-weight:bold;" +
-						"border-color:red;border-style:solid;border-width:medium\">");
+					srchtml.append("<span class=\"anaphor\">");
 				if(snt.highlightAsAntecedent())
-					srchtml.append("<span style=\"font-weight:bold;color:red\">");
+					srchtml.append("<span class=\"antecedent highlight\">");
 
 				srchtml.append(escapeXml(snt.getToken()));
 
@@ -316,11 +326,6 @@ public class InstanceWindow implements ActionListener {
 
 		StringBuilder tgthtml = new StringBuilder();
 		tgthtml.append(XHTML_HEADER);
-		tgthtml.append(
-			"<style>\n" +
-			"highlight { color: red };\n" +
-			"nohighlight { color: green };\n" +
-			"</style>\n");
 		current_.reset();
 		while(current_.hasNext()) {
 			current_.next();
@@ -329,13 +334,10 @@ public class InstanceWindow implements ActionListener {
 			while(snt.hasNext()) {
 				snt.next();
 				if(snt.highlightAsAnaphor())
-					tgthtml.append("<span id=\"ana." + snt.getIndex() + "\" " +
-						"style=\"font-weight:bold;" +
-						"border-color:red;border-style:solid;border-width:medium\">");
+					tgthtml.append("<span id=\"ana." + snt.getIndex() + "\" class=\"nohighlight anaphor\">");
+
 				if(snt.highlightAsAntecedent())
-					tgthtml.append("<span id=\"ant." + snt.getIndex() + "\" " +
-						"style=\"font-weight:bold;\">");
-						//"style=\"font-weight:bold;color:red\">");
+					tgthtml.append("<span id=\"ant." + snt.getIndex() + "\" class=\"nohighlight antecedent\">");
 
 				tgthtml.append(escapeXml(snt.getToken()));
 
@@ -350,6 +352,7 @@ public class InstanceWindow implements ActionListener {
 		}
 
 		tgthtml.append("</body></html>");
+		System.err.println(tgthtml.toString());
 
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
@@ -386,11 +389,19 @@ public class InstanceWindow implements ActionListener {
 		if(ctx == null)
 			return;
 
-		String c = e.getAttribute("class");
-		if(c.equals(chl))
-			e.setAttribute("class", cnohl);
-		else
-			e.setAttribute("class", chl);
+		ArrayList<String> classes = new ArrayList<String>(Arrays.asList(e.getAttribute("class").split(" ")));
+		if(classes.remove(chl))
+			classes.add(cnohl);
+		else {
+			classes.remove(cnohl);
+			classes.add(chl);
+		}
+
+		StringBuilder sb = new StringBuilder();
+		for(String c : classes)
+			sb.append(c).append(' ');
+		sb.deleteCharAt(sb.length() - 1);
+		e.setAttribute("class", sb.toString());
 
 		Box tgt = box.getRestyleTarget();
 
