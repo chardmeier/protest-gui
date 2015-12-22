@@ -349,7 +349,6 @@ public class InstanceWindow implements ActionListener {
 		}
 
 		tgthtml.append("</body></html>");
-		System.err.println(tgthtml.toString());
 
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
