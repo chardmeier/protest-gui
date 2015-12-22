@@ -10,9 +10,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TestSuiteExample {
+	private Connection connection_;
+
 	private int srccorpus_;
 	private int tgtcorpus_;
 	private int example_no_;
+
+	private boolean loaded_;
 
 	private List<int[]> anaphorSourceHighlight_;
 	private List<int[]> anaphorTargetHighlight_;
@@ -24,91 +28,105 @@ public class TestSuiteExample {
 
 	private int currline_;
 
-	public TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) 
-			throws SQLException {
+	public TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) {
+		connection_ = conn;
 		srccorpus_ = srccorpus;
 		tgtcorpus_ = tgtcorpus;
 		example_no_ = example_no;
-
-		Position anaphorSource = retrieveAnaphorSourcePosition(conn);
-		List<Position> anaphorTarget = retrieveAnaphorTargetPositions(conn);
-		List<Position> antecedentSource = retrieveAntecedentSourcePositions(conn);
-		List<Position> antecedentTarget = retrieveAntecedentTargetPositions(conn);
-
-		int firstLine = anaphorSource.getLine();
-		int lastLine = anaphorSource.getLine();
-		for(Position p : antecedentSource) {
-			if(p.getLine() < firstLine)
-				firstLine = p.getLine();
-			if(p.getLine() > lastLine)
-				lastLine = p.getLine();
-		}
-
-		if(firstLine > 0)
-			firstLine--;
-
-		sourceSentences_ = retrieveSentences(conn, srccorpus_, firstLine, lastLine);
-		targetSentences_ = retrieveSentences(conn, tgtcorpus_, firstLine, lastLine);
-
-		int nsent = lastLine - firstLine + 1;
-		anaphorSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
-		anaphorTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
-		antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
-		antecedentTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
-
-		anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine,
-				new int[] { anaphorSource.getHead() });
-
-		int[] buf = new int[100];
-
-		if(!anaphorTarget.isEmpty()) {
-			int line = anaphorTarget.get(0).getLine();
-			int i = 0;
-			for(Position p : anaphorTarget) {
-				if(p.getLine() != line) {
-					anaphorTargetHighlight_.set(line - firstLine,
-							Arrays.copyOf(buf, i));
-					i = 0;
-				}
-				for(int j = p.getStart(); j <= p.getEnd(); j++)
-					buf[i++] = j;
-			}
-			anaphorTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
-		}
-
-		if(!antecedentSource.isEmpty()) {
-			int line = antecedentSource.get(0).getLine();
-			int i = 0;
-			for(Position p : antecedentSource) {
-				if(p.getLine() != line) {
-					antecedentSourceHighlight_.set(line - firstLine,
-							Arrays.copyOf(buf, i));
-					i = 0;
-				}
-				for(int j = p.getStart(); j <= p.getEnd(); j++)
-					buf[i++] = j;
-			}
-			antecedentSourceHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
-		}
-
-		if(!antecedentTarget.isEmpty()) {
-			int line = antecedentTarget.get(0).getLine();
-			int i = 0;
-			for(Position p : antecedentTarget) {
-				if(p.getLine() != line) {
-					antecedentTargetHighlight_.set(line - firstLine,
-							Arrays.copyOf(buf, i));
-					i = 0;
-				}
-				for(int j = p.getStart(); j <= p.getEnd(); j++)
-					buf[i++] = j;
-			}
-			antecedentTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
-		}
+		loaded_ = false;
+		currline_ = -1;
 	}
 
-	private Position retrieveAnaphorSourcePosition(Connection conn) throws SQLException {
-		PreparedStatement stmt = conn.prepareStatement(
+	private void load() {
+		if(loaded_)
+			return;
+
+		try {
+			Position anaphorSource = retrieveAnaphorSourcePosition();
+			List<Position> anaphorTarget = retrieveAnaphorTargetPositions();
+			List<Position> antecedentSource = retrieveAntecedentSourcePositions();
+			List<Position> antecedentTarget = retrieveAntecedentTargetPositions();
+
+			int firstLine = anaphorSource.getLine();
+			int lastLine = anaphorSource.getLine();
+			for(Position p : antecedentSource) {
+				if(p.getLine() < firstLine)
+					firstLine = p.getLine();
+				if(p.getLine() > lastLine)
+					lastLine = p.getLine();
+			}
+
+			if(firstLine > 0)
+				firstLine--;
+
+			sourceSentences_ = retrieveSentences(srccorpus_, firstLine, lastLine);
+			targetSentences_ = retrieveSentences(tgtcorpus_, firstLine, lastLine);
+
+			int nsent = lastLine - firstLine + 1;
+			anaphorSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
+			anaphorTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
+			antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
+			antecedentTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
+
+			anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine,
+					new int[] { anaphorSource.getHead() });
+
+			int[] buf = new int[100];
+
+			if(!anaphorTarget.isEmpty()) {
+				int line = anaphorTarget.get(0).getLine();
+				int i = 0;
+				for(Position p : anaphorTarget) {
+					if(p.getLine() != line) {
+						anaphorTargetHighlight_.set(line - firstLine,
+								Arrays.copyOf(buf, i));
+						i = 0;
+					}
+					for(int j = p.getStart(); j <= p.getEnd(); j++)
+						buf[i++] = j;
+				}
+				anaphorTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
+			}
+
+			if(!antecedentSource.isEmpty()) {
+				int line = antecedentSource.get(0).getLine();
+				int i = 0;
+				for(Position p : antecedentSource) {
+					if(p.getLine() != line) {
+						antecedentSourceHighlight_.set(line - firstLine,
+								Arrays.copyOf(buf, i));
+						i = 0;
+					}
+					for(int j = p.getStart(); j <= p.getEnd(); j++)
+						buf[i++] = j;
+				}
+				antecedentSourceHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
+			}
+
+			if(!antecedentTarget.isEmpty()) {
+				int line = antecedentTarget.get(0).getLine();
+				int i = 0;
+				for(Position p : antecedentTarget) {
+					if(p.getLine() != line) {
+						antecedentTargetHighlight_.set(line - firstLine,
+								Arrays.copyOf(buf, i));
+						i = 0;
+					}
+					for(int j = p.getStart(); j <= p.getEnd(); j++)
+						buf[i++] = j;
+				}
+				antecedentTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
+			}
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		loaded_ = true;
+	}
+
+	private Position retrieveAnaphorSourcePosition() throws SQLException {
+		PreparedStatement stmt = connection_.prepareStatement(
 			"select line, srcpos from pro_examples " +
 			"where srccorpus=? and tgtcorpus=? and example_no=?");
 		stmt.setInt(1, srccorpus_);
@@ -121,8 +139,8 @@ public class TestSuiteExample {
 		return new Position(line, srcpos, srcpos, srcpos);
 	}
 
-	private List<Position> retrieveAntecedentSourcePositions(Connection conn) throws SQLException {
-		PreparedStatement stmt = conn.prepareStatement(
+	private List<Position> retrieveAntecedentSourcePositions() throws SQLException {
+		PreparedStatement stmt = connection_.prepareStatement(
 			"select line, srcstartpos, srcheadpos, srcendpos from pro_antecedents " +
 			"where srccorpus=? and tgtcorpus=? and example_no=? " +
 			"order by line, srcstartpos, srcheadpos, srcendpos");
@@ -141,8 +159,8 @@ public class TestSuiteExample {
 		return out;
 	}
 
-	private List<Position> retrieveAnaphorTargetPositions(Connection conn) throws SQLException {
-		PreparedStatement stmt = conn.prepareStatement(
+	private List<Position> retrieveAnaphorTargetPositions() throws SQLException {
+		PreparedStatement stmt = connection_.prepareStatement(
 			"select line, tgtpos from translations " +
 			"where tgtcorpus=? and example_no=? and ant_no is null " +
 			"order by line, tgtpos");
@@ -158,8 +176,8 @@ public class TestSuiteExample {
 		return out;
 	}
 
-	private List<Position> retrieveAntecedentTargetPositions(Connection conn) throws SQLException {
-		PreparedStatement stmt = conn.prepareStatement(
+	private List<Position> retrieveAntecedentTargetPositions() throws SQLException {
+		PreparedStatement stmt = connection_.prepareStatement(
 			"select line, tgtpos from translations " +
 			"where tgtcorpus=? and example_no=? and ant_no is not null " +
 			"order by line, tgtpos");
@@ -175,9 +193,9 @@ public class TestSuiteExample {
 		return out;
 	}
 
-	private List<String> retrieveSentences(Connection conn, int corpus, int minsnt, int maxsnt)
+	private List<String> retrieveSentences(int corpus, int minsnt, int maxsnt)
 			throws SQLException {
-		PreparedStatement stmt = conn.prepareStatement(
+		PreparedStatement stmt = connection_.prepareStatement(
 			"select sentence from sentences where corpus=? and line between ? and ? order by line");
 		stmt.setInt(1, corpus);
 		stmt.setInt(2, minsnt);
@@ -194,10 +212,12 @@ public class TestSuiteExample {
 	}
 
 	public void next() {
+		load();
 		currline_++;
 	}
 
 	public boolean hasNext() {
+		load();
 		return currline_ < sourceSentences_.size() - 1;
 	}
 
