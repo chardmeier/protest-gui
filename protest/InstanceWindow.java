@@ -143,16 +143,16 @@ public class InstanceWindow implements ActionListener {
 		JPanel annotationPanel = new JPanel(new GridLayout(4,1));
 
 		// Antecedent correctness
-		JRadioButton antOK_ = new JRadioButton("yes");
+		antOK_ = new JRadioButton("yes");
 		antOK_.setActionCommand("ant ok");
 		antOK_.addActionListener(this);
-		JRadioButton antBad_ = new JRadioButton("no");
+		antBad_ = new JRadioButton("no");
 		antBad_.setActionCommand("ant bad");
 		antBad_.addActionListener(this);
-		JRadioButton antNA_ = new JRadioButton("n/a");
+		antNA_ = new JRadioButton("n/a");
 		antNA_.setActionCommand("ant na");
 		antNA_.addActionListener(this);
-		JRadioButton antUnset_ = new JRadioButton("unset");
+		antUnset_ = new JRadioButton("unset");
 		antUnset_.setActionCommand("ant unset");
 		antUnset_.addActionListener(this);
 		antUnset_.setSelected(true);
@@ -173,13 +173,13 @@ public class InstanceWindow implements ActionListener {
 		annotationPanel.add(antButtonPanel);
 
 		// Pronoun correctness
-		JRadioButton prnOK_ = new JRadioButton("yes");
+		prnOK_ = new JRadioButton("yes");
 		prnOK_.setActionCommand("prn ok");
 		prnOK_.addActionListener(this);
-		JRadioButton prnBad_ = new JRadioButton("no");
+		prnBad_ = new JRadioButton("no");
 		prnBad_.setActionCommand("prn bad");
 		prnBad_.addActionListener(this);
-		JRadioButton prnUnset_ = new JRadioButton("unset");
+		prnUnset_ = new JRadioButton("unset");
 		prnUnset_.setActionCommand("prn unset");
 		prnUnset_.addActionListener(this);
 		prnUnset_.setSelected(true);
