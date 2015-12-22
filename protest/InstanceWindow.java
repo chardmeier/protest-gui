@@ -221,12 +221,9 @@ public class InstanceWindow implements ActionListener {
 			}
 		});
 
-		JPanel remarksPanel = new JPanel(new BorderLayout());
-		remarksPanel.add(remarksField_, BorderLayout.CENTER);
-
 		JPanel wrapperPanel = new JPanel(new BorderLayout());
 		wrapperPanel.add(annotationPanel, BorderLayout.PAGE_START);
-		wrapperPanel.add(remarksPanel, BorderLayout.CENTER);
+		wrapperPanel.add(remarksField_, BorderLayout.CENTER);
 		detailPanel.add(wrapperPanel, BorderLayout.CENTER);
 
 		frame_.pack();
