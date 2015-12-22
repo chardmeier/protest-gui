@@ -286,7 +286,8 @@ public class TestSuiteExample {
 			stmt.setInt(1, example_id_);
 			for(int i = 0; i < approvedTokens_.size(); i++)
 				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
-					if(approvedTokens_.get(i)[j].isEmpty())
+					String app = approvedTokens_.get(i)[j];
+					if(app == null || app.isEmpty())
 						continue;
 					stmt.setInt(2, firstLine_ + i);
 					stmt.setInt(3, j);
