@@ -11,10 +11,17 @@ import java.util.List;
 
 public class TestSuiteExample {
 	private Connection connection_;
+	
+	// id in the pro_examples table, uniquely identifying a
+	// (srccorpus, tgtcorpus, example_no) combination
+	private int example_id_;
 
 	private int srccorpus_;
 	private int tgtcorpus_;
 	private int example_no_;
+
+	private int firstLine_;
+	private int lastLine_;
 
 	private boolean loaded_;
 
@@ -27,6 +34,11 @@ public class TestSuiteExample {
 	private List<String> targetSentences_;
 
 	private int currline_;
+
+	private String antecedentAnnotation_;
+	private String anaphorAnnotation_;
+	private String remarks_;
+	private List<boolean[]> approvedTokens_;
 
 	public TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) {
 		connection_ = conn;
@@ -47,28 +59,28 @@ public class TestSuiteExample {
 			List<Position> antecedentSource = retrieveAntecedentSourcePositions();
 			List<Position> antecedentTarget = retrieveAntecedentTargetPositions();
 
-			int firstLine = anaphorSource.getLine();
-			int lastLine = anaphorSource.getLine();
+			firstLine_ = anaphorSource.getLine();
+			lastLine_ = anaphorSource.getLine();
 			for(Position p : antecedentSource) {
-				if(p.getLine() < firstLine)
-					firstLine = p.getLine();
-				if(p.getLine() > lastLine)
-					lastLine = p.getLine();
+				if(p.getLine() < firstLine_)
+					firstLine_ = p.getLine();
+				if(p.getLine() > lastLine_)
+					lastLine_ = p.getLine();
 			}
 
-			if(firstLine > 0)
-				firstLine--;
+			if(firstLine_ > 0)
+				firstLine_--;
 
-			sourceSentences_ = retrieveSentences(srccorpus_, firstLine, lastLine);
-			targetSentences_ = retrieveSentences(tgtcorpus_, firstLine, lastLine);
+			sourceSentences_ = retrieveSentences(srccorpus_, firstLine_, lastLine_);
+			targetSentences_ = retrieveSentences(tgtcorpus_, firstLine_, lastLine_);
 
-			int nsent = lastLine - firstLine + 1;
+			int nsent = lastLine_ - firstLine_ + 1;
 			anaphorSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			anaphorTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			antecedentTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 
-			anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine,
+			anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine_,
 					new int[] { anaphorSource.getHead() });
 
 			int[] buf = new int[100];
@@ -78,14 +90,14 @@ public class TestSuiteExample {
 				int i = 0;
 				for(Position p : anaphorTarget) {
 					if(p.getLine() != line) {
-						anaphorTargetHighlight_.set(line - firstLine,
+						anaphorTargetHighlight_.set(line - firstLine_,
 								Arrays.copyOf(buf, i));
 						i = 0;
 					}
 					for(int j = p.getStart(); j <= p.getEnd(); j++)
 						buf[i++] = j;
 				}
-				anaphorTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
+				anaphorTargetHighlight_.set(line - firstLine_, Arrays.copyOf(buf, i));
 			}
 
 			if(!antecedentSource.isEmpty()) {
@@ -93,14 +105,14 @@ public class TestSuiteExample {
 				int i = 0;
 				for(Position p : antecedentSource) {
 					if(p.getLine() != line) {
-						antecedentSourceHighlight_.set(line - firstLine,
+						antecedentSourceHighlight_.set(line - firstLine_,
 								Arrays.copyOf(buf, i));
 						i = 0;
 					}
 					for(int j = p.getStart(); j <= p.getEnd(); j++)
 						buf[i++] = j;
 				}
-				antecedentSourceHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
+				antecedentSourceHighlight_.set(line - firstLine_, Arrays.copyOf(buf, i));
 			}
 
 			if(!antecedentTarget.isEmpty()) {
@@ -108,14 +120,14 @@ public class TestSuiteExample {
 				int i = 0;
 				for(Position p : antecedentTarget) {
 					if(p.getLine() != line) {
-						antecedentTargetHighlight_.set(line - firstLine,
+						antecedentTargetHighlight_.set(line - firstLine_,
 								Arrays.copyOf(buf, i));
 						i = 0;
 					}
 					for(int j = p.getStart(); j <= p.getEnd(); j++)
 						buf[i++] = j;
 				}
-				antecedentTargetHighlight_.set(line - firstLine, Arrays.copyOf(buf, i));
+				antecedentTargetHighlight_.set(line - firstLine_, Arrays.copyOf(buf, i));
 			}
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -127,13 +139,14 @@ public class TestSuiteExample {
 
 	private Position retrieveAnaphorSourcePosition() throws SQLException {
 		PreparedStatement stmt = connection_.prepareStatement(
-			"select line, srcpos from pro_examples " +
+			"select id, line, srcpos from pro_examples " +
 			"where srccorpus=? and tgtcorpus=? and example_no=?");
 		stmt.setInt(1, srccorpus_);
 		stmt.setInt(2, tgtcorpus_);
 		stmt.setInt(3, example_no_);
 		ResultSet res = stmt.executeQuery();
 		res.next();
+		example_id_ = res.getInt("id");
 		int line = res.getInt("line");
 		int srcpos = res.getInt("srcpos");
 		return new Position(line, srcpos, srcpos, srcpos);
@@ -207,6 +220,82 @@ public class TestSuiteExample {
 		return out;
 	}
 
+	private void loadAnnotations() throws SQLException {
+		PreparedStatement stmt = connection_.prepareStatement(
+			"select ant_annotation, anaph_annotation, remarks from annotations where example=?");
+		stmt.setInt(1, example_id_);
+		ResultSet res = stmt.executeQuery();
+		res.next();
+		antecedentAnnotation_ = res.getString(1);
+		anaphorAnnotation_ = res.getString(2);
+		remarks_ = res.getString(3);
+		if(res.next())
+			System.err.println("Warning: Multiple annotation records for example ID " + example_id_);
+
+		int nsent = lastLine_ - firstLine_ + 1;
+		approvedTokens_ = new ArrayList<boolean[]>(nsent);
+		for(int i = 0; i < nsent; i++) {
+			String[] t = targetSentences_.get(i).split(" ");
+			approvedTokens_.add(new boolean[t.length]);
+		}
+
+		stmt = connection_.prepareStatement(
+			"select line, token, annotation from token_annotations where example=?");
+		stmt.setInt(1, example_id_);
+		res = stmt.executeQuery();
+		while(res.next()) {
+			int line = res.getInt(1) - firstLine_;
+			int token = res.getInt(2);
+			String annotation = res.getString(3);
+			approvedTokens_.get(line)[token] = annotation.equals("ok");
+		}
+	}
+
+	public void saveAnnotations() {
+		try {
+			connection_.setAutoCommit(false);
+
+			PreparedStatement stmt = connection_.prepareStatement(
+				"delete from annotations where example=?");
+			stmt.setInt(1, example_id_);
+			stmt.execute();
+
+			stmt = connection_.prepareStatement(
+				"insert into annotations(example, ant_annotation, anaph_annotation, remarks) " +
+				"values (?, ?, ?, ?)");
+			stmt.setInt(1, example_id_);
+			stmt.setString(2, antecedentAnnotation_);
+			stmt.setString(3, antecedentAnnotation_);
+			stmt.setString(4, remarks_);
+			stmt.execute();
+
+			stmt = connection_.prepareStatement(
+				"delete from token_annotations where example=?");
+			stmt.setInt(1, example_id_);
+			stmt.execute();
+
+			stmt = connection_.prepareStatement(
+				"insert into token_annotations (example, line, token, annotation) " +
+				"values (?, ?, ?, ?)");
+			stmt.setInt(1, example_id_);
+			for(int i = 0; i < approvedTokens_.size(); i++)
+				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
+					stmt.setInt(2, firstLine_ + i);
+					stmt.setInt(3, j);
+					stmt.setString(4, approvedTokens_.get(i)[j] ? "ok" : "bad");
+					stmt.execute();
+				}
+
+			connection_.commit();
+		} catch(SQLException e) {
+			try {
+				connection_.rollback();
+			} catch(SQLException e2) {}
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
 	public void reset() {
 		currline_ = -1;
 	}
@@ -231,5 +320,37 @@ public class TestSuiteExample {
 		return new Sentence(targetSentences_.get(currline_),
 				anaphorTargetHighlight_.get(currline_),
 				antecedentTargetHighlight_.get(currline_));
+	}
+
+	public String getAntecedentAnnotation() {
+		return antecedentAnnotation_;
+	}
+
+	public void setAntecedentAnnotation(String annotation) {
+		antecedentAnnotation_ = annotation;
+	}
+
+	public String getAnaphorAnnotation() {
+		return anaphorAnnotation_;
+	}
+
+	public void setAnaphorAnnotation(String annotation) {
+		anaphorAnnotation_ = annotation;
+	}
+
+	public String getRemarks() {
+		return remarks_;
+	}
+
+	public void setRemarks(String remarks) {
+		remarks_ = remarks;
+	}
+
+	public boolean isTokenApproved(int line, int token) {
+		return approvedTokens_.get(line)[token];
+	}
+
+	public void setTokenApproved(int line, int token, boolean approved) {
+		approvedTokens_.get(line)[token] = approved;
 	}
 }
