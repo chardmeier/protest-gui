@@ -70,10 +70,10 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 		categoryList_ = new JList(categoryNames_.toArray(new String[0]));
 		categoryList_.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		categoryList_.addListSelectionListener(this);
-		frame.getContentPane().add(new JScrollPane(categoryList_), BorderLayout.PAGE_START);
+		frame.getContentPane().add(new JScrollPane(categoryList_), BorderLayout.CENTER);
 
 		JButton quitButton = new JButton("Quit");
-		frame.getContentPane().add(quitButton, BorderLayout.CENTER);
+		frame.getContentPane().add(quitButton, BorderLayout.PAGE_END);
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
