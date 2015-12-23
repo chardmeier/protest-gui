@@ -421,14 +421,12 @@ public class InstanceWindow implements ActionListener {
 			int state = toggleHighlight(panel, box, celem, Arrays.asList(antClasses));
 			current_.setTokenApproval(line, pos, states[state]);
 			dirty_ = true;
-			System.err.println("Clicked on antecedent token " + cc[1]);
 		} else if(cc[0].equals("ana")) {
 			int line = Integer.parseInt(cc[1]);
 			int pos = Integer.parseInt(cc[2]);
 			int state = toggleHighlight(panel, box, celem, Arrays.asList(anaClasses));
 			current_.setTokenApproval(line, pos, states[state]);
 			dirty_ = true;
-			System.err.println("Clicked on anaphor token " + cc[1]);
 		}
 	}
 
