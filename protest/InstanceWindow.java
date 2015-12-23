@@ -239,8 +239,6 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void setAnnotations() {
-		dirty_ = false;
-
 		String antecedentAnnotation = current_.getAntecedentAnnotation();
 		if(antecedentAnnotation.equals("ok"))
 			antOK_.setSelected(true);
@@ -267,7 +265,10 @@ public class InstanceWindow implements ActionListener {
 			prnUnset_.setSelected(true);
 		}
 
+		// This is going to set the dirty flag, so we clear it afterwards.
 		remarksField_.setText(current_.getRemarks());
+
+		dirty_ = false;
 	}
 
 	private void saveAnnotations() {
