@@ -292,10 +292,11 @@ public class InstanceWindow implements ActionListener {
 			"<style type=\"text/css\">\n" +
 			"body { font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;" +
 				"font:1.2em/1.5em }\n" +
-			".anaphor { font-weight: bold; border-color: red; border-style: solid; border-width: medium }\n" +
-			".antecedent { font-weight: bold }\n" +
-			".highlight { color: red }\n" +
-			".nohighlight { color: green }\n" +
+			".anaphor { font-weight: bold; background-color: yellow; padding: 3px }\n" +
+			".antecedent { font-weight: bold; background-color: aqua; padding: 3px }\n" +
+			".ant_unset, .ana_unset { color: black }\n" +
+			".ant_ok, .ana_ok { color: black; border-color: green; border-style: solid; border-width: medium; }\n" +
+			".ant_bad, .ana_bad { color: red; text-decoration: line-through }\n" +
 			"</style>\n" +
 			"</head>\n" +
 			"<body>\n";
@@ -312,7 +313,7 @@ public class InstanceWindow implements ActionListener {
 				if(snt.highlightAsAnaphor())
 					srchtml.append("<span class=\"anaphor\">");
 				if(snt.highlightAsAntecedent())
-					srchtml.append("<span class=\"antecedent highlight\">");
+					srchtml.append("<span class=\"antecedent\">");
 
 				srchtml.append(escapeXml(snt.getToken()));
 
@@ -362,15 +363,16 @@ public class InstanceWindow implements ActionListener {
 				snt.next();
 
 				String approval = current_.getTokenApproval(current_.getIndex(), snt.getIndex());
-				String state = approval.equals("ok") ? "highlight" : "nohighlight";
+				if(approval.isEmpty())
+					approval = "unset";
 
 				if(snt.highlightAsAnaphor())
-					tgthtml.append(String.format("<span id=\"ana.%d.%d\" class=\"anaphor %s\">",
-							      current_.getIndex(), snt.getIndex(), state));
+					tgthtml.append(String.format("<span id=\"ana.%d.%d\" class=\"anaphor ana_%s\">",
+							      current_.getIndex(), snt.getIndex(), approval));
 
 				if(snt.highlightAsAntecedent())
-					tgthtml.append(String.format("<span id=\"ant.%d.%d\" class=\"antecedent %s\">",
-							      current_.getIndex(), snt.getIndex(), state));
+					tgthtml.append(String.format("<span id=\"ant.%d.%d\" class=\"antecedent ant_%s\">",
+							      current_.getIndex(), snt.getIndex(), approval));
 
 				tgthtml.append(escapeXml(snt.getToken()));
 
@@ -386,6 +388,8 @@ public class InstanceWindow implements ActionListener {
 
 		tgthtml.append("</body></html>");
 
+		System.err.println(tgthtml.toString());
+
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
 
@@ -396,6 +400,10 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void targetWordClicked(BasicPanel panel, Box box) {
+		String[] states = { "", "ok", "bad" };
+		String[] antClasses = { "ant_unset", "ant_ok", "ant_bad" };
+		String[] anaClasses = { "ana_unset", "ana_ok", "ana_bad" };
+
 		String id = null;
 		Element celem = null;
 		for(Node node = box.getElement(); node.getNodeType() == Node.ELEMENT_NODE; node = node.getParentNode()) {
@@ -410,30 +418,34 @@ public class InstanceWindow implements ActionListener {
 		if(cc[0].equals("ant")) {
 			int line = Integer.parseInt(cc[1]);
 			int pos = Integer.parseInt(cc[2]);
-			String state = toggleHighlight(panel, box, celem, "highlight", "nohighlight");
-			current_.setTokenApproval(line, pos, state.equals("highlight") ? "ok" : "bad");
+			int state = toggleHighlight(panel, box, celem, Arrays.asList(antClasses));
+			current_.setTokenApproval(line, pos, states[state]);
 			dirty_ = true;
 			System.err.println("Clicked on antecedent token " + cc[1]);
 		} else if(cc[0].equals("ana")) {
 			int line = Integer.parseInt(cc[1]);
 			int pos = Integer.parseInt(cc[2]);
-			String state = toggleHighlight(panel, box, celem, "highlight", "nohighlight");
-			current_.setTokenApproval(line, pos, state.equals("highlight") ? "ok" : "bad");
+			int state = toggleHighlight(panel, box, celem, Arrays.asList(anaClasses));
+			current_.setTokenApproval(line, pos, states[state]);
 			dirty_ = true;
 			System.err.println("Clicked on anaphor token " + cc[1]);
 		}
 	}
 
-	private String toggleHighlight(BasicPanel panel, Box box, Element e, String chl, String cnohl) {
+	private int toggleHighlight(BasicPanel panel, Box box, Element e, List<String> classList) {
 		ArrayList<String> classes = new ArrayList<String>(Arrays.asList(e.getAttribute("class").split(" ")));
-		String newstate;
-		if(classes.remove(chl))
-			newstate = cnohl;
-		else
-			newstate = chl;
-
-		classes.remove(cnohl);
-		classes.add(newstate);
+		ArrayList<String> intersection = new ArrayList<String>(classes);
+		intersection.retainAll(classList);
+		if(intersection.size() > 1)
+			throw new IllegalStateException("Multiple classes set: " + intersection.toString());
+		int newstate;
+		if(intersection.isEmpty())
+			newstate = 0;
+		else {
+			newstate = (classList.indexOf(intersection.get(0)) + 1) % classList.size();
+			classes.removeAll(intersection);
+		}
+		classes.add(classList.get(newstate));
 
 		StringBuilder sb = new StringBuilder();
 		for(String c : classes)
