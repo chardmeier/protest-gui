@@ -33,6 +33,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
+//For message dialogs
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -56,11 +60,15 @@ public class InstanceWindow implements ActionListener {
 	private JTextArea remarksField_;
 	private JRadioButton antOK_;
 	private JRadioButton antBad_;
-	private JRadioButton antNA_;
 	private JRadioButton antUnset_;
 	private JRadioButton prnOK_;
 	private JRadioButton prnBad_;
 	private JRadioButton prnUnset_;
+    
+    private JPanel annotationPanel_;
+    private JPanel antButtonPanel_;
+    private JLabel antLabel_;
+    private JLabel proLabel_;
 
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
@@ -139,8 +147,7 @@ public class InstanceWindow implements ActionListener {
 		browsePanel.add(nextButton_, BorderLayout.LINE_END);
 
 		// Annotation buttons
-		
-		JPanel annotationPanel = new JPanel(new GridLayout(4,1));
+        annotationPanel_ = new JPanel(new GridLayout(4,1));
 
 		// Antecedent correctness
 		antOK_ = new JRadioButton("yes");
@@ -149,9 +156,6 @@ public class InstanceWindow implements ActionListener {
 		antBad_ = new JRadioButton("no");
 		antBad_.setActionCommand("ant bad");
 		antBad_.addActionListener(this);
-		antNA_ = new JRadioButton("n/a");
-		antNA_.setActionCommand("ant na");
-		antNA_.addActionListener(this);
 		antUnset_ = new JRadioButton("unset");
 		antUnset_.setActionCommand("ant unset");
 		antUnset_.addActionListener(this);
@@ -160,17 +164,16 @@ public class InstanceWindow implements ActionListener {
 		ButtonGroup antGroup = new ButtonGroup();
 		antGroup.add(antOK_);
 		antGroup.add(antBad_);
-		antGroup.add(antNA_);
 		antGroup.add(antUnset_);
 
-		JPanel antButtonPanel = new JPanel(new FlowLayout());
-		antButtonPanel.add(antOK_);
-		antButtonPanel.add(antBad_);
-		antButtonPanel.add(antNA_);
-		antButtonPanel.add(antUnset_);
-
-		annotationPanel.add(new JLabel("Antecedent correctly translated?", JLabel.CENTER));
-		annotationPanel.add(antButtonPanel);
+        antButtonPanel_ = new JPanel(new FlowLayout());
+        antButtonPanel_.add(antOK_);
+        antButtonPanel_.add(antBad_);
+        antButtonPanel_.add(antUnset_);
+        
+        antLabel_ = new JLabel("Antecedent correctly translated?", JLabel.CENTER);
+        annotationPanel_.add(antLabel_);
+        annotationPanel_.add(antButtonPanel_);
 
 		// Pronoun correctness
 		prnOK_ = new JRadioButton("yes");
@@ -194,11 +197,9 @@ public class InstanceWindow implements ActionListener {
 		prnButtonPanel.add(prnBad_);
 		prnButtonPanel.add(prnUnset_);
 
-		annotationPanel.add(new JLabel(
-					"<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
-					"(given antecedent)?</div></html>",
-					JLabel.CENTER));
-		annotationPanel.add(prnButtonPanel);
+        proLabel_ = new JLabel("", JLabel.CENTER);
+        annotationPanel_.add(proLabel_);
+        annotationPanel_.add(prnButtonPanel);
 
 		// Text field for annotator's notes
 		
@@ -222,7 +223,7 @@ public class InstanceWindow implements ActionListener {
 		});
 
 		JPanel wrapperPanel = new JPanel(new BorderLayout());
-		wrapperPanel.add(annotationPanel, BorderLayout.PAGE_START);
+        wrapperPanel.add(annotationPanel_, BorderLayout.PAGE_START);
 		wrapperPanel.add(remarksField_, BorderLayout.CENTER);
 		detailPanel.add(wrapperPanel, BorderLayout.CENTER);
 
@@ -233,7 +234,8 @@ public class InstanceWindow implements ActionListener {
 		idxField_.setText(String.format("%d/%d", currentIdx_ + 1, instances_.size()));
 		prevButton_.setEnabled(currentIdx_ > 0);
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
-
+        //Make "annotationPanel_" invisible if pronoun-antetecedent agreement is not required
+        setAntAgreeVisible();
 		setContext();
 		setAnnotations();
 	}
@@ -244,8 +246,6 @@ public class InstanceWindow implements ActionListener {
 			antOK_.setSelected(true);
 		else if(antecedentAnnotation.equals("bad"))
 			antBad_.setSelected(true);
-		else if(antecedentAnnotation.equals("na"))
-			antNA_.setSelected(true);
 		else if(antecedentAnnotation.isEmpty())
 			antUnset_.setSelected(true);
 		else {
@@ -296,7 +296,6 @@ public class InstanceWindow implements ActionListener {
 			".antecedent { font-weight: bold; background-color: aqua; padding: 3px }\n" +
 			".ant_unset, .ana_unset { color: black }\n" +
 			".ant_ok, .ana_ok { color: black; border-color: green; border-style: solid; border-width: medium; }\n" +
-			".ant_bad, .ana_bad { color: red; text-decoration: line-through }\n" +
 			"</style>\n" +
 			"</head>\n" +
 			"<body>\n";
@@ -390,6 +389,23 @@ public class InstanceWindow implements ActionListener {
 
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
+    
+    private void setAntAgreeVisible() {
+        boolean agree = current_.getAntecedentAgreementRequired();
+        if (agree==true) {
+            //annotationPanel_.setVisible(true);
+            antButtonPanel_.setVisible(true);
+            antLabel_.setVisible(true);
+            proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
+                              "(given antecedent)?</div></html>");
+        }
+        else {
+            //annotationPanel_.setVisible(false);
+            antButtonPanel_.setVisible(false);
+            antLabel_.setVisible(false);
+            proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated?</div></html>");
+        }
+    }
 
 	private String escapeXml(String s) {
 		return s.replace("&", "&amp;").replace("\"", "&quot;")
@@ -398,9 +414,9 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void targetWordClicked(BasicPanel panel, Box box) {
-		String[] states = { "", "ok", "bad" };
-		String[] antClasses = { "ant_unset", "ant_ok", "ant_bad" };
-		String[] anaClasses = { "ana_unset", "ana_ok", "ana_bad" };
+        String[] states = { "", "ok" };
+        String[] antClasses = { "ant_unset", "ant_ok" };
+        String[] anaClasses = { "ana_unset", "ana_ok" };
 
 		String id = null;
 		Element celem = null;
@@ -468,17 +484,42 @@ public class InstanceWindow implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		String[] cmd = e.getActionCommand().split(" ");
+        String conflictMessage = "";
 		if(cmd[0].equals("browse")) {
-			saveAnnotations();
-			if(cmd[1].equals("prev")) {
-				currentIdx_--;
-				current_ = instances_.get(currentIdx_);
-				showCurrentInstance();
-			} else if(cmd[1].equals("next")) {
-				currentIdx_++;
-				current_ = instances_.get(currentIdx_);
-				showCurrentInstance();
-			}
+            // Check if there is an annotation conflict
+            boolean stayOnPage = false;
+            int conflictType = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
+            // Check if annotator wishes to make a correction
+            if (conflictType != 0) {
+                JDialog.setDefaultLookAndFeelDecorated(true);
+                switch (conflictType) {
+                    case 1: conflictMessage = "Conflicting PRONOUN annotations. Do you want to correct them?";
+                        break;
+                    case 2: conflictMessage = "Conflicting ANTECEDENT annotations. Do you want to correct them?";
+                        break;
+                    case 3: conflictMessage = "Conflicting PRONOUN AND ANTECEDENT annotations. Do you want to correct them?";
+                        break;
+                    default: conflictMessage = "Conflicting annotations. Do you want to correct them?";
+                        break;
+                }
+                int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (response == JOptionPane.YES_OPTION){
+                    stayOnPage = true;
+                }
+            }
+            // If the annotator doesn't wish to make a correction, continue with browsing
+            if (stayOnPage == false) {
+                saveAnnotations();
+                if(cmd[1].equals("prev")) {
+                    currentIdx_--;
+                    current_ = instances_.get(currentIdx_);
+                    showCurrentInstance();
+                } else if(cmd[1].equals("next")) {
+                    currentIdx_++;
+                    current_ = instances_.get(currentIdx_);
+                    showCurrentInstance();
+                }
+            }
 		} else if(cmd[0].equals("ant")) {
 			dirty_ = true;
 			current_.setAntecedentAnnotation(cmd[1]);

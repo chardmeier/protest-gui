@@ -3,13 +3,11 @@ package protest;
 public class Position {
 	private int line_;
 	private int start_;
-	private int head_;
 	private int end_;
-
-	Position(int line, int start, int head, int end) {
+    
+    Position(int line, int start, int end) {
 		line_ = line;
 		start_ = start;
-		head_ = head;
 		end_ = end;
 	}
 
@@ -19,10 +17,6 @@ public class Position {
 
 	public int getStart() {
 		return start_;
-	}
-
-	public int getHead() {
-		return head_;
 	}
 
 	public int getEnd() {

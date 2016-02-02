@@ -79,9 +79,10 @@ public class TestSuiteExample {
 			anaphorTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			antecedentTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
-
-			anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine_,
-					new int[] { anaphorSource.getHead() });
+            
+            anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine_,
+            		new int[] { anaphorSource.getStart() });
+            
 
 			int[] buf = new int[100];
 
@@ -151,14 +152,14 @@ public class TestSuiteExample {
 		example_id_ = res.getInt("id");
 		int line = res.getInt("line");
 		int srcpos = res.getInt("srcpos");
-		return new Position(line, srcpos, srcpos, srcpos);
+        return new Position(line, srcpos, srcpos);
 	}
 
 	private List<Position> retrieveAntecedentSourcePositions() throws SQLException {
 		PreparedStatement stmt = connection_.prepareStatement(
-			"select line, srcstartpos, srcheadpos, srcendpos from pro_antecedents " +
+			"select line, srcheadpos from pro_antecedents " +
 			"where srccorpus=? and tgtcorpus=? and example_no=? " +
-			"order by line, srcstartpos, srcheadpos, srcendpos");
+			"order by line, srcheadpos");
 		stmt.setInt(1, srccorpus_);
 		stmt.setInt(2, tgtcorpus_);
 		stmt.setInt(3, example_no_);
@@ -166,10 +167,9 @@ public class TestSuiteExample {
 		ArrayList<Position> out = new ArrayList<Position>();
 		while(res.next()) {
 			int line = res.getInt("line");
-			int srcstartpos = res.getInt("srcstartpos");
-			int srcheadpos = res.getInt("srcheadpos");
-			int srcendpos = res.getInt("srcendpos");
-			out.add(new Position(line, srcstartpos, srcheadpos, srcendpos));
+            int srcstartpos = res.getInt("srcheadpos");
+            int srcendpos = res.getInt("srcheadpos");
+            out.add(new Position(line, srcstartpos, srcendpos));
 		}
 		return out;
 	}
@@ -186,7 +186,7 @@ public class TestSuiteExample {
 		while(res.next()) {
 			int line = res.getInt("line");
 			int tgtpos = res.getInt("tgtpos");
-			out.add(new Position(line, tgtpos, tgtpos, tgtpos));
+			out.add(new Position(line, tgtpos, tgtpos));
 		}
 		return out;
 	}
@@ -203,7 +203,7 @@ public class TestSuiteExample {
 		while(res.next()) {
 			int line = res.getInt("line");
 			int tgtpos = res.getInt("tgtpos");
-			out.add(new Position(line, tgtpos, tgtpos, tgtpos));
+			out.add(new Position(line, tgtpos, tgtpos));
 		}
 		return out;
 	}
@@ -271,7 +271,7 @@ public class TestSuiteExample {
 				"values (?, ?, ?, ?)");
 			stmt.setInt(1, example_id_);
 			stmt.setString(2, antecedentAnnotation_);
-			stmt.setString(3, antecedentAnnotation_);
+			stmt.setString(3, anaphorAnnotation_);
 			stmt.setString(4, remarks_);
 			stmt.execute();
 
@@ -367,4 +367,91 @@ public class TestSuiteExample {
 	public void setTokenApproval(int line, int token, String approved) {
 		approvedTokens_.get(line)[token] = approved;
 	}
+    
+    //Return True if pronoun example category requires antecedent agreement
+    public boolean getAntecedentAgreementRequired() {
+        boolean agree = false;
+        try {
+            PreparedStatement stmt = connection_.prepareStatement(
+                "select c.antagreement from categories as c " +
+                "left join pro_examples as pe on pe.category_no = c.id " +
+                "where pe.srccorpus=? and pe.tgtcorpus=? and pe.example_no=?");
+            stmt.setInt(1, srccorpus_);
+            stmt.setInt(2, tgtcorpus_);
+            stmt.setInt(3, example_no_);
+            ResultSet res = stmt.executeQuery();
+            res.next();
+            // Check if antecedent agreement is required
+            if (res.getInt("antagreement") == 1){
+                agree = true;
+            }
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return agree;
+    }
+    
+    private List<Position> retrieveApprovedPositions() {
+        ArrayList<Position> out = new ArrayList<Position>();
+        int lineNo;
+        int tokNo;
+        for(int i = 0; i < approvedTokens_.size(); i++)
+            for(int j = 0; j < approvedTokens_.get(i).length; j++) {
+                String app = approvedTokens_.get(i)[j];
+                if(app == null || app.isEmpty())
+                    continue;
+                lineNo = firstLine_ + i;
+                tokNo = j;
+                out.add(new Position(lineNo, tokNo, tokNo));
+            }
+        return out;
+    }
+    
+    private boolean checkIfTokensAnnotated(List<Position> all, List<Position> approved) {
+        boolean result = false;
+        for(Position p : all) {
+            for(Position q : approved) {
+                if ((p.getLine() == q.getLine()) && (p.getStart() == q.getStart()) && (p.getEnd() == q.getEnd())){
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+    
+    public int checkAnnotationConflict(){
+        int conflictType = 0;
+        try {
+            String anaph_annotation = getAnaphorAnnotation();
+            String ant_annotation = getAntecedentAnnotation();
+            // Get positions of anaphor and antecedent in target
+            List<Position> anaphorTarget = retrieveAnaphorTargetPositions();
+            List<Position> antecedentTarget = retrieveAntecedentTargetPositions();
+            // Get positions of highlighted tokens from: approvedTokens_
+            List<Position> approved = retrieveApprovedPositions();
+            // Compare
+            boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget,approved);
+            boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget,approved);
+            if ((!anaph_annotation.equals("ok") && anaphTokAnnotated == true) || (anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())){
+                // Pronoun annotation conflict
+                conflictType = 1;
+            }
+            if ((!ant_annotation.equals("ok") && antTokAnnotated == true) || (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())){
+                // Antecedent annotation conflict
+                if (conflictType == 1) { // Both pronoun and antecedents have a conflict
+                    conflictType = 3;
+                }
+                else {
+                    conflictType = 2;
+                }
+            }
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return conflictType;
+    }
 }
