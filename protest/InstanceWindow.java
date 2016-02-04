@@ -69,6 +69,9 @@ public class InstanceWindow implements ActionListener {
     private JPanel antButtonPanel_;
     private JLabel antLabel_;
     private JLabel proLabel_;
+    
+    private JPanel instructionPanel_;
+    private JLabel instructionLabel_;
 
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
@@ -92,16 +95,26 @@ public class InstanceWindow implements ActionListener {
 					saveAnnotations();
 			}
 		}));
+        
+        // Instructions
+        
+        instructionPanel_ = new JPanel();
+        instructionPanel_.setPreferredSize(new Dimension(1200, 60));
+        instructionPanel_.setLayout(new FlowLayout(FlowLayout.LEFT));
+        frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
+        instructionLabel_ = new JLabel("");
+        instructionLabel_.setText("<html><b>All pronouns:</b> mark whether the pronoun is correctly translated, and select the minimum number of tokens necessary for a correct translation.<br><b>Anaphoric pronouns only:</b> mark whether the antecedent is correctly translated, and whether the pronoun translation is correct given the antecedent.<br>Select the minimum number of tokens necessary for a correct translation of both antecedent and pronoun.</html>");
+        instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
 		
 		// Source and target context
 
 		JPanel contextPanel = new JPanel();
-		contextPanel.setPreferredSize(new Dimension(900, 750));
+        contextPanel.setPreferredSize(new Dimension(900, 750));
 		frame_.getContentPane().add(contextPanel, BorderLayout.LINE_START);
 		BorderLayout bl = new BorderLayout();
 		bl.setVgap(15);
 		contextPanel.setLayout(bl);
-
+        
 		sourceContext_ = new XHTMLPanel();
 		FSScrollPane srcctxpane = new FSScrollPane(sourceContext_);
 		srcctxpane.setPreferredSize(new Dimension(900, 367));
@@ -292,10 +305,12 @@ public class InstanceWindow implements ActionListener {
 			"<style type=\"text/css\">\n" +
 			"body { font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;" +
 				"font:1.2em/1.5em }\n" +
-			".anaphor { font-weight: bold; background-color: yellow; padding: 3px }\n" +
-			".antecedent { font-weight: bold; background-color: aqua; padding: 3px }\n" +
+            ".anaphor { font-weight: bold; background-color: yellow; padding: 3px }\n" +
+            ".antecedent { font-weight: bold; background-color: aqua; padding: 3px }\n" +
 			".ant_unset, .ana_unset { color: black }\n" +
-			".ant_ok, .ana_ok { color: black; border-color: green; border-style: solid; border-width: medium; }\n" +
+			//".ant_ok, .ana_ok { color: black; border-color: green; border-style: solid; border-width: medium; }\n" +
+            ".ant_ok { color: black; background-color: #1E90FF }\n" + //#1E90FF=dodgerblue
+            ".ana_ok { color: black; background-color: orange; }\n" +
 			"</style>\n" +
 			"</head>\n" +
 			"<body>\n";
@@ -488,19 +503,30 @@ public class InstanceWindow implements ActionListener {
 		if(cmd[0].equals("browse")) {
             // Check if there is an annotation conflict
             boolean stayOnPage = false;
-            int conflictType = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
+            int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
             // Check if annotator wishes to make a correction
-            if (conflictType != 0) {
+            if (conflictList[0] != 0 || conflictList[1] != 0) {
                 JDialog.setDefaultLookAndFeelDecorated(true);
-                switch (conflictType) {
-                    case 1: conflictMessage = "Conflicting PRONOUN annotations. Do you want to correct them?";
+                switch (conflictList[0]) {
+                    case 0: break;
+                    case 1: conflictMessage += "PRONOUN: Pronoun translation marked as OK, but no tokens selected.\n";
                         break;
-                    case 2: conflictMessage = "Conflicting ANTECEDENT annotations. Do you want to correct them?";
+                    case 2: conflictMessage += "PRONOUN: Tokens selected, but pronoun translation not marked as OK.\n";
                         break;
-                    case 3: conflictMessage = "Conflicting PRONOUN AND ANTECEDENT annotations. Do you want to correct them?";
+                    default: conflictMessage += "PRONOUN: Conflicting annotations.\n";
                         break;
-                    default: conflictMessage = "Conflicting annotations. Do you want to correct them?";
+                }
+                switch (conflictList[1]) {
+                    case 0: break;
+                    case 1: conflictMessage += "ANTECEDENT: Pronoun translation marked as OK, but no tokens selected.\n";
                         break;
+                    case 2: conflictMessage += "ANTECEDENT: Tokens selected, but pronoun translation not marked as OK.\n";
+                        break;
+                    default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
+                        break;
+                }
+                if (!conflictMessage.equals("")){
+                    conflictMessage += "Do you want to correct this?";
                 }
                 int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (response == JOptionPane.YES_OPTION){

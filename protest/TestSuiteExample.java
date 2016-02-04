@@ -421,8 +421,9 @@ public class TestSuiteExample {
         return result;
     }
     
-    public int checkAnnotationConflict(){
-        int conflictType = 0;
+    public int[] checkAnnotationConflict(){
+        int anaphConflictType = 0;
+        int antConflictType = 0;
         try {
             String anaph_annotation = getAnaphorAnnotation();
             String ant_annotation = getAntecedentAnnotation();
@@ -434,24 +435,25 @@ public class TestSuiteExample {
             // Compare
             boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget,approved);
             boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget,approved);
-            if ((!anaph_annotation.equals("ok") && anaphTokAnnotated == true) || (anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())){
-                // Pronoun annotation conflict
-                conflictType = 1;
+            // Pronoun annotation conflicts
+            if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty()){
+                anaphConflictType = 1;
             }
-            if ((!ant_annotation.equals("ok") && antTokAnnotated == true) || (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())){
-                // Antecedent annotation conflict
-                if (conflictType == 1) { // Both pronoun and antecedents have a conflict
-                    conflictType = 3;
-                }
-                else {
-                    conflictType = 2;
-                }
+            else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true) {
+                anaphConflictType = 2;
+            }
+            // Antecedent annotation conflicts
+            if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty()){
+                antConflictType = 1;
+            }
+            else if (!ant_annotation.equals("ok") && antTokAnnotated == true) {
+                antConflictType = 2;
             }
         }
         catch(SQLException e) {
             e.printStackTrace();
             System.exit(1);
         }
-        return conflictType;
+        return new int[] {anaphConflictType, antConflictType};
     }
 }
