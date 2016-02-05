@@ -3,17 +3,24 @@ package protest;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import java.awt.Color;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Statement;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -26,6 +33,8 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 
 	private ArrayList<String> categoryNames_;
 	private ArrayList<ArrayList<TestSuiteExample>> examplesByCategory_;
+    private ArrayList<ArrayList<TestSuiteExample>> newExamplesByCategory_;
+    private ArrayList<ArrayList<TestSuiteExample>> doneExamplesByCategory_;
 
 	private JList categoryList_;
 	private InstanceWindow instWindow_;
@@ -35,32 +44,39 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 
 		categoryNames_ = new ArrayList<String>();
 		examplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
+        newExamplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
+        doneExamplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
 		Statement stmt = db_.createStatement();
-		ResultSet rs = stmt.executeQuery("select distinct s.name, t.name, categories.description, " +
-				"      srccorpus, tgtcorpus, category_no " +
-				"from pro_examples, categories, corpora as s, corpora as t " +
-				"where pro_examples.category_no=categories.id and " +
-				"      srccorpus=s.id and tgtcorpus=t.id " +
-				"order by s.name, t.name, categories.description");
-		while(rs.next()) {
-			String name = rs.getString(1) + " - " + rs.getString(2) + " - " + rs.getString(3);
+        ResultSet rs = stmt.executeQuery("select id as category_no, description from categories");
+        while(rs.next()) {
+            String name = rs.getString(2);
 			categoryNames_.add(name);
-			PreparedStatement ps = db_.prepareStatement("select distinct example_no from pro_examples " +
-					"where srccorpus=? and tgtcorpus=? and category_no=?");
-			int srccorpus = rs.getInt("srccorpus");
-			int tgtcorpus = rs.getInt("tgtcorpus");
-			ps.setInt(1, srccorpus);
-			ps.setInt(2, tgtcorpus);
-			ps.setInt(3, rs.getInt("category_no"));
+            PreparedStatement ps = db_.prepareStatement("select example_no, srccorpus, tgtcorpus from pro_examples where category_no=?");
+            PreparedStatement done_ps = db_.prepareStatement("select p.example_no as example_no, p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus from pro_examples as p left join annotations as a where p.id=a.example and p.category_no=?");
+            PreparedStatement new_ps = db_.prepareStatement("select p.example_no as example_no, p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus from pro_examples as p where p.id not in (select distinct(example) from annotations) and p.category_no=?");
+            ps.setInt(1, rs.getInt("category_no"));
+            new_ps.setInt(1, rs.getInt("category_no"));
+            done_ps.setInt(1, rs.getInt("category_no"));
 			ResultSet exrs = ps.executeQuery();
-			ArrayList<TestSuiteExample> exs = new ArrayList<TestSuiteExample>();
-			while(exrs.next())
-				exs.add(new TestSuiteExample(db_, srccorpus, tgtcorpus, exrs.getInt(1)));
-			examplesByCategory_.add(exs);
+            ResultSet newExrs = new_ps.executeQuery();
+            ResultSet doneExrs = done_ps.executeQuery();
+            examplesByCategory_.add(addExamples(exrs));
+            newExamplesByCategory_.add(addExamples(newExrs));
+            doneExamplesByCategory_.add(addExamples(doneExrs));
 		}
 
 		instWindow_ = new InstanceWindow();
 	}
+    
+    public ArrayList<TestSuiteExample> addExamples(ResultSet rs) throws SQLException {
+        ArrayList<TestSuiteExample> result = new ArrayList<TestSuiteExample>();
+        while(rs.next()) {
+            int srccorpus = rs.getInt("srccorpus");
+            int tgtcorpus = rs.getInt("tgtcorpus");
+            result.add(new TestSuiteExample(db_, srccorpus, tgtcorpus, rs.getInt(1)));
+        }
+        return result;
+    }
 
 	public void run() {
 		JFrame frame = new JFrame("PROTEST Browser");
@@ -70,7 +86,44 @@ public class ProtestGUI implements Runnable, ListSelectionListener {
 		categoryList_ = new JList(categoryNames_.toArray(new String[0]));
 		categoryList_.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		categoryList_.addListSelectionListener(this);
-		frame.getContentPane().add(new JScrollPane(categoryList_), BorderLayout.CENTER);
+		frame.getContentPane().add(new JScrollPane(categoryList_), BorderLayout.PAGE_START);
+        
+        JPanel catButtonsPanel_ = new JPanel(new GridLayout(14,1));
+        frame.getContentPane().add(new JScrollPane(catButtonsPanel_), BorderLayout.LINE_START);
+        
+        for(String c : categoryNames_) {
+            JPanel rowPanel_ = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JLabel catLabel = new JLabel(c);
+            JButton newButton = new JButton("New");
+            newButton.setBackground(Color.YELLOW);
+            newButton.setOpaque(true);
+            JButton doneButton = new JButton("Done");
+            doneButton.setBackground(Color.GREEN);
+            doneButton.setOpaque(true);
+            JButton conflictsButton = new JButton("Conflicts");
+            conflictsButton.setBackground(Color.RED);
+            conflictsButton.setOpaque(true);
+            newButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    instWindow_.setData(c, newExamplesByCategory_.get(categoryNames_.indexOf(c)));
+                    instWindow_.setVisible(true);
+                }});
+            doneButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    instWindow_.setData(c, doneExamplesByCategory_.get(categoryNames_.indexOf(c)));
+                    instWindow_.setVisible(true);
+                }});
+            conflictsButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    instWindow_.setData(c, examplesByCategory_.get(categoryNames_.indexOf(c)));
+                    instWindow_.setVisible(true);
+                }});
+            rowPanel_.add(catLabel);
+            rowPanel_.add(newButton);
+            rowPanel_.add(doneButton);
+            rowPanel_.add(conflictsButton);
+            catButtonsPanel_.add(rowPanel_);
+        }
 
 		JButton quitButton = new JButton("Quit");
 		frame.getContentPane().add(quitButton, BorderLayout.PAGE_END);
