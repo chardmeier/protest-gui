@@ -2,7 +2,7 @@ THINGS TO DO:
 
 Before annotation starts:
 * [DONE] Make warning messages for conflicting annotations more specific
-* Amend browser window to contain a list of classes, each with three buttons (new,done,conflicts)
+* [DONE - some layout issues] Amend browser window to contain a list of classes, each with three buttons (new,done,conflicts)
 * [DONE: AddToDatabase.sql] Add a field in the pro_examples table to contain a sequence number (used to define the order in which pronoun examples are presented to the annotators)
 * [DONE: yellow->orange; aqua->dodgerblue] Change the highlight of selected tokens (yellow->orange; blue->green)
 * [DONE] Add simple instructions to the top of the annotation window
