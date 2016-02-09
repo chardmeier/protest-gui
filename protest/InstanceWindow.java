@@ -558,6 +558,7 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	public void setData(String title, List<TestSuiteExample> instances) {
+		saveAnnotations(); // in case the window is already open
 		instances_ = instances;
 		current_ = instances_.get(0);
 		currentIdx_ = 0;
