@@ -4,8 +4,8 @@ public class Position {
 	private int line_;
 	private int start_;
 	private int end_;
-    
-    Position(int line, int start, int end) {
+	
+	Position(int line, int start, int end) {
 		line_ = line;
 		start_ = start;
 		end_ = end;
