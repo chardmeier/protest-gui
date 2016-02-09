@@ -322,11 +322,12 @@ public class InstanceWindow implements ActionListener {
 
 	private boolean saveAnnotations(boolean force) {
 		if(dirty_) {
-			System.err.println("Saving annotations.");
-			dirty_ = false; // set this now in case we get called again from an exit hook
 			int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
 			if(!force && !confirmConflict(conflictList)) 
 				return false;
+
+			System.err.println("Saving annotations.");
+			dirty_ = false; // set this now in case we get called again from an exit hook
 			current_.setRemarks(remarksField_.getText());
 			current_.saveAnnotations();
 			return true;
