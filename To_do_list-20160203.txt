@@ -18,11 +18,15 @@ Before annotation starts:
 	- [DONE: AddToDatabase.sql] Add entry to capture: masterID: “DiscoMT2015”
 * Provide a means for annotator task assignment (back-end)
 	- [DONE: AddToDatabase.sql] Add a tasks table to the database - this will map example IDs to annotators
+* Add information about conflicting annotations to guidelines
+* Adjust layout of browser screen (gride is not dynamically created, but rows are)
+* Add counts to new/done/donflicts buttons
+* Contact annotators to arrange a meeting
 
 Any time:
 * Create one complete database create statement, with original table definitions plus additions listed above?
 * Create an external CSS file with which to control annotation highlight colour scheme/ presentation
-* Provide a method to remove all arteries related to a given system, from the database
+* Provide a method to remove all entries related to a given system, from the database
 * Remove A3-108 system from the manual annotation task as output is so poor
 * Provide a means for annotator task assignment (front-end). Provide a method to randomise the order of the examples, and calculate overlap for IAA
 * Provide a means to view inter-annotator agreement: re-purpose the main annotation window to allow the user to toggle between two or more annotators’ annotations of the same example
