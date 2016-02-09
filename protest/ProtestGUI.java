@@ -119,7 +119,7 @@ public class ProtestGUI implements Runnable{
         JPanel catButtonsPanel_ = new JPanel(new GridLayout(14,1));
         frame_.getContentPane().add(new JScrollPane(catButtonsPanel_), BorderLayout.LINE_START);
         
-        for(String c : categoryNames_) {
+        for(final String c : categoryNames_) {
             JPanel rowPanel_ = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel catLabel = new JLabel(c);
             JButton newButton = new JButton("New");
