@@ -81,18 +81,20 @@ public class InstanceWindow implements ActionListener {
 
 	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
-		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame_.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				saveAnnotations();
+				if(saveAnnotations(false))
+					frame_.setVisible(false);
 			}
 		});
 		// Make sure the annotations get saved if the annotation window is open
 		// and the application gets terminated without closing it first.
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
+				// We can't stop the shutdown at this point, so we force saving
 				if(frame_.isVisible())
-					saveAnnotations();
+					saveAnnotations(true);
 			}
 		}));
 		
@@ -284,14 +286,54 @@ public class InstanceWindow implements ActionListener {
 		dirty_ = false;
 	}
 
-	private void saveAnnotations() {
+	private boolean confirmConflict(int[] conflictList) {
+		// Check if annotator wishes to make a correction
+		String conflictMessage = "";
+		if (conflictList[0] != 0 || conflictList[1] != 0) {
+			JDialog.setDefaultLookAndFeelDecorated(true);
+			switch (conflictList[0]) {
+				case 0: break;
+				case 1: conflictMessage += "PRONOUN: Pronoun translation marked as OK, but no tokens selected.\n";
+					break;
+				case 2: conflictMessage += "PRONOUN: Tokens selected, but pronoun translation not marked as OK.\n";
+					break;
+				default: conflictMessage += "PRONOUN: Conflicting annotations.\n";
+					break;
+			}
+			switch (conflictList[1]) {
+				case 0: break;
+				case 1: conflictMessage += "ANTECEDENT: Pronoun translation marked as OK, but no tokens selected.\n";
+					break;
+				case 2: conflictMessage += "ANTECEDENT: Tokens selected, but pronoun translation not marked as OK.\n";
+					break;
+				default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
+					break;
+			}
+			if (!conflictMessage.equals("")){
+				conflictMessage += "Do you want to correct this?";
+			}
+			int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (response == JOptionPane.YES_OPTION)
+				return false;
+		}
+
+		return true;
+	}
+
+	private boolean saveAnnotations(boolean force) {
 		if(dirty_) {
 			System.err.println("Saving annotations.");
 			dirty_ = false; // set this now in case we get called again from an exit hook
+			int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
+			if(!force && !confirmConflict(conflictList)) 
+				return false;
 			current_.setRemarks(remarksField_.getText());
 			current_.saveAnnotations();
-		} else
+			return true;
+		} else {
 			System.err.println("No need to save annotations.");
+			return true;
+		}
 	}
 
 	private void setContext() {
@@ -499,43 +541,8 @@ public class InstanceWindow implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		String[] cmd = e.getActionCommand().split(" ");
-		String conflictMessage = "";
 		if(cmd[0].equals("browse")) {
-			// Check if there is an annotation conflict
-			boolean stayOnPage = false;
-			int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
-			// Check if annotator wishes to make a correction
-			if (conflictList[0] != 0 || conflictList[1] != 0) {
-				JDialog.setDefaultLookAndFeelDecorated(true);
-				switch (conflictList[0]) {
-					case 0: break;
-					case 1: conflictMessage += "PRONOUN: Pronoun translation marked as OK, but no tokens selected.\n";
-						break;
-					case 2: conflictMessage += "PRONOUN: Tokens selected, but pronoun translation not marked as OK.\n";
-						break;
-					default: conflictMessage += "PRONOUN: Conflicting annotations.\n";
-						break;
-				}
-				switch (conflictList[1]) {
-					case 0: break;
-					case 1: conflictMessage += "ANTECEDENT: Pronoun translation marked as OK, but no tokens selected.\n";
-						break;
-					case 2: conflictMessage += "ANTECEDENT: Tokens selected, but pronoun translation not marked as OK.\n";
-						break;
-					default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
-						break;
-				}
-				if (!conflictMessage.equals("")){
-					conflictMessage += "Do you want to correct this?";
-				}
-				int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-				if (response == JOptionPane.YES_OPTION){
-					stayOnPage = true;
-				}
-			}
-			// If the annotator doesn't wish to make a correction, continue with browsing
-			if (stayOnPage == false) {
-				saveAnnotations();
+			if(saveAnnotations(false)) {
 				if(cmd[1].equals("prev")) {
 					currentIdx_--;
 					current_ = instances_.get(currentIdx_);
@@ -558,7 +565,10 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	public void setData(String title, List<TestSuiteExample> instances) {
-		saveAnnotations(); // in case the window is already open
+		// save and check for conflicts if window already open
+		if(!saveAnnotations(false))
+			return;
+
 		instances_ = instances;
 		current_ = instances_.get(0);
 		currentIdx_ = 0;
