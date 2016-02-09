@@ -64,20 +64,20 @@ public class InstanceWindow implements ActionListener {
 	private JRadioButton prnOK_;
 	private JRadioButton prnBad_;
 	private JRadioButton prnUnset_;
-    
-    private JPanel annotationPanel_;
-    private JPanel antButtonPanel_;
-    private JLabel antLabel_;
-    private JLabel proLabel_;
-    
-    private JPanel instructionPanel_;
-    private JLabel instructionLabel_;
+	
+	private JPanel annotationPanel_;
+	private JPanel antButtonPanel_;
+	private JLabel antLabel_;
+	private JLabel proLabel_;
+	
+	private JPanel instructionPanel_;
+	private JLabel instructionLabel_;
 
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
 	private int currentIdx_;
 
-	private boolean dirty_;
+	private boolean dirty_ = false;
 
 	public InstanceWindow() {
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
@@ -95,26 +95,26 @@ public class InstanceWindow implements ActionListener {
 					saveAnnotations();
 			}
 		}));
-        
-        // Instructions
-        
-        instructionPanel_ = new JPanel();
-        instructionPanel_.setPreferredSize(new Dimension(1200, 60));
-        instructionPanel_.setLayout(new FlowLayout(FlowLayout.LEFT));
-        frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
-        instructionLabel_ = new JLabel("");
-        instructionLabel_.setText("<html><b>All pronouns:</b> mark whether the pronoun is correctly translated, and select the minimum number of tokens necessary for a correct translation.<br><b>Anaphoric pronouns only:</b> mark whether the antecedent is correctly translated, and whether the pronoun translation is correct given the antecedent.<br>Select the minimum number of tokens necessary for a correct translation of both antecedent and pronoun.</html>");
-        instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
+		
+		// Instructions
+		
+		instructionPanel_ = new JPanel();
+		instructionPanel_.setPreferredSize(new Dimension(1200, 60));
+		instructionPanel_.setLayout(new FlowLayout(FlowLayout.LEFT));
+		frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
+		instructionLabel_ = new JLabel("");
+		instructionLabel_.setText("<html><b>All pronouns:</b> mark whether the pronoun is correctly translated, and select the minimum number of tokens necessary for a correct translation.<br><b>Anaphoric pronouns only:</b> mark whether the antecedent is correctly translated, and whether the pronoun translation is correct given the antecedent.<br>Select the minimum number of tokens necessary for a correct translation of both antecedent and pronoun.</html>");
+		instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
 		
 		// Source and target context
 
 		JPanel contextPanel = new JPanel();
-        contextPanel.setPreferredSize(new Dimension(900, 750));
+		contextPanel.setPreferredSize(new Dimension(900, 750));
 		frame_.getContentPane().add(contextPanel, BorderLayout.LINE_START);
 		BorderLayout bl = new BorderLayout();
 		bl.setVgap(15);
 		contextPanel.setLayout(bl);
-        
+		
 		sourceContext_ = new XHTMLPanel();
 		FSScrollPane srcctxpane = new FSScrollPane(sourceContext_);
 		srcctxpane.setPreferredSize(new Dimension(900, 367));
@@ -160,7 +160,7 @@ public class InstanceWindow implements ActionListener {
 		browsePanel.add(nextButton_, BorderLayout.LINE_END);
 
 		// Annotation buttons
-        annotationPanel_ = new JPanel(new GridLayout(4,1));
+		annotationPanel_ = new JPanel(new GridLayout(4,1));
 
 		// Antecedent correctness
 		antOK_ = new JRadioButton("yes");
@@ -179,14 +179,14 @@ public class InstanceWindow implements ActionListener {
 		antGroup.add(antBad_);
 		antGroup.add(antUnset_);
 
-        antButtonPanel_ = new JPanel(new FlowLayout());
-        antButtonPanel_.add(antOK_);
-        antButtonPanel_.add(antBad_);
-        antButtonPanel_.add(antUnset_);
-        
-        antLabel_ = new JLabel("Antecedent correctly translated?", JLabel.CENTER);
-        annotationPanel_.add(antLabel_);
-        annotationPanel_.add(antButtonPanel_);
+		antButtonPanel_ = new JPanel(new FlowLayout());
+		antButtonPanel_.add(antOK_);
+		antButtonPanel_.add(antBad_);
+		antButtonPanel_.add(antUnset_);
+		
+		antLabel_ = new JLabel("Antecedent correctly translated?", JLabel.CENTER);
+		annotationPanel_.add(antLabel_);
+		annotationPanel_.add(antButtonPanel_);
 
 		// Pronoun correctness
 		prnOK_ = new JRadioButton("yes");
@@ -210,9 +210,9 @@ public class InstanceWindow implements ActionListener {
 		prnButtonPanel.add(prnBad_);
 		prnButtonPanel.add(prnUnset_);
 
-        proLabel_ = new JLabel("", JLabel.CENTER);
-        annotationPanel_.add(proLabel_);
-        annotationPanel_.add(prnButtonPanel);
+		proLabel_ = new JLabel("", JLabel.CENTER);
+		annotationPanel_.add(proLabel_);
+		annotationPanel_.add(prnButtonPanel);
 
 		// Text field for annotator's notes
 		
@@ -236,7 +236,7 @@ public class InstanceWindow implements ActionListener {
 		});
 
 		JPanel wrapperPanel = new JPanel(new BorderLayout());
-        wrapperPanel.add(annotationPanel_, BorderLayout.PAGE_START);
+		wrapperPanel.add(annotationPanel_, BorderLayout.PAGE_START);
 		wrapperPanel.add(remarksField_, BorderLayout.CENTER);
 		detailPanel.add(wrapperPanel, BorderLayout.CENTER);
 
@@ -247,8 +247,8 @@ public class InstanceWindow implements ActionListener {
 		idxField_.setText(String.format("%d/%d", currentIdx_ + 1, instances_.size()));
 		prevButton_.setEnabled(currentIdx_ > 0);
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
-        //Make "annotationPanel_" invisible if pronoun-antetecedent agreement is not required
-        setAntAgreeVisible();
+		//Make "annotationPanel_" invisible if pronoun-antetecedent agreement is not required
+		setAntAgreeVisible();
 		setContext();
 		setAnnotations();
 	}
@@ -305,12 +305,12 @@ public class InstanceWindow implements ActionListener {
 			"<style type=\"text/css\">\n" +
 			"body { font-family:'Lucida Sans Unicode','Lucida Typewriter','Andale Mono',monospace;" +
 				"font:1.2em/1.5em }\n" +
-            ".anaphor { font-weight: bold; background-color: yellow; padding: 3px }\n" +
-            ".antecedent { font-weight: bold; background-color: aqua; padding: 3px }\n" +
+			".anaphor { font-weight: bold; background-color: yellow; padding: 3px }\n" +
+			".antecedent { font-weight: bold; background-color: aqua; padding: 3px }\n" +
 			".ant_unset, .ana_unset { color: black }\n" +
 			//".ant_ok, .ana_ok { color: black; border-color: green; border-style: solid; border-width: medium; }\n" +
-            ".ant_ok { color: black; background-color: #1E90FF }\n" + //#1E90FF=dodgerblue
-            ".ana_ok { color: black; background-color: orange; }\n" +
+			".ant_ok { color: black; background-color: #1E90FF }\n" + //#1E90FF=dodgerblue
+			".ana_ok { color: black; background-color: orange; }\n" +
 			"</style>\n" +
 			"</head>\n" +
 			"<body>\n";
@@ -382,11 +382,11 @@ public class InstanceWindow implements ActionListener {
 
 				if(snt.highlightAsAnaphor())
 					tgthtml.append(String.format("<span id=\"ana.%d.%d\" class=\"anaphor ana_%s\">",
-							      current_.getIndex(), snt.getIndex(), approval));
+								  current_.getIndex(), snt.getIndex(), approval));
 
 				if(snt.highlightAsAntecedent())
 					tgthtml.append(String.format("<span id=\"ant.%d.%d\" class=\"antecedent ant_%s\">",
-							      current_.getIndex(), snt.getIndex(), approval));
+								  current_.getIndex(), snt.getIndex(), approval));
 
 				tgthtml.append(escapeXml(snt.getToken()));
 
@@ -404,23 +404,23 @@ public class InstanceWindow implements ActionListener {
 
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
-    
-    private void setAntAgreeVisible() {
-        boolean agree = current_.getAntecedentAgreementRequired();
-        if (agree==true) {
-            //annotationPanel_.setVisible(true);
-            antButtonPanel_.setVisible(true);
-            antLabel_.setVisible(true);
-            proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
-                              "(given antecedent)?</div></html>");
-        }
-        else {
-            //annotationPanel_.setVisible(false);
-            antButtonPanel_.setVisible(false);
-            antLabel_.setVisible(false);
-            proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated?</div></html>");
-        }
-    }
+	
+	private void setAntAgreeVisible() {
+		boolean agree = current_.getAntecedentAgreementRequired();
+		if (agree==true) {
+			//annotationPanel_.setVisible(true);
+			antButtonPanel_.setVisible(true);
+			antLabel_.setVisible(true);
+			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
+							  "(given antecedent)?</div></html>");
+		}
+		else {
+			//annotationPanel_.setVisible(false);
+			antButtonPanel_.setVisible(false);
+			antLabel_.setVisible(false);
+			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated?</div></html>");
+		}
+	}
 
 	private String escapeXml(String s) {
 		return s.replace("&", "&amp;").replace("\"", "&quot;")
@@ -429,9 +429,9 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void targetWordClicked(BasicPanel panel, Box box) {
-        String[] states = { "", "ok" };
-        String[] antClasses = { "ant_unset", "ant_ok" };
-        String[] anaClasses = { "ana_unset", "ana_ok" };
+		String[] states = { "", "ok" };
+		String[] antClasses = { "ant_unset", "ant_ok" };
+		String[] anaClasses = { "ana_unset", "ana_ok" };
 
 		String id = null;
 		Element celem = null;
@@ -499,53 +499,53 @@ public class InstanceWindow implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		String[] cmd = e.getActionCommand().split(" ");
-        String conflictMessage = "";
+		String conflictMessage = "";
 		if(cmd[0].equals("browse")) {
-            // Check if there is an annotation conflict
-            boolean stayOnPage = false;
-            int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
-            // Check if annotator wishes to make a correction
-            if (conflictList[0] != 0 || conflictList[1] != 0) {
-                JDialog.setDefaultLookAndFeelDecorated(true);
-                switch (conflictList[0]) {
-                    case 0: break;
-                    case 1: conflictMessage += "PRONOUN: Pronoun translation marked as OK, but no tokens selected.\n";
-                        break;
-                    case 2: conflictMessage += "PRONOUN: Tokens selected, but pronoun translation not marked as OK.\n";
-                        break;
-                    default: conflictMessage += "PRONOUN: Conflicting annotations.\n";
-                        break;
-                }
-                switch (conflictList[1]) {
-                    case 0: break;
-                    case 1: conflictMessage += "ANTECEDENT: Pronoun translation marked as OK, but no tokens selected.\n";
-                        break;
-                    case 2: conflictMessage += "ANTECEDENT: Tokens selected, but pronoun translation not marked as OK.\n";
-                        break;
-                    default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
-                        break;
-                }
-                if (!conflictMessage.equals("")){
-                    conflictMessage += "Do you want to correct this?";
-                }
-                int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (response == JOptionPane.YES_OPTION){
-                    stayOnPage = true;
-                }
-            }
-            // If the annotator doesn't wish to make a correction, continue with browsing
-            if (stayOnPage == false) {
-                saveAnnotations();
-                if(cmd[1].equals("prev")) {
-                    currentIdx_--;
-                    current_ = instances_.get(currentIdx_);
-                    showCurrentInstance();
-                } else if(cmd[1].equals("next")) {
-                    currentIdx_++;
-                    current_ = instances_.get(currentIdx_);
-                    showCurrentInstance();
-                }
-            }
+			// Check if there is an annotation conflict
+			boolean stayOnPage = false;
+			int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
+			// Check if annotator wishes to make a correction
+			if (conflictList[0] != 0 || conflictList[1] != 0) {
+				JDialog.setDefaultLookAndFeelDecorated(true);
+				switch (conflictList[0]) {
+					case 0: break;
+					case 1: conflictMessage += "PRONOUN: Pronoun translation marked as OK, but no tokens selected.\n";
+						break;
+					case 2: conflictMessage += "PRONOUN: Tokens selected, but pronoun translation not marked as OK.\n";
+						break;
+					default: conflictMessage += "PRONOUN: Conflicting annotations.\n";
+						break;
+				}
+				switch (conflictList[1]) {
+					case 0: break;
+					case 1: conflictMessage += "ANTECEDENT: Pronoun translation marked as OK, but no tokens selected.\n";
+						break;
+					case 2: conflictMessage += "ANTECEDENT: Tokens selected, but pronoun translation not marked as OK.\n";
+						break;
+					default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
+						break;
+				}
+				if (!conflictMessage.equals("")){
+					conflictMessage += "Do you want to correct this?";
+				}
+				int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				if (response == JOptionPane.YES_OPTION){
+					stayOnPage = true;
+				}
+			}
+			// If the annotator doesn't wish to make a correction, continue with browsing
+			if (stayOnPage == false) {
+				saveAnnotations();
+				if(cmd[1].equals("prev")) {
+					currentIdx_--;
+					current_ = instances_.get(currentIdx_);
+					showCurrentInstance();
+				} else if(cmd[1].equals("next")) {
+					currentIdx_++;
+					current_ = instances_.get(currentIdx_);
+					showCurrentInstance();
+				}
+			}
 		} else if(cmd[0].equals("ant")) {
 			dirty_ = true;
 			current_.setAntecedentAnnotation(cmd[1]);
