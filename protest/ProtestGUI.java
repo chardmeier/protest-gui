@@ -35,7 +35,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 
 	public ProtestGUI(String dbfile) throws SQLException {
 		db_ = new Database(dbfile);
-		instWindow_ = new InstanceWindow(this);
+		instWindow_ = new InstanceWindow(this, 0);
 	}
 
 /*

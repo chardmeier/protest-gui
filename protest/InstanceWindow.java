@@ -79,9 +79,12 @@ public class InstanceWindow implements ActionListener {
 	private TestSuiteExample current_;
 	private int currentIdx_;
 
+	private int annotator_;
+
 	private boolean dirty_ = false;
 
-	public InstanceWindow(ProtestGUI categorySelector) {
+	public InstanceWindow(ProtestGUI categorySelector, int annotator) {
+		annotator_ = annotator;
 		categorySelector_ = categorySelector;
 
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
@@ -324,6 +327,12 @@ public class InstanceWindow implements ActionListener {
 		return true;
 	}
 
+	private String encodeConflictType(int[] conflictList) {
+		final String[] anaTypes = { "ana_ok", "ana_notokens", "ana_unset" };
+		final String[] antTypes = { "ant_ok", "ant_notokens", "ant_unset" };
+		return String.format("%s %s", anaTypes[conflictList[0]], antTypes[conflictList[1]]);
+	}
+
 	private boolean saveAnnotations(boolean force) {
 		if(dirty_) {
 			int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
@@ -333,7 +342,7 @@ public class InstanceWindow implements ActionListener {
 			System.err.println("Saving annotations.");
 			dirty_ = false; // set this now in case we get called again from an exit hook
 			current_.setRemarks(remarksField_.getText());
-			current_.saveAnnotations();
+			current_.saveAnnotations(annotator_, encodeConflictType(conflictList));
 			categorySelector_.refresh();
 			return true;
 		} else {

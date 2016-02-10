@@ -257,41 +257,46 @@ public class TestSuiteExample {
 		}
 	}
 
-	public void saveAnnotations() {
+	public void saveAnnotations(int annotator, String conflictStatus) {
 		try {
 			connection_.setAutoCommit(false);
 
 			PreparedStatement stmt = connection_.prepareStatement(
-				"delete from annotations where example=?");
+				"delete from annotations where example=? and annotator_id=?");
 			stmt.setInt(1, example_id_);
+			stmt.setInt(2, annotator);
 			stmt.execute();
 
 			stmt = connection_.prepareStatement(
-				"insert into annotations(example, ant_annotation, anaph_annotation, remarks) " +
-				"values (?, ?, ?, ?)");
+				"insert into annotations (example, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
+				"values (?, ?, ?, ?, ?, ?)");
 			stmt.setInt(1, example_id_);
 			stmt.setString(2, antecedentAnnotation_);
 			stmt.setString(3, anaphorAnnotation_);
 			stmt.setString(4, remarks_);
+			stmt.setInt(5, annotator);
+			stmt.setString(6, conflictStatus);
 			stmt.execute();
 
 			stmt = connection_.prepareStatement(
-				"delete from token_annotations where example=?");
+				"delete from token_annotations where example=? and annotator_id=?");
 			stmt.setInt(1, example_id_);
+			stmt.setInt(2, annotator);
 			stmt.execute();
 
 			stmt = connection_.prepareStatement(
-				"insert into token_annotations (example, line, token, annotation) " +
-				"values (?, ?, ?, ?)");
+				"insert into token_annotations (example, annotator_id, line, token, annotation) " +
+				"values (?, ?, ?, ?, ?)");
 			stmt.setInt(1, example_id_);
+			stmt.setInt(2, annotator);
 			for(int i = 0; i < approvedTokens_.size(); i++)
 				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
 					String app = approvedTokens_.get(i)[j];
 					if(app == null || app.isEmpty())
 						continue;
-					stmt.setInt(2, firstLine_ + i);
-					stmt.setInt(3, j);
-					stmt.setString(4, approvedTokens_.get(i)[j]);
+					stmt.setInt(3, firstLine_ + i);
+					stmt.setInt(4, j);
+					stmt.setString(5, approvedTokens_.get(i)[j]);
 					stmt.execute();
 				}
 
