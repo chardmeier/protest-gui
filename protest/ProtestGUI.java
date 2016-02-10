@@ -37,51 +37,6 @@ public class ProtestGUI implements Runnable, ActionListener {
 		db_ = new Database(dbfile);
 		instWindow_ = new InstanceWindow(this, 0);
 	}
-
-/*
-	public void refreshData() {
-		categoryNames_ = new ArrayList<String>();
-		conflictExamplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
-		newExamplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
-		doneExamplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
-		try {
-			Statement stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select id as category_no, description from categories");
-			while(rs.next()) {
-				String name = rs.getString(2);
-				categoryNames_.add(name);
-				String conflictCondition = "(select distinct(a.example) from annotations as a left join pro_examples as p on p.id=a.example left join token_annotations as ta on ta.example=a.example left join translations as t on p.example_no=t.example_no and p.tgtcorpus=t.tgtcorpus and ta.token=t.tgtpos and ta.line=t.line where (t.ant_no IS NOT NULL and a.ant_annotation IS NOT 'ok') or (a.ant_annotation IS 'ok' and ta.annotation IS NULL) UNION select distinct(a.example) from annotations as a left join pro_examples as p on p.id=a.example left join token_annotations as ta on ta.example=a.example left join translations as t on p.example_no=t.example_no and p.tgtcorpus=t.tgtcorpus and ta.token=t.tgtpos and ta.line=t.line where (t.ant_no IS NULL and a.anaph_annotation IS NOT 'ok' and NOT (a.anaph_annotation IN ('','bad') and ta.annotation IS NULL)) or (a.anaph_annotation IS 'ok' and ta.annotation IS NULL))";
-				PreparedStatement conflict_ps = db_.prepareStatement("select example_no, srccorpus, tgtcorpus from pro_examples where id in " + conflictCondition + " and category_no=?");
-				PreparedStatement done_ps = db_.prepareStatement("select p.example_no as example_no, p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus from pro_examples as p left join annotations as a where p.id=a.example and p.id not in " + conflictCondition + " and p.category_no=?");
-				PreparedStatement new_ps = db_.prepareStatement("select p.example_no as example_no, p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus from pro_examples as p where p.id not in (select distinct(example) from annotations) and p.category_no=?");
-				conflict_ps.setInt(1, rs.getInt("category_no"));
-				new_ps.setInt(1, rs.getInt("category_no"));
-				done_ps.setInt(1, rs.getInt("category_no"));
-				ResultSet conflictExrs = conflict_ps.executeQuery();
-				ResultSet newExrs = new_ps.executeQuery();
-				ResultSet doneExrs = done_ps.executeQuery();
-				conflictExamplesByCategory_.add(addExamples(conflictExrs));
-				newExamplesByCategory_.add(addExamples(newExrs));
-				doneExamplesByCategory_.add(addExamples(doneExrs));
-				}
-			}
-		catch(SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-
-
-	public ArrayList<TestSuiteExample> addExamples(ResultSet rs) throws SQLException {
-		ArrayList<TestSuiteExample> result = new ArrayList<TestSuiteExample>();
-		while(rs.next()) {
-			int srccorpus = rs.getInt("srccorpus");
-			int tgtcorpus = rs.getInt("tgtcorpus");
-			result.add(new TestSuiteExample(db_, srccorpus, tgtcorpus, rs.getInt(1)));
-		}
-		return result;
-	}
-*/
    
 	public void run() {
 		frame_ = new JFrame("PROTEST Browser");

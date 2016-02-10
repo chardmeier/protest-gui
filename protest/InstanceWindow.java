@@ -398,27 +398,6 @@ public class InstanceWindow implements ActionListener {
 			srchtml.append("</p>\n");
 		}
 
-//		for(int i = srcfrom; i <= srcto; i++) {
-//			if(current_.getSourceWordLabel(i) > 0)
-//				srchtml.append("<span style=\"font-weight:bold;color:red\">");
-//			else if(current_.getSourceWordLabel(i) < 0)
-//				srchtml.append("<span style=\"font-weight:bold;" +
-//					"border-color:red;border-style:solid;border-width:medium\">");
-//
-//			if(current_.getSourceWordLabel(i) == highlight)
-//				srchtml.append("<span style=\"border-bottom-color:black;" +
-//					"border-bottom-style:solid;border-bottom-width:medium\">");
-//
-//			srchtml.append(escapeXml(corpus_.getSource().getElement(i)));
-//
-//			if(current_.getSourceWordLabel(i) == highlight)
-//				srchtml.append("</span>");
-//
-//			if(current_.getSourceWordLabel(i) != 0)
-//				srchtml.append("</span>");
-//			srchtml.append(' ');
-//		}
-
 		srchtml.append("</body></html>");
 
 		sourceContext_.setDocumentFromString(srchtml.toString(), "", new XhtmlNamespaceHandler());
