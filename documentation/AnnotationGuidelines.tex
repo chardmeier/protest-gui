@@ -57,7 +57,7 @@
 
 \title{PROTEST: Manual Annotation Guidelines\\Version 1.0}
 %\author{The Author}
-\date{1 February 2016} % Activate to display a given date or no date (if empty),
+%/\date{9 February 2016} % Activate to display a given date or no date (if empty),
          % otherwise the current date is printed 
 
 \begin{document}
@@ -116,15 +116,16 @@ Complete the annotation of each pronoun instance using the following guidelines:
 \subsection{General Guidelines: All Pronouns}
 
 \begin{itemize}
-  \item Answer the question: "Pronoun Correctly Translated?" using the "yes/no" options in the \textbf{annotation panel} in the top right-hand corner of the \textbf{Manual Annotation window}
+  \item Answer the question: ``Pronoun Correctly Translated?'' using the ``yes/no'' options in the \textbf{annotation panel} in the top right-hand corner of the \textbf{Manual Annotation window}
   \begin{itemize}
     \item You should answer this question for all source-language pronouns, whether or not they are translated by the MT system
-    \item If a source-language pronoun is left untranslated by the MT system, use the "yes/no" options to mark whether this is correct/incorrect
-    \item If you are unsure, you may use the default "unset" option and complete the annotation later. Please use the \textbf{remarks box} on the right-hand side of the \textbf{Manual Annotation window} to record any notes that may be useful to you later on
+    \item If a source-language pronoun is left untranslated by the MT system, use the ``yes/no'' options to mark whether this is correct/incorrect
+    \item If you are unsure, you may use the default ``unset'' option and complete the annotation later. Please use the \textbf{remarks box} on the right-hand side of the \textbf{Manual Annotation window} to record any notes that may be useful to you later on
     \item You may come across incorrect translations. If you believe that it is possible to assess the translation of the pronoun independently of the remainder of the translation output, you should annotate the example as normal. If not, you should leave the example un-annotated and add a comment to the \textbf{remarks box}
+    \item If the pronoun is present in the translation output but is not highlighted (i.e. a bad alignment), do not attempt to annotate the example. Instead, add a comment to the \textbf{remarks box}
     \item Note: if the pronoun is anaphoric, follow the guidelines in Section \ref{AnaphoricGuidelines}
   \end{itemize}
-  \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun. To select a token, click on it. A green border will appear around the token indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a yellow highlight
+  \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun. To select a token, click on it. The token highlight will change to orange, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a yellow highlight
   \item Please use the \textbf{remarks box} to record any issues that you would like to discuss, e.g. relating to any difficulties or problems that you encounter during the annotation of a given pronoun
   \item Once you have completed the annotation of the current pronoun instance, move to the next one using the \textbf{Next} button in the top right hand corner of the \textbf{Manual Annotation window}
   \begin{itemize}
@@ -136,17 +137,38 @@ Complete the annotation of each pronoun instance using the following guidelines:
 \subsection{Anaphoric Pronouns Only}
 \label{AnaphoricGuidelines}
 
-If the pronoun is anaphoric, you will need to consider both the translation of the antecedent head and the pronoun. The \textit{head} of the source-language pronoun's \textit{antecedent} will be highlighted in blue. If the antecedent head has been translated by the MT system, the translation (consisting of one or more tokens) in the MT system output will also be highlighted in blue.
+If the pronoun is anaphoric, you will need to consider both the translation of the antecedent head and the pronoun. The \textit{head} of the source-language pronoun's \textit{antecedent} will be highlighted in light blue. If the antecedent head has been translated by the MT system, the translation (consisting of one or more tokens) in the MT system output will also be highlighted in light blue.
 
 \begin{itemize}
-  \item First, answer the question: "Antecedent Correctly Translated?" using the "yes/no" options in the \textbf{annotation panel} in the top right-hand corner of the \textbf{Manual Annotation window}
-  \item Select the minimum number of blue highlighted tokens that constitutes a correct translation of the source-language antecedent head. To select a token, click on it. A green border will appear around the token indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a blue highlight
-  \item Second, answer the question: "Pronoun Correctly Translated (given antecedent)?" using the "yes/no" options in the \textbf{annotation panel}
+  \item First, answer the question: ``Antecedent Correctly Translated?'' using the ``yes/no'' options in the \textbf{annotation panel} in the top right-hand corner of the \textbf{Manual Annotation window}
+  \begin{itemize}
+    \item If the pronoun or the antecedent head are present in the translation output but is not highlighted (i.e. a bad alignment), do not attempt to annotate the example. Instead, add a comment to the \textbf{remarks box}
+  \end{itemize}  
+  \item Select the minimum number of blue highlighted tokens that constitutes a correct translation of the source-language antecedent head. To select a token, click on it. The token highlight will change to a darker shad of blue, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a blue highlight
+  \item Second, answer the question: ``Pronoun Correctly Translated (given antecedent)?'' using the ``yes/no'' options in the \textbf{annotation panel}
   \begin{itemize}
     \item A correctly translated pronoun is one that \textit{is compatible} with the translation of the antecedent head, regardless of whether the antecedent is translated correctly
   \end{itemize}
   \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun (given the antecedent)
 \end{itemize}
+
+
+\section{Conflicting Annotations}
+There are a number of scenarios which give rise to conflicting annotations:
+\begin{itemize}
+  \item All pronouns:
+  \begin{itemize}
+    \item Pronoun is marked as correct, but no tokens are selected in the translation output
+    \item Tokens are selected in the translation output of the pronoun, but the pronoun is not marked as correct
+  \end{itemize}
+  \item Anaphoric pronouns only:
+  \begin{itemize}
+    \item Antecedent is marked as correct, but no tokens are selected in the translation output
+    \item Tokens are selected in the translation output of the antecedent, but the antecedent is not marked as correct 
+  \end{itemize}
+\end{itemize}
+
+In the case of anaphoric pronouns, conflicts may exist in the annotation of the pronoun, its antecedent, or both.
 
 
 \end{document}
