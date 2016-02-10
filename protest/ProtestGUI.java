@@ -24,31 +24,20 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-//For message dialogs
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-
-public class ProtestGUI implements Runnable{
-	private Connection db_;
-
-	private ArrayList<String> categoryNames_;
-	private ArrayList<ArrayList<TestSuiteExample>> conflictExamplesByCategory_;
-	private ArrayList<ArrayList<TestSuiteExample>> newExamplesByCategory_;
-	private ArrayList<ArrayList<TestSuiteExample>> doneExamplesByCategory_;
+public class ProtestGUI implements Runnable, ActionListener {
+	private Database db_;
+	private List<AnnotationCategory> categories_;
 
 	private InstanceWindow instWindow_;
 	private JFrame frame_;
-	
+	private ArrayList<JButton> catButtons_;
 
 	public ProtestGUI(String dbfile) throws SQLException {
-		db_ = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
-
-		refreshData();
-
+		db_ = new Database(dbfile);
 		instWindow_ = new InstanceWindow();
 	}
 
-
+/*
 	public void refreshData() {
 		categoryNames_ = new ArrayList<String>();
 		conflictExamplesByCategory_ = new ArrayList<ArrayList<TestSuiteExample>>();
@@ -91,20 +80,8 @@ public class ProtestGUI implements Runnable{
 		}
 		return result;
 	}
+*/
    
-	
-	public void onButtonClick(List<TestSuiteExample> listInstances, String c, String msg) {
-		if (listInstances.isEmpty()){
-			JDialog.setDefaultLookAndFeelDecorated(true);
-			JOptionPane.showMessageDialog(frame_, msg);
-		}
-		else {
-			instWindow_.setData(c, listInstances);
-			instWindow_.setVisible(true);
-		}
-	}
-
-	
 	public void run() {
 		frame_ = new JFrame("PROTEST Browser");
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -116,58 +93,54 @@ public class ProtestGUI implements Runnable{
 		instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
 		frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
 		
-		JPanel catButtonsPanel_ = new JPanel(new GridLayout(14,1));
-		frame_.getContentPane().add(new JScrollPane(catButtonsPanel_), BorderLayout.LINE_START);
+		categories_ = db_.getCategories();
+
+		JPanel catButtonsPanel = new JPanel(new GridLayout(categories_.size() + 1, AnnotationCategory.GROUP_COUNT + 1));
+		frame_.getContentPane().add(new JScrollPane(catButtonsPanel), BorderLayout.LINE_START);
 		
-		for(final String c : categoryNames_) {
-			JPanel rowPanel_ = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			JLabel catLabel = new JLabel(c);
-			JButton newButton = new JButton("New");
-			newButton.setBackground(Color.YELLOW);
-			newButton.setOpaque(true);
-			JButton doneButton = new JButton("Done");
-			doneButton.setBackground(Color.GREEN);
-			doneButton.setOpaque(true);
-			JButton conflictsButton = new JButton("Conflicts");
-			conflictsButton.setBackground(Color.RED);
-			conflictsButton.setOpaque(true);
-			newButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					refreshData();
-					List<TestSuiteExample> listInstances = newExamplesByCategory_.get(categoryNames_.indexOf(c));
-					onButtonClick(listInstances, c, "No unannotated examples for this category");
-				}});
-			doneButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					refreshData();
-					List<TestSuiteExample> listInstances = doneExamplesByCategory_.get(categoryNames_.indexOf(c));
-					onButtonClick(listInstances, c, "No annotated examples for this category");
-				}});
-			conflictsButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					refreshData();
-					List<TestSuiteExample> listInstances = conflictExamplesByCategory_.get(categoryNames_.indexOf(c));
-					onButtonClick(listInstances, c, "No examples with conflicting annotations for this category");
-				}});
-			rowPanel_.add(catLabel);
-			rowPanel_.add(newButton);
-			rowPanel_.add(doneButton);
-			rowPanel_.add(conflictsButton);
-			catButtonsPanel_.add(rowPanel_);
+		catButtonsPanel.add(new JLabel());
+		for(int i = 0; i < AnnotationCategory.GROUP_COUNT; i++)
+			catButtonsPanel.add(new JLabel(AnnotationCategory.getGroupLabel(i)));
+
+		catButtons_ = new ArrayList<JButton>();
+		for(int i = 0; i < categories_.size(); i++) {
+			AnnotationCategory cat = categories_.get(i);
+			JLabel catLabel = new JLabel(cat.getLabel());
+			for(int j = 0; j < AnnotationCategory.GROUP_COUNT; j++) {
+				int cnt = cat.getCount(j);
+				JButton button = new JButton(Integer.toString(cnt));
+				button.setEnabled(cnt > 0);
+				button.setBackground(AnnotationCategory.getGroupColour(j));
+				button.setOpaque(true);
+				button.setActionCommand(String.format("%d %d", i, j));
+				button.addActionListener(this);
+				catButtons_.add(button);
+				catButtonsPanel.add(button);
+			}
 		}
 
 		JButton quitButton = new JButton("Quit");
 		frame_.getContentPane().add(quitButton, BorderLayout.PAGE_END);
-		quitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-			}
-		});
+		quitButton.setActionCommand("quit");
+		quitButton.addActionListener(this);
 
 		frame_.pack();
 		frame_.setVisible(true);
 	}
 
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+
+		if(cmd.equals("quit"))
+			System.exit(0);
+
+		String[] idx = cmd.split(" ");
+		int cat = Integer.parseInt(idx[0]);
+		int grp = Integer.parseInt(idx[1]);
+
+		instWindow_.setData(categories_.get(cat).getLabel(), categories_.get(cat).getExamples(grp));
+		instWindow_.setVisible(true);
+	}
 
 	public static void main(String[] args) throws SQLException {
 		if(args.length != 1) {
