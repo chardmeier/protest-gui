@@ -100,7 +100,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 		
 		catButtonsPanel.add(new JLabel());
 		for(int i = 0; i < AnnotationCategory.GROUP_COUNT; i++)
-			catButtonsPanel.add(new JLabel(AnnotationCategory.getGroupLabel(i)));
+			catButtonsPanel.add(new JLabel(AnnotationCategory.getGroupLabel(i), JLabel.CENTER));
 
 		catButtons_ = new ArrayList<JButton>();
 		for(int i = 0; i < categories_.size(); i++) {
