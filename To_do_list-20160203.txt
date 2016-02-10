@@ -1,35 +1,94 @@
 THINGS TO DO:
 
 Before annotation starts:
+
 * [DONE] Make warning messages for conflicting annotations more specific
-* [DONE - some layout issues] Amend browser window to contain a list of classes, each with three buttons (new,done,conflicts)
-* [DONE: AddToDatabase.sql] Add a field in the pro_examples table to contain a sequence number (used to define the order in which pronoun examples are presented to the annotators)
-* [DONE: yellow->orange; aqua->dodgerblue] Change the highlight of selected tokens (yellow->orange; blue->green)
+
+* [DONE - some layout issues] Amend browser window to contain a list of classes,
+  each with three buttons (new,done,conflicts)
+
+* [DONE: AddToDatabase.sql] Add a field in the pro_examples table to contain a
+  sequence number (used to define the order in which pronoun examples are
+  presented to the annotators)
+
+* [DONE: yellow->orange; aqua->dodgerblue] Change the highlight of selected
+  tokens (yellow->orange; blue->green)
+
 * [DONE] Add simple instructions to the top of the annotation window
-* [DONE] Add instruction to the guidelines that if the pronoun is present in the translation output but is not highlighted (i.e. a bad alignment) to leave a comment in the remarks box
-* Include a case where the source-language pronoun is not aligned to anything in the translation output - change the question in the annotation panel to reflect that the decision is as to whether an untranslated pronoun is correct/incorrect
-* Add a “bad translation” field to the annotations table + provide annotator with a button to mark a translation as “bad”
-* [DONE: AddToDatabase.sql] Add an annotators table which stores the ID (int, key) and name (string)
- 	- [DONE: AddToDatabase.sql] Add an annotator “ID” field to the annotations and token_annotations tables
-* Write import / export functions in SQL (import annotations into master DB / export annotator DB out of master DB - to contain only what the annotator needs to do their annotation work)
-* Provide a means to check the context of an annotator DB - corpus name, annotator, date, number of examples etc.
-	- [DONE: AddToDatabase.sql] Construct a meta_data table with two fields: tag (string), value (string)
-	- [DONE: AddToDatabase.sql] Add entry to capture: file_type: master DB / annotator DB
-	- [DONE: AddToDatabase.sql] Add entry to capture: masterID: “DiscoMT2015”
+
+* [DONE] Add instruction to the guidelines that if the pronoun is present in the
+  translation output but is not highlighted (i.e. a bad alignment) to leave a
+  comment in the remarks box
+
+* Include a case where the source-language pronoun is not aligned to anything in
+  the translation output - change the question in the annotation panel to
+  reflect that the decision is as to whether an untranslated pronoun is
+  correct/incorrect
+
+* Add a "bad translation" field to the annotations table + provide
+  annotator with a button to mark a translation as "bad"
+
+* [DONE: AddToDatabase.sql] Add an annotators table which stores the ID (int,
+  key) and name (string)
+
+	- [DONE: AddToDatabase.sql] Add an annotator "ID" field to the
+	  annotations and token_annotations tables
+
+* Write import / export functions in SQL (import annotations into master DB /
+  export annotator DB out of master DB - to contain only what the annotator
+  needs to do their annotation work)
+
+* Provide a means to check the context of an annotator DB - corpus name,
+  annotator, date, number of examples etc.
+
+	- [DONE: AddToDatabase.sql] Construct a meta_data table with two fields:
+	  tag (string), value (string)
+
+	- [DONE: AddToDatabase.sql] Add entry to capture: file_type: master DB /
+	  annotator DB
+
+	- [DONE: AddToDatabase.sql] Add entry to capture: masterID:
+	  "DiscoMT2015"
+
 * Provide a means for annotator task assignment (back-end)
-	- [DONE: AddToDatabase.sql] Add a tasks table to the database - this will map example IDs to annotators
+
+	- [DONE: AddToDatabase.sql] Add a tasks table to the database - this
+	  will map example IDs to annotators
+
 * Add information about conflicting annotations to guidelines
-* Adjust layout of browser screen (gride is not dynamically created, but rows are)
+
+* Adjust layout of browser screen (gride is not dynamically created, but rows
+  are)
+
 * Add counts to new/done/donflicts buttons
+
 * Contact annotators to arrange a meeting
 
+
 Any time:
-* Create one complete database create statement, with original table definitions plus additions listed above?
-* Create an external CSS file with which to control annotation highlight colour scheme/ presentation
-* Provide a method to remove all entries related to a given system, from the database
+
+* Create one complete database create statement, with original table definitions
+  plus additions listed above?
+
+* Create an external CSS file with which to control annotation highlight colour
+  scheme/ presentation
+
+* Provide a method to remove all entries related to a given system, from the
+  database
+
 * Remove A3-108 system from the manual annotation task as output is so poor
-* Provide a means for annotator task assignment (front-end). Provide a method to randomise the order of the examples, and calculate overlap for IAA
-* Provide a means to view inter-annotator agreement: re-purpose the main annotation window to allow the user to toggle between two or more annotators’ annotations of the same example
+
+* Provide a means for annotator task assignment (front-end). Provide a method to
+  randomise the order of the examples, and calculate overlap for IAA
+
+* Provide a means to view inter-annotator agreement: re-purpose the main
+  annotation window to allow the user to toggle between two or more
+  annotators’ annotations of the same example
+
 * Provide script to compute IAA
-* [SQL script written: RemoveApproval.sql] Remove the "approval" flags and table from the SQL database and evaluation script
-* Re-write automatic evaluation script in some other language? For LREC and for inclusion in the GUI - can this be written in the same code?
+
+* [SQL script written: RemoveApproval.sql] Remove the "approval" flags and table
+  from the SQL database and evaluation script
+
+* Re-write automatic evaluation script in some other language? For LREC and for
+  inclusion in the GUI - can this be written in the same code?
