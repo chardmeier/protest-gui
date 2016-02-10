@@ -22,11 +22,11 @@ public class Database {
 
 		try {
 			Statement stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select categories.id as category_no, categories.description as description, " +
-						"annotations.conflict_status as conflict_status, pro_examples.example_no as example_no, " +
-						"pro_examples.srccorpus as srccorpus, pro_examples.tgtcorpus as tgtcorpus, " +
-					"from categories as c outer join pro_examples as p on c.id=p.category_no " +
-						"outer join annotations as a on p.id=a.example order by description, conflict_status");
+			ResultSet rs = stmt.executeQuery("select c.id as category_no, c.description as description, " +
+						"a.conflict_status as conflict_status, p.example_no as example_no, " +
+						"p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus " +
+					"from categories as c left outer join pro_examples as p on c.id=p.category_no " +
+						"left outer join annotations as a on p.id=a.example order by description, conflict_status");
 			String lastcat = null;
 			AnnotationCategory catobj = null;
 			while(rs.next()) {
