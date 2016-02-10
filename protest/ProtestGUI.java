@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 public class ProtestGUI implements Runnable, ActionListener {
 	private Database db_;
 	private List<AnnotationCategory> categories_;
+	private int currentCategory_;
 
 	private InstanceWindow instWindow_;
 	private JFrame frame_;
@@ -34,7 +35,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 
 	public ProtestGUI(String dbfile) throws SQLException {
 		db_ = new Database(dbfile);
-		instWindow_ = new InstanceWindow();
+		instWindow_ = new InstanceWindow(this);
 	}
 
 /*
@@ -135,11 +136,23 @@ public class ProtestGUI implements Runnable, ActionListener {
 			System.exit(0);
 
 		String[] idx = cmd.split(" ");
-		int cat = Integer.parseInt(idx[0]);
+		currentCategory_ = Integer.parseInt(idx[0]);
 		int grp = Integer.parseInt(idx[1]);
 
-		instWindow_.setData(categories_.get(cat).getLabel(), categories_.get(cat).getExamples(grp));
+		instWindow_.setData(categories_.get(currentCategory_).getLabel(), categories_.get(currentCategory_).getExamples(grp));
 		instWindow_.setVisible(true);
+	}
+
+	public void refresh() {
+		categories_ = db_.getCategories();
+		for(int i = 0; i < categories_.size(); i++) {
+			for(int j = 0; i < AnnotationCategory.GROUP_COUNT; j++) {
+				int cnt = categories_.get(i).getCount(j);
+				JButton button = catButtons_.get(i * AnnotationCategory.GROUP_COUNT + j);
+				button.setText(Integer.toString(cnt));
+				button.setEnabled(cnt > 0);
+			}
+		}
 	}
 
 	public static void main(String[] args) throws SQLException {

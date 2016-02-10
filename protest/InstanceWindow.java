@@ -50,6 +50,8 @@ import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 
 public class InstanceWindow implements ActionListener {
+	private ProtestGUI categorySelector_;
+
 	private JFrame frame_;
 	private XHTMLPanel sourceContext_;
 	private XHTMLPanel targetContext_;
@@ -79,7 +81,9 @@ public class InstanceWindow implements ActionListener {
 
 	private boolean dirty_ = false;
 
-	public InstanceWindow() {
+	public InstanceWindow(ProtestGUI categorySelector) {
+		categorySelector_ = categorySelector;
+
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame_.addWindowListener(new WindowAdapter() {
@@ -330,6 +334,7 @@ public class InstanceWindow implements ActionListener {
 			dirty_ = false; // set this now in case we get called again from an exit hook
 			current_.setRemarks(remarksField_.getText());
 			current_.saveAnnotations();
+			categorySelector_.refresh();
 			return true;
 		} else {
 			System.err.println("No need to save annotations.");
