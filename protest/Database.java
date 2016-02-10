@@ -48,7 +48,7 @@ public class Database {
 
 					if(conflict == null)
 						catobj.addExample(AnnotationCategory.NEW, exmpl);
-					else if(conflict.equals("ok"))
+					else if(conflict.equals("ana_ok ant_ok"))
 						catobj.addExample(AnnotationCategory.DONE, exmpl);
 					else
 						catobj.addExample(AnnotationCategory.CONFLICT, exmpl);
