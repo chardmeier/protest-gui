@@ -146,7 +146,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 	public void refresh() {
 		categories_ = db_.getCategories();
 		for(int i = 0; i < categories_.size(); i++) {
-			for(int j = 0; i < AnnotationCategory.GROUP_COUNT; j++) {
+			for(int j = 0; j < AnnotationCategory.GROUP_COUNT; j++) {
 				int cnt = categories_.get(i).getCount(j);
 				JButton button = catButtons_.get(i * AnnotationCategory.GROUP_COUNT + j);
 				button.setText(Integer.toString(cnt));
