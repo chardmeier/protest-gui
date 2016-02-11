@@ -101,7 +101,7 @@ public class Database {
 			// to add DB identifiers.
 			Statement stmt = conn.createStatement();
 			Statement maindb_stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select sql from master.sqlite_master order by type desc");
+			ResultSet rs = stmt.executeQuery("select sql from sqlite_master order by type desc");
 			while(rs.next())
 				stmt.execute(rs.getString(1));
 
@@ -285,6 +285,11 @@ public class Database {
 			} catch(SQLException e2) {}
 			throw e;
 		}
+	}
+
+	public static void main(String[] args) throws SQLException {
+		Database db = new Database("protestsuite.db");
+		db.createAnnotatorDB("tstann.db", 0, 0);
 	}
 }
 
