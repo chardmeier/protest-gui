@@ -25,8 +25,11 @@ public class ProtestGUI implements Runnable, ActionListener {
 	private JFrame frame_;
 	private ArrayList<JButton> catButtons_;
 
-	public ProtestGUI(String dbfile) throws SQLException {
-		db_ = new Database(dbfile);
+	public ProtestGUI(String dbfile) {
+		//db_ = new Database(dbfile);
+		db_ = new DatabaseOpener().open();
+		if(db_ == null)
+			System.exit(0);
 		instWindow_ = new InstanceWindow(this, 0);
 	}
    
@@ -103,7 +106,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 		}
 	}
 
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) {
 		if(args.length != 1) {
 			System.err.println("Usage: ProtestGUI dbfile");
 			System.exit(1);

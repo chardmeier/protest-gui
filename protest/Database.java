@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Database {
@@ -60,6 +61,21 @@ public class Database {
 		}
 
 		return catlist;
+	}
+
+	public HashMap<String,String> getMetadata() {
+		HashMap<String,String> metadata = new HashMap<String,String>();
+
+		try {
+			Statement stmt = db_.createStatement();
+			ResultSet rs = stmt.executeQuery("select tag, tag_value from meta_data");
+			while(rs.next())
+				metadata.put(rs.getString("tag"), rs.getString("tag_value"));
+		} catch(SQLException e) {
+			metadata = null;
+		}
+
+		return metadata;
 	}
 }
 
