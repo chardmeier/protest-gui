@@ -1,5 +1,6 @@
 package protest;
 
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -7,6 +8,7 @@ import java.sql.SQLException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
 public class DatabaseOpener implements PropertyChangeListener {
 	private JFileChooser fileChooser_;
@@ -15,6 +17,7 @@ public class DatabaseOpener implements PropertyChangeListener {
 	public DatabaseOpener() {
 		fileChooser_ = new JFileChooser(System.getProperty("user.dir"));
 		metadataTable_ = new MetadataTable();
+		metadataTable_.setPreferredSize(new Dimension(200, 100));
 		fileChooser_.setAccessory(new JScrollPane(metadataTable_));
 		fileChooser_.addPropertyChangeListener(this);
 	}

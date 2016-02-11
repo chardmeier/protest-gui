@@ -23,6 +23,7 @@ public class MetadataTable extends JPanel {
 		if(db == null || (metadata = db.getMetadata()) == null)
 			add(emptyLabel_);
 		else {
+			table_.setPreferredSize(getSize());
 			table_.setModel(new MetadataTableModel(metadata));
 			add(table_);
 		}
