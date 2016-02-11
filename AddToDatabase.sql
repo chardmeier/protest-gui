@@ -7,6 +7,7 @@ CREATE TABLE annotators (
 );
 
 ALTER TABLE annotations ADD COLUMN annotator_id integer;
+ALTER TABLE annotations ADD COLUMN conflict_status text;
 
 ALTER TABLE token_annotations ADD COLUMN annotator_id integer;
 
