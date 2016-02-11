@@ -80,6 +80,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 		quitButton.setActionCommand("quit");
 		quitButton.addActionListener(this);
 
+		frame_.setLocationByPlatform(true);
 		frame_.pack();
 		frame_.setVisible(true);
 	}

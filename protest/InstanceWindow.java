@@ -249,6 +249,7 @@ public class InstanceWindow implements ActionListener {
 		wrapperPanel.add(remarksField_, BorderLayout.CENTER);
 		detailPanel.add(wrapperPanel, BorderLayout.CENTER);
 
+		frame_.setLocationByPlatform(true);
 		frame_.pack();
 	}
 
