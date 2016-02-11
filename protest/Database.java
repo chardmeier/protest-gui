@@ -13,9 +13,15 @@ import java.util.List;
 
 public class Database {
 	private Connection db_;
+	private String name_;
 
 	public Database(String dbfile) throws SQLException {
 		db_ = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
+		name_ = dbfile;
+	}
+
+	public String getName() {
+		return name_;
 	}
 
 	public List<AnnotationCategory> getCategories() {

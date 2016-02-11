@@ -34,7 +34,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 	}
    
 	public void run() {
-		frame_ = new JFrame("PROTEST Browser");
+		frame_ = new JFrame(db_.getName());
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame_.getContentPane().getLayout()).setVgap(15);
 		
