@@ -86,11 +86,22 @@ public class Database {
 
 	public void createAnnotatorDB(String outfile, int annotator, int task) throws SQLException {
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outfile);
-		setupTables(outdb);
 
 		conn.setAutoCommit(false);
 
+		// copy DB schema -- totally specific to sqlite, using internal data structures!
+		// The order by clause makes sure all tables are created before we start adding indices.
+		// We fetch the schema from the main DB connection and execute the create statements on a
+		// connection that only has the new DB attached so we don't have to manipulate them
+		// to add DB identifiers.
 		Statement stmt = conn.createStatement();
+		Statement maindb_stmt = db_.createStatement();
+		ResultSet rs = stmt.executeQuery("select sql from master.sqlite_master order by type desc");
+		while(rs.next())
+			stmt.execute(rs.getString(1));
+
+		// now attach the main DB to the same connection as the DB being created to make data
+		// transfer easier
 		stmt.execute("attach database \"" + dbfile_ + "\" as master");
 
 		PreparedStatement ps;
