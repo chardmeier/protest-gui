@@ -139,7 +139,7 @@ public class Database {
 			// corpora
 			ps = conn.prepareStatement("insert into main.corpora " +
 					"select c.* from master.corpora as c, master.pro_examples as e, master.annotation_tasks as t " +
-					"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.example_no=t.example and " +
+					"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.id=t.example and " +
 					"t.annotator_id=? and t.task_no=?");
 			ps.setInt(1, annotator);
 			ps.setInt(2, task);
@@ -152,8 +152,9 @@ public class Database {
 			
 			// pro_antecedents
 			ps = conn.prepareStatement("insert into main.pro_antecedents " +
-					"select a.* from master.pro_antecedents as a, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and a.example_no=t.example");
+					"select a.* from master.pro_antecedents as a, master.pro_examples as e, master.annotation_tasks as t " +
+					"where t.annotator_id=? and t.task_no=? and " +
+					"e.id=t.example and a.srccorpus=e.srccorpus and a.tgtcorpus=e.tgtcorpus and a.example_no=e.example_no");
 			ps.setInt(1, annotator);
 			ps.setInt(2, task);
 			ps.execute();
@@ -161,7 +162,7 @@ public class Database {
 			// pro_examples
 			ps = conn.prepareStatement("insert into main.pro_examples " +
 					"select e.* from master.pro_examples as e, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and e.example_no=t.example");
+					"where t.annotator_id=? and t.task_no=? and e.id=t.example");
 			ps.setInt(1, annotator);
 			ps.setInt(2, task);
 			ps.execute();
