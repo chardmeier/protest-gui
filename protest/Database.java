@@ -101,13 +101,21 @@ public class Database {
 			// to add DB identifiers.
 			Statement stmt = conn.createStatement();
 			Statement maindb_stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select sql from sqlite_master order by type desc");
+			ResultSet rs = maindb_stmt.executeQuery("select sql from sqlite_master " +
+					"where tbl_name not like 'sqlite_%' order by type desc");
 			while(rs.next())
 				stmt.execute(rs.getString(1));
+
+			// must turn off transactions now because ATTACH doesn't work within a transaction
+			conn.commit();
+			conn.setAutoCommit(true);
 
 			// now attach the main DB to the same connection as the DB being created to make data
 			// transfer easier
 			stmt.execute("attach database \"" + dbfile_ + "\" as master");
+
+			// and turn on transactions again
+			conn.setAutoCommit(false);
 
 			PreparedStatement ps;
 
