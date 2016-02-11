@@ -13,15 +13,15 @@ import java.util.List;
 
 public class Database {
 	private Connection db_;
-	private String name_;
+	private String dbfile_;
 
 	public Database(String dbfile) throws SQLException {
 		db_ = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
-		name_ = dbfile;
+		dbfile_ = dbfile;
 	}
 
 	public String getName() {
-		return name_;
+		return dbfile_;
 	}
 
 	public List<AnnotationCategory> getCategories() {
@@ -82,6 +82,94 @@ public class Database {
 		}
 
 		return metadata;
+	}
+
+	public void createAnnotatorDB(String outfile, int annotator, int task) throws SQLException {
+		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outfile);
+		setupTables(outdb);
+
+		conn.setAutoCommit(false);
+
+		Statement stmt = conn.createStatement();
+		stmt.execute("attach database \"" + dbfile_ + "\" as master");
+
+		PreparedStatement ps;
+
+		// annotation_tasks
+		ps = conn.prepareStatement("insert into main.annotation_tasks " +
+				"select * from master.annotation_tasks " +
+				"where annotator_id=? and task_no=?");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
+
+		// annotations
+		ps = conn.prepareStatement("insert into main.annotations " +
+				"select a.* from master.annotations as a, master.annotation_tasks as t " +
+				"where t.annotator_id=? and t.task_no=? and a.example=t.example");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
+
+		// annotators
+		ps = conn.prepareStatement("insert into main.annotators " +
+				"select * from master.annotators where id=?");
+		ps.setInt(1, annotator);
+		ps.execute();
+
+		// categories
+		stmt.execute("insert into main.categories select * from master.categories");
+
+		// corpora
+		ps = conn.prepareStatement("insert into main.corpora " +
+				"select c.* from master.corpora as c, master.pro_examples as e, master.annotation_tasks as t " +
+				"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.example_no=t.example and " +
+				"t.annotator_id=? and t.task_no=?");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
+
+		// documents
+		stmt.execute("insert into main.documents " +
+				"select d.* from master.documents as d, main.corpora as c "+
+				"where d.corpus=c.id");
+		
+		// pro_antecedents
+		ps = conn.prepareStatement("insert into main.pro_antecedents " +
+				"select a.* from master.pro_antecedents as a, master.annotation_tasks as t " +
+				"where t.annotator_id=? and t.task_no=? and a.example_no=t.example");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
+
+		// pro_examples
+		ps = conn.prepareStatement("insert into main.pro_examples " +
+				"select e.* from master.pro_examples as e, master.annotation_tasks as t " +
+				"where t.annotator_id=? and t.task_no=? and e.example_no=t.example");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
+
+		// sentences
+		stmt.execute("insert into main.sentences " +
+				"select s.* from master.sentences as s, main.corpora as c "+
+				"where s.corpus=c.id");
+
+		// token_annotations
+		ps = conn.prepareStatement("insert into main.token_annotations " +
+				"select a.* from master.token_annotations as a, master.annotation_tasks as t " +
+				"where t.annotator_id=? and t.task_no=? and a.example=t.example");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
+
+		// translations
+		ps = conn.prepareStatement("insert into main.translations " +
+				"select tr.* from master.translations, master.annotation_tasks as t " +
+				"where t.annotator_id=? and t.task_no=? and tr.example_no=t.example");
+		ps.setInt(1, annotator);
+		ps.setInt(2, task);
+		ps.execute();
 	}
 }
 
