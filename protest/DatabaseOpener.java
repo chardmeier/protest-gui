@@ -13,7 +13,7 @@ public class DatabaseOpener implements PropertyChangeListener {
 	private MetadataTable metadataTable_;
 	
 	public DatabaseOpener() {
-		fileChooser_ = new JFileChooser();
+		fileChooser_ = new JFileChooser(System.getProperty("user.dir"));
 		metadataTable_ = new MetadataTable();
 		fileChooser_.setAccessory(new JScrollPane(metadataTable_));
 		fileChooser_.addPropertyChangeListener(this);
