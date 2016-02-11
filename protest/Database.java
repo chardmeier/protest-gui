@@ -170,6 +170,8 @@ public class Database {
 		ps.setInt(1, annotator);
 		ps.setInt(2, task);
 		ps.execute();
+
+		conn.commit();
 	}
 }
 
