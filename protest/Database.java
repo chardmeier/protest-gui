@@ -150,7 +150,7 @@ public class Database {
 
 			// corpora
 			ps = conn.prepareStatement("insert into main.corpora " +
-					"select c.* from master.corpora as c, master.pro_examples as e, master.annotation_tasks as t " +
+					"select distinct c.* from master.corpora as c, master.pro_examples as e, master.annotation_tasks as t " +
 					"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.id=t.example and " +
 					"t.annotator_id=? and t.task_no=?");
 			ps.setInt(1, annotator);
