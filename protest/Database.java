@@ -128,8 +128,8 @@ public class Database {
 			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_type', 'annotator')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) " +
 					"select 'time_created', datetime('now')");
-			stmt.execute("insert into main.meta_data " +
-					"select * from master.meta_data where tag in ('master_id', 'master_description')");
+			stmt.execute("insert into main.meta_data (tag, tag_value) " +
+					"select tag, tag_value from master.meta_data where tag in ('master_id', 'master_description')");
 
 			ps = conn.prepareStatement("insert into main.meta_data (tag, tag_value) values ('annotator_id', ?)");
 			ps.setInt(1, annotator);
