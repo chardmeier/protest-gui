@@ -44,6 +44,13 @@ public class AnnotationCategory {
 		return examples_.get(grp).size();
 	}
 
+	public int getCount() {
+		int cnt = 0;
+		for(List<TestSuiteExample> g : examples_)
+			cnt += g.size();
+		return cnt;
+	}
+
 	public List<TestSuiteExample> getExamples(int grp) {
 		return examples_.get(grp);
 	}
