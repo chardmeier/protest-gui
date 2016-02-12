@@ -201,9 +201,12 @@ public class Database {
 			ps.execute();
 
 			conn.commit();
+			conn.close();
 		} catch(SQLException e) {
 			try {
 				conn.rollback();
+				conn.close();
+				new File(outfile).delete();
 			} catch(SQLException e2) {}
 			throw e;
 		}
@@ -245,6 +248,8 @@ public class Database {
 					"where a.example=b.example and a.annotator_id=b.annotator_id");
 			rs.next();
 			ret.setTokenDuplicates(rs.getInt(1));
+
+			conn.close();
 		} catch(SQLException e) {
 			ret.setError(e.getMessage());
 		}
@@ -291,6 +296,7 @@ public class Database {
 			stmt.execute("insert into master.token_annotations select * from main.token_annotations");
 
 			conn.commit();
+			conn.close();
 		} catch(SQLException e) {
 			try {
 				conn.rollback();
