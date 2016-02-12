@@ -194,7 +194,7 @@ public class Database {
 
 			// translations
 			ps = conn.prepareStatement("insert into main.translations " +
-					"select tr.* from master.translations, master.annotation_tasks as t " +
+					"select tr.* from master.translations as tr, master.annotation_tasks as t " +
 					"where t.annotator_id=? and t.task_no=? and tr.example_no=t.example");
 			ps.setInt(1, annotator);
 			ps.setInt(2, task);
