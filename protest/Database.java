@@ -1,5 +1,7 @@
 package protest;
 
+import java.io.File;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -89,6 +91,8 @@ public class Database {
 	}
 
 	public void createAnnotatorDB(String outfile, int annotator, int task) throws SQLException {
+		new File(outfile).delete();
+
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outfile);
 
 		conn.setAutoCommit(false);
