@@ -123,6 +123,23 @@ public class Database {
 
 			PreparedStatement ps;
 
+			// meta_data
+			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_version', 'PROTEST 1.0')");
+			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_type', 'annotator')");
+			stmt.execute("insert into main.meta_data (tag, tag_value) " +
+					"select 'time_created', datetime('now')");
+			stmt.execute("insert into main.meta_data " +
+					"select * from master.meta_data where tag in ('master_id', 'master_description')");
+
+			ps = conn.prepareStatement("insert into main.meta_data (tag, tag_value) values ('annotator_id', ?)");
+			ps.setInt(1, annotator);
+			ps.execute();
+
+			ps = conn.prepareStatement("insert into main.meta_data (tag, tag_value) " +
+					"select 'annotator_name', name from master.annotators where id=?");
+			ps.setInt(1, annotator);
+			ps.execute();
+
 			// annotation_tasks
 			ps = conn.prepareStatement("insert into main.annotation_tasks " +
 					"select * from master.annotation_tasks " +
