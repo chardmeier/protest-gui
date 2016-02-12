@@ -325,7 +325,10 @@ public class Database {
 
 	public static void main(String[] args) throws SQLException {
 		Database db = new Database("protestsuite.db");
-		db.createAnnotationBatch("tstann.db", 0, 0);
+		PrecheckReport rep = db.precheckAnnotationBatch("tstann.db");
+		System.err.println(rep.getMessage());
+		if(rep.canImport())
+			db.importAnnotationBatch("tstann.db");
 	}
 }
 
