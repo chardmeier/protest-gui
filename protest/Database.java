@@ -90,7 +90,7 @@ public class Database {
 		return metadata;
 	}
 
-	public void createAnnotatorDB(String outfile, int annotator, int task) throws SQLException {
+	public void createAnnotationBatch(String outfile, int annotator, int task) throws SQLException {
 		new File(outfile).delete();
 
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outfile);
@@ -125,7 +125,7 @@ public class Database {
 
 			// meta_data
 			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_version', 'PROTEST 1.0')");
-			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_type', 'annotator')");
+			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_type', 'annotation_batch')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) " +
 					"select 'time_created', datetime('now')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) " +
@@ -229,7 +229,7 @@ public class Database {
 		}
 	}
 
-	public PrecheckReport precheckAnnotatorDB(String infile) {
+	public PrecheckReport precheckAnnotationBatch(String infile) {
 		PrecheckReport ret = new PrecheckReport();
 
 		try {
@@ -291,7 +291,7 @@ public class Database {
 			return val1.equals(val2);
 	}
 
-	public void importAnnotatorDB(String infile) throws SQLException {
+	public void importAnnotationBatch(String infile) throws SQLException {
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
 
 		try {
@@ -324,7 +324,7 @@ public class Database {
 
 	public static void main(String[] args) throws SQLException {
 		Database db = new Database("protestsuite.db");
-		db.createAnnotatorDB("tstann.db", 0, 0);
+		db.createAnnotationBatch("tstann.db", 0, 0);
 	}
 }
 
