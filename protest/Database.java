@@ -295,11 +295,12 @@ public class Database {
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
 
 		try {
-			conn.setAutoCommit(false);
 			Statement stmt = conn.createStatement();
 
 			stmt.execute("attach database \"" + dbfile_ + "\" as master");
 			
+			conn.setAutoCommit(false);
+
 			stmt.execute("delete from master.annotations where id in " +
 					"(select a.id from main.annotations as a, master.annotations as b " +
 					"where a.example=b.example and a.annotator_id=b.annotator_id)");
