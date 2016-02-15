@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,6 +28,17 @@ public class Database {
 	}
 
 	public List<AnnotationCategory> getCategories() {
+		return doGetCategories("");
+	}
+
+	public List<AnnotationCategory> getCategoriesForCorpora(int[] tgtcorpora) {
+		if(tgtcorpora.length == 0)
+			return Collections.<AnnotationCategory>emptyList();
+
+		return doGetCategories("where tgtcorpus in " + makeInList(tgtcorpora));
+	}
+
+	private List<AnnotationCategory> doGetCategories(String whereClause) {
 		ArrayList<AnnotationCategory> catlist = new ArrayList<AnnotationCategory>();
 
 		try {
@@ -35,7 +47,9 @@ public class Database {
 						"a.conflict_status as conflict_status, p.example_no as example_no, " +
 						"p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus " +
 					"from categories as c left outer join pro_examples as p on c.id=p.category_no " +
-						"left outer join annotations as a on p.id=a.example order by description, conflict_status");
+						"left outer join annotations as a on p.id=a.example " +
+					whereClause + " " +
+					"order by description, conflict_status");
 			String lastcat = null;
 			AnnotationCategory catobj = null;
 			while(rs.next()) {
@@ -71,6 +85,40 @@ public class Database {
 		return catlist;
 	}
 
+	public List<TargetCorpus> getTargetCorpora() {
+		ArrayList<TargetCorpus> crplist = new ArrayList<TargetCorpus>();
+
+		try {
+			Statement stmt = db_.createStatement();
+			ResultSet rs = stmt.executeQuery("select corpus.name as name, count(*) as cnt from corpora, pro_examples " +
+				       "where corpora.id=pro_examples.tgtcorpus group by name order by name");
+			while(rs.next())
+				crplist.add(new TargetCorpus(rs.getString("name"), rs.getInt("cnt")));
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		return crplist;
+	}
+
+	public int getFilteredExampleCount(int[] tgtcorpora, int[] categories) {
+		if(tgtcorpora.length == 0 || categories.length == 0)
+			return 0;
+
+		try {
+			Statement stmt = db_.createStatement();
+			ResultSet rs = stmt.executeQuery("select count(*) from pro_examples " +
+					"where tgtcorpus in " + makeInList(tgtcorpora) + " " +
+					"and category_no in " + makeInList(categories));
+			rs.next();
+			return rs.getInt(1);
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
 	public HashMap<String,String> getMetadata() {
 		return getMetadata(db_);
 	}
@@ -88,6 +136,22 @@ public class Database {
 		}
 
 		return metadata;
+	}
+
+	public boolean tasksetExists(String label) {
+		try {
+			PreparedStatement ps = db_.prepareStatement("select count(*) from task_definition where taskset=?");
+			ps.setString(1, label);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			return rs.getInt(1) > 0;
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+	public void createAnnotationTasks(String taskset, int[] tgtcorpora, int[] categories, int ntasks, int iaa) {
 	}
 
 	public void createAnnotationBatch(String outfile, int annotator, int task) throws SQLException {
@@ -321,6 +385,16 @@ public class Database {
 			} catch(SQLException e2) {}
 			throw e;
 		}
+	}
+
+	private String makeInList(int[] ids) {
+		StringBuilder sb = new StringBuilder();
+		sb.append('(');
+		sb.append(ids[0]);
+		for(int i = 1; i < ids.length; i++)
+			sb.append(',').append(ids[i]);
+		sb.append(')');
+		return sb.toString();
 	}
 
 	public static void main(String[] args) throws SQLException {
