@@ -158,8 +158,8 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 
 	private void createTasks() {
 		String label = labelField_.getText();
-		int[] tgtcorpora = tgtcorpusTable_.getSelectedRows();
-		int[] categories = categoryTable_.getSelectedRows();
+		int[] tgtcorpora = tgtcorpusModel_.translateSelection(tgtcorpusTable_.getSelectedRows());
+		int[] categories = categoryModel_.translateSelection(categoryTable_.getSelectedRows());
 		int ntasks = taskSpinnerModel_.getNumber().intValue();
 		int iaa = iaaSpinnerModel_.getNumber().intValue();
 		int cnt = db_.getFilteredExampleCount(tgtcorpora, categories);
