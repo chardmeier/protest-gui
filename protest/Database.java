@@ -194,7 +194,7 @@ public class Database {
 			while(rs.next()) {
 				int[] key = { rs.getInt("tgtcorpus"), rs.getInt("category_no") };
 				int cnt = rs.getInt("cnt");
-				proportions.put(key, Integer.valueOf(rs.getInt(cnt)));
+				proportions.put(key, Integer.valueOf(cnt));
 				totalcnt += cnt;
 			}
 
