@@ -45,7 +45,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		tgtcorpusModel_ = new SelectionTableModel();
 		List<TargetCorpus> corpora = db.getTargetCorpora();
 		for(TargetCorpus c : corpora)
-			tgtcorpusModel_.add(c.getLabel(), c.getCount());
+			tgtcorpusModel_.add(c.getID(), c.getLabel(), c.getCount());
 
 		tgtcorpusTable_ = new JTable(tgtcorpusModel_);
 		tgtcorpusTable_.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -59,7 +59,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		categoryModel_ = new SelectionTableModel();
 		List<AnnotationCategory> cats = db.getCategories();
 		for(AnnotationCategory c : cats)
-			categoryModel_.add(c.getLabel(), 0);
+			categoryModel_.add(c.getID(), c.getLabel(), 0);
 
 		categoryTable_ = new JTable(categoryModel_);
 		categoryTable_.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -136,7 +136,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 	}
 
 	private void updateCategoryCounts() {
-		int[] tgtcorpora = tgtcorpusTable_.getSelectedRows();
+		int[] tgtcorpora = tgtcorpusModel_.translateSelection(tgtcorpusTable_.getSelectedRows());
 		List<AnnotationCategory> filteredCats = db_.getCategoriesForCorpora(tgtcorpora);
 		categoryModel_.resetCounts();
 		for(AnnotationCategory cat : filteredCats)
@@ -144,8 +144,8 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 	}
 
 	private void updateTaskParameters() {
-		int[] tgtcorpora = tgtcorpusTable_.getSelectedRows();
-		int[] categories = categoryTable_.getSelectedRows();
+		int[] tgtcorpora = tgtcorpusModel_.translateSelection(tgtcorpusTable_.getSelectedRows());
+		int[] categories = categoryModel_.translateSelection(categoryTable_.getSelectedRows());
 		int cnt = db_.getFilteredExampleCount(tgtcorpora, categories);
 		countLabel_.setText(Integer.toString(cnt));
 		if(taskSpinnerModel_.getNumber().intValue() > cnt)

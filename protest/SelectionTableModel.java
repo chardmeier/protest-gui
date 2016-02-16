@@ -7,10 +7,12 @@ import java.util.Collections;
 import javax.swing.table.AbstractTableModel;
 
 public class SelectionTableModel extends AbstractTableModel {
+	private ArrayList<Integer> ids_ = new ArrayList<Integer>();
 	private ArrayList<String> items_ = new ArrayList<String>();
 	private ArrayList<Integer> counts_ = new ArrayList<Integer>();
 
-	public void add(String label, int count) {
+	public void add(int id, String label, int count) {
+		ids_.add(Integer.valueOf(id));
 		items_.add(label);
 		counts_.add(Integer.valueOf(count));
 	}
@@ -22,6 +24,13 @@ public class SelectionTableModel extends AbstractTableModel {
 	public void setCount(String label, int count) {
 		int pos = items_.indexOf(label);
 		counts_.set(pos, Integer.valueOf(count));
+	}
+
+	public int[] translateSelection(int[] sel) {
+		int[] res = new int[sel.length];
+		for(int i = 0; i < sel.length; i++)
+			res[i] = ids_.get(sel[i]).intValue();
+		return res;
 	}
 
 	public int getRowCount() {

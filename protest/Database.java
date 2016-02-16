@@ -50,15 +50,16 @@ public class Database {
 						"left outer join annotations as a on p.id=a.example " +
 					whereClause + " " +
 					"order by description, conflict_status");
-			String lastcat = null;
+			int lastcat = -1;
 			AnnotationCategory catobj = null;
 			while(rs.next()) {
+				int id = rs.getInt("category_no");
 				String cat = rs.getString("description");
 				String conflict = rs.getString("conflict_status");
 
-				if(lastcat == null || !cat.equals(lastcat)) {
-					lastcat = cat;
-					catobj = new AnnotationCategory(cat);
+				if(lastcat == -1 || id != lastcat) {
+					lastcat = id;
+					catobj = new AnnotationCategory(id, cat);
 					catlist.add(catobj);
 				}
 
@@ -90,10 +91,11 @@ public class Database {
 
 		try {
 			Statement stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select corpora.name as name, count(*) as cnt from corpora, pro_examples " +
-				       "where corpora.id=pro_examples.tgtcorpus group by name order by name");
+			ResultSet rs = stmt.executeQuery("select corpora.id as id, corpora.name as name, count(*) as cnt " +
+					"from corpora, pro_examples " +
+					"where corpora.id=pro_examples.tgtcorpus group by name order by name");
 			while(rs.next())
-				crplist.add(new TargetCorpus(rs.getString("name"), rs.getInt("cnt")));
+				crplist.add(new TargetCorpus(rs.getInt("id"), rs.getString("name"), rs.getInt("cnt")));
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);

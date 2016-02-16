@@ -14,10 +14,12 @@ public class AnnotationCategory {
 	private static String[] groupLabels_ = { "new", "done", "conflict" };
 	private static Color[] groupColours_ = { Color.YELLOW, Color.GREEN, Color.RED };
 
+	private int id_;
 	private String label_;
 	private ArrayList<List<TestSuiteExample>> examples_;
 
-	public AnnotationCategory(String label) {
+	public AnnotationCategory(int id, String label) {
+		id_ = id;
 		label_ = label;
 		examples_ = new ArrayList<List<TestSuiteExample>>();
 		for(int i = 0; i < GROUP_COUNT; i++)
@@ -30,6 +32,10 @@ public class AnnotationCategory {
 
 	public static Color getGroupColour(int grp) {
 		return groupColours_[grp];
+	}
+
+	public int getID() {
+		return id_;
 	}
 
 	public String getLabel() {
