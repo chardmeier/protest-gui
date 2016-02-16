@@ -152,6 +152,85 @@ public class Database {
 	}
 
 	public void createAnnotationTasks(String taskset, int[] tgtcorpora, int[] categories, int ntasks, int iaa) {
+		try {
+			db_.setAutoCommit(false);
+
+			Statement stmt = db_.createStatement();
+
+			PreparedStatement ps_descr = db_.prepareStatement(
+					"insert into task_definition (taskset, label) values (?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+			ps_descr.setString(1, taskset);
+
+			int iaa_id = -1;
+			if(iaa > 0) {
+				ps_descr.setString(2, "IAA");
+				ps_descr.execute();
+				ResultSet rs = ps_descr.getGeneratedKeys();
+				rs.next();
+				iaa_id = rs.getInt(1);
+			}
+
+			int[] task_ids = new int[ntasks];
+			for(int i = 0; i < ntasks; i++) {
+				ps_descr.setString(2, Integer.toString(i));
+				ps_descr.execute();
+				ResultSet rs = ps_descr.getGeneratedKeys();
+				rs.next();
+				task_ids[i] = rs.getInt(1);
+			}
+
+			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_examples" +
+					"where tgtcorpus in " + makeInList(tgtcorpora) + " and category_no in " + makeInList(categories) + " " +
+					"group by tgtcorpus, category_no order by tgtcorpus, category_no");
+			HashMap<int[],Integer> proportions = new HashMap<int[],Integer>();
+			int totalcnt = 0;
+			while(rs.next()) {
+				int[] key = { rs.getInt("tgtcorpus"), rs.getInt("category_no") };
+				int cnt = rs.getInt("cnt");
+				proportions.put(key, Integer.valueOf(rs.getInt(cnt)));
+				totalcnt += cnt;
+			}
+
+			PreparedStatement ps_select = db_.prepareStatement("insert into annotation_tasks (task_no, example) " +
+					"select ?, id from pro_examples where tgtcorpus=? and category_no=? " + 
+					"order by random() limit ?");
+			for(int corpus : tgtcorpora) {
+				for(int cat : categories) {
+					ps_assign.setInt(2, corpus);
+					ps_assign.setInt(3, cat);
+
+					int[] key = { corpus, cat };
+					int cnt = proportions.get(key).intValue();
+
+					if(iaa > 0) {
+						double prop = ((double) cnt) / ((double) totalcnt);
+						int nx = Math.ceil(prop * iaa);
+						ps_assign.setInt(1, iaa_id);
+						ps_assign.setInt(3, nx);
+						ps_assign.execute();
+						cnt -= nx;
+					}
+
+					if(ntasks > 0 && cnt > 0) {
+						int nx = Math.ceil(((double) cnt) / ((double) ntasks));
+						ps_assign.setInt(3, nx);
+						for(int i = 0; i < ntasks; i++) {
+							ps_assign.setInt(1, Integer.valueOf(task_ids[i]));
+							ps_assign.execute();
+						}
+					}
+				}
+			}
+
+			db_.commit();
+		} catch(SQLException e) {
+			try {
+				db_.rollback();
+			} catch(SQLException e2) {}
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	public void createAnnotationBatch(String outfile, int annotator, int task) throws SQLException {
