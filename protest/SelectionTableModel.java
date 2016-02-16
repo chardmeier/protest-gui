@@ -36,10 +36,8 @@ public class SelectionTableModel extends AbstractTableModel {
 		switch(col) {
 		case 0:
 			return items_.get(row);
-			break;
 		case 1:
 			return counts_.get(row);
-			break;
 		default:
 			throw new IllegalArgumentException("Undefined column number: " + row);
 		}
