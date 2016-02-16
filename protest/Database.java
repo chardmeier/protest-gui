@@ -90,7 +90,7 @@ public class Database {
 
 		try {
 			Statement stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select corpus.name as name, count(*) as cnt from corpora, pro_examples " +
+			ResultSet rs = stmt.executeQuery("select corpora.name as name, count(*) as cnt from corpora, pro_examples " +
 				       "where corpora.id=pro_examples.tgtcorpus group by name order by name");
 			while(rs.next())
 				crplist.add(new TargetCorpus(rs.getString("name"), rs.getInt("cnt")));
