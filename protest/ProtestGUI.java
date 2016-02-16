@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 public class ProtestGUI implements Runnable, ActionListener {
@@ -24,6 +25,8 @@ public class ProtestGUI implements Runnable, ActionListener {
 	private int currentCategory_;
 
 	private InstanceWindow instWindow_;
+	private TaskDefinitionWindow taskDefinitionWindow_;
+
 	private JFrame frame_;
 	private ArrayList<JButton> catButtons_;
 
@@ -32,6 +35,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 		if(db_ == null)
 			System.exit(0);
 		instWindow_ = new InstanceWindow(this, 0);
+		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
 
 	public ProtestGUI(String dbfile) {
@@ -42,6 +46,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 			System.exit(1);
 		}
 		instWindow_ = new InstanceWindow(this, 0);
+		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
    
 	public void run() {
@@ -49,6 +54,29 @@ public class ProtestGUI implements Runnable, ActionListener {
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame_.getContentPane().getLayout()).setVgap(15);
 		
+		JToolBar toolbar = new JToolBar("Protest GUI");
+		frame_.getContentPane().add(toolbar, BorderLayout.PAGE_START);
+
+		JButton defineTaskButton = new JButton("Define Tasks");
+		defineTaskButton.setActionCommand("define-tasks");
+		defineTaskButton.addActionListener(this);
+		toolbar.add(defineTaskButton);
+
+		JButton assignButton = new JButton("Assign to Annotators");
+		assignButton.setActionCommand("assign-annotators");
+		assignButton.addActionListener(this);
+		toolbar.add(assignButton);
+
+		JButton createBatchButton = new JButton("Create Batch");
+		createBatchButton.setActionCommand("create-batch");
+		createBatchButton.addActionListener(this);
+		toolbar.add(createBatchButton);
+
+		JButton importBatchButton = new JButton("Import Batch");
+		importBatchButton.setActionCommand("import-batch");
+		importBatchButton.addActionListener(this);
+		toolbar.add(importBatchButton);
+
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		frame_.getContentPane().add(mainPanel, BorderLayout.CENTER);
 
@@ -77,7 +105,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 				button.setEnabled(cnt > 0);
 				button.setBackground(AnnotationCategory.getGroupColour(j));
 				button.setOpaque(true);
-				button.setActionCommand(String.format("%d %d", i, j));
+				button.setActionCommand(String.format("display %d %d", i, j));
 				button.addActionListener(this);
 				catButtons_.add(button);
 				catButtonsPanel.add(button);
@@ -99,13 +127,22 @@ public class ProtestGUI implements Runnable, ActionListener {
 
 		if(cmd.equals("quit"))
 			System.exit(0);
+		else if(cmd.equals("define-tasks"))
+			taskDefinitionWindow_.setVisible(true);
+		else if(cmd.equals("assign-annotators"))
+			System.err.println("assign-annotators not implemented");
+		else if(cmd.equals("create-batch"))
+			System.err.println("create-batch not implemented");
+		else if(cmd.equals("import-batch"))
+			System.err.println("import-batch not implemented");
+		else if(cmd.startsWith("display")) {
+			String[] idx = cmd.split(" ");
+			currentCategory_ = Integer.parseInt(idx[1]);
+			int grp = Integer.parseInt(idx[2]);
 
-		String[] idx = cmd.split(" ");
-		currentCategory_ = Integer.parseInt(idx[0]);
-		int grp = Integer.parseInt(idx[1]);
-
-		instWindow_.setData(categories_.get(currentCategory_).getLabel(), categories_.get(currentCategory_).getExamples(grp));
-		instWindow_.setVisible(true);
+			instWindow_.setData(categories_.get(currentCategory_).getLabel(), categories_.get(currentCategory_).getExamples(grp));
+			instWindow_.setVisible(true);
+		}
 	}
 
 	public void refresh() {
