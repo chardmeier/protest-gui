@@ -150,7 +150,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		countLabel_.setText(Integer.toString(cnt));
 		if(taskSpinnerModel_.getNumber().intValue() > cnt)
 			taskSpinnerModel_.setValue(Integer.valueOf(cnt));
-		taskSpinnerModel_.setMaximum(cnt);
+		taskSpinnerModel_.setMaximum(Integer.valueOf(cnt));
 		if(iaaSpinnerModel_.getNumber().intValue() > cnt)
 			iaaSpinnerModel_.setValue(Integer.valueOf(cnt));
 		iaaSpinnerModel_.setMaximum(Integer.valueOf(cnt));
