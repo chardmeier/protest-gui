@@ -25,11 +25,15 @@ public class ProtestGUI implements Runnable, ActionListener {
 	private JFrame frame_;
 	private ArrayList<JButton> catButtons_;
 
-	public ProtestGUI(String dbfile) {
-		//db_ = new Database(dbfile);
+	public ProtestGUI() {
 		db_ = new DatabaseOpener().open();
 		if(db_ == null)
 			System.exit(0);
+		instWindow_ = new InstanceWindow(this, 0);
+	}
+
+	public ProtestGUI(String dbfile) {
+		db_ = new Database(dbfile);
 		instWindow_ = new InstanceWindow(this, 0);
 	}
    
@@ -107,11 +111,17 @@ public class ProtestGUI implements Runnable, ActionListener {
 	}
 
 	public static void main(String[] args) {
-		if(args.length != 1) {
-			System.err.println("Usage: ProtestGUI dbfile");
+		if(args.length > 1) {
+			System.err.println("Usage: ProtestGUI [dbfile]");
 			System.exit(1);
 		}
 
-		SwingUtilities.invokeLater(new ProtestGUI(args[0]));
+		ProtestGUI gui;
+		if(args.length == 1)
+			gui = new ProtestGUI(args[0]);
+		else
+			gui = new ProtestGUI();
+
+		SwingUtilities.invokeLater(gui);
 	}
 }
