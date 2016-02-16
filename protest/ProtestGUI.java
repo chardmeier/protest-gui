@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
 
+import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,12 @@ public class ProtestGUI implements Runnable, ActionListener {
 	}
 
 	public ProtestGUI(String dbfile) {
-		db_ = new Database(dbfile);
+		try {
+			db_ = new Database(dbfile);
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		instWindow_ = new InstanceWindow(this, 0);
 	}
    
