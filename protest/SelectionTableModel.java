@@ -7,8 +7,8 @@ import java.util.Collections;
 import javax.swing.table.AbstractTableModel;
 
 public class SelectionTableModel extends AbstractTableModel {
-	private ArrayList<String> items_;
-	private ArrayList<Integer> counts_;
+	private ArrayList<String> items_ = new ArrayList<String>();
+	private ArrayList<Integer> counts_ = new ArrayList<Integer>();
 
 	public void add(String label, int count) {
 		items_.add(label);
