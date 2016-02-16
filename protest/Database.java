@@ -186,7 +186,7 @@ public class Database {
 				task_ids[i] = rs.getInt(1);
 			}
 
-			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_examples" +
+			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_examples " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " and category_no in " + makeInList(categories) + " " +
 					"group by tgtcorpus, category_no order by tgtcorpus, category_no");
 			HashMap<int[],Integer> proportions = new HashMap<int[],Integer>();
