@@ -1,12 +1,12 @@
 package protest;
 
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.util.List;
 
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -40,7 +40,6 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 
 		frame_ = new JFrame("Task Definition");
 		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		frame_.getContentPane().setLayout(new FlowLayout());
 
 		tgtcorpusModel_ = new SelectionTableModel();
 		List<TargetCorpus> corpora = db.getTargetCorpora();
@@ -52,7 +51,9 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		tgtcorpusTable_.setRowSelectionAllowed(true);
 		tgtcorpusTable_.setColumnSelectionAllowed(false);
 		tgtcorpusTable_.getSelectionModel().addListSelectionListener(this);
-		frame_.getContentPane().add(new JScrollPane(tgtcorpusTable_));
+
+		JPanel tgtcorpusPanel = new JPanel();
+		tgtcorpusPanel.add(new JScrollPane(tgtcorpusTable_));
 
 		categoryModel_ = new SelectionTableModel();
 		List<AnnotationCategory> cats = db.getCategories();
@@ -64,10 +65,11 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		categoryTable_.setRowSelectionAllowed(true);
 		categoryTable_.setColumnSelectionAllowed(false);
 		categoryTable_.getSelectionModel().addListSelectionListener(this);
-		frame_.getContentPane().add(new JScrollPane(categoryTable_));
+		
+		JPanel categoryPanel = new JPanel();
+		categoryPanel.add(new JScrollPane(categoryTable_));
 
 		JPanel settingsPanel = new JPanel(new GridLayout(5, 2));
-		frame_.getContentPane().add(settingsPanel);
 
 		settingsPanel.add(new JLabel("Number of examples:"));
 		countLabel_ = new JLabel("0");
@@ -94,6 +96,21 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		resetButton.setActionCommand("reset");
 		resetButton.addActionListener(this);
 		settingsPanel.add(resetButton);
+
+		GroupLayout layout = new GroupLayout(frame_.getContentPane());
+		frame_.getContentPane().setLayout(layout);
+		layout.setHorizontalGroup(
+				layout.createParallelGroup()
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(tgtcorpusPanel)
+						.addComponent(categoryPanel))
+					.addComponent(settingsPanel));
+		layout.setVerticalGroup(
+				layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup()
+						.addComponent(tgtcorpusPanel)
+						.addComponent(categoryPanel))
+					.addComponent(settingsPanel));
 
 		frame_.pack();
 	}
