@@ -23,4 +23,25 @@ public class SelectionTableModel extends AbstractTableModel {
 		int pos = items_.indexOf(label);
 		counts_.set(pos, Integer.valueOf(count));
 	}
+
+	public int getRowCount() {
+		return items_.size();
+	}
+
+	public int getColumnCount() {
+		return 2;
+	}
+
+	public Object getValueAt(int row, int col) {
+		switch(col) {
+		case 0:
+			return items_.get(row);
+			break;
+		case 1:
+			return counts_.get(row);
+			break;
+		default:
+			throw new IllegalArgumentException("Undefined column number: " + row);
+		}
+	}
 }
