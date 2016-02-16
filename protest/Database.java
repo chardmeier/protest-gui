@@ -215,14 +215,14 @@ public class Database {
 						double prop = ((double) cnt) / ((double) totalcnt);
 						int nx = (int) Math.ceil(prop * iaa);
 						ps.setInt(1, iaa_id);
-						ps.setInt(3, nx);
+						ps.setInt(4, nx);
 						ps.execute();
 						cnt -= nx;
 					}
 
 					if(ntasks > 0 && cnt > 0) {
 						int nx = (int) Math.ceil(((double) cnt) / ((double) ntasks));
-						ps.setInt(3, nx);
+						ps.setInt(4, nx);
 						for(int i = 0; i < ntasks; i++) {
 							ps.setInt(1, Integer.valueOf(task_ids[i]));
 							ps.execute();
