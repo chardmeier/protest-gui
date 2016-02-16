@@ -49,11 +49,11 @@ public class ProtestGUI implements Runnable, ActionListener {
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame_.getContentPane().getLayout()).setVgap(15);
 		
-		JLabel instructionLabel_ = new JLabel("<html><b>Select set of instances, for annotation / browsing:</b></html>");
-		JPanel instructionPanel_ = new JPanel();
-		instructionPanel_.setLayout(new FlowLayout(FlowLayout.LEFT));
-		instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
-		frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
+		JLabel instructionLabel = new JLabel("<html><b>Select set of instances, for annotation / browsing:</b></html>");
+		JPanel instructionPanel = new JPanel();
+		instructionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		instructionPanel.add(instructionLabel, BorderLayout.LINE_START);
+		frame_.getContentPane().add(instructionPanel, BorderLayout.PAGE_START);
 		
 		categories_ = db_.getCategories();
 
