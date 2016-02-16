@@ -18,6 +18,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -100,7 +101,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		GroupLayout layout = new GroupLayout(frame_.getContentPane());
 		frame_.getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(
-				layout.createParallelGroup()
+				layout.createParallelGroup(GroupLayout.Alignment.CENTER)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(tgtcorpusPanel)
 						.addComponent(categoryPanel))
@@ -111,6 +112,8 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 						.addComponent(tgtcorpusPanel)
 						.addComponent(categoryPanel))
 					.addComponent(settingsPanel));
+		layout.linkSize(SwingConstants.HORIZONTAL, tgtcorpusPanel, categoryPanel);
+		layout.linkSize(SwingConstants.HORIZONTAL, tgtcorpusPanel, settingsPanel);
 
 		frame_.pack();
 	}
