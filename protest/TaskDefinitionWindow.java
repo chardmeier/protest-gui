@@ -164,6 +164,18 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		int iaa = iaaSpinnerModel_.getNumber().intValue();
 		int cnt = db_.getFilteredExampleCount(tgtcorpora, categories);
 
+		if(cnt == 0) {
+			JOptionPane.showMessageDialog(null, "No examples selected",
+					"No examples", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		if(ntasks + iaa == 0) {
+			JOptionPane.showMessageDialog(null, "No tasks specified",
+					"No tasks", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
 		if(ntasks + iaa > cnt) {
 			JOptionPane.showMessageDialog(null, "Not enough examples in selection to create the specified tasks.",
 					"Too few examples", JOptionPane.ERROR_MESSAGE);
