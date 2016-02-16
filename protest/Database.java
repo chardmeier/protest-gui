@@ -205,7 +205,7 @@ public class Database {
 
 					if(iaa > 0) {
 						double prop = ((double) cnt) / ((double) totalcnt);
-						int nx = Math.ceil(prop * iaa);
+						int nx = (int) Math.ceil(prop * iaa);
 						ps.setInt(1, iaa_id);
 						ps.setInt(3, nx);
 						ps.execute();
@@ -213,7 +213,7 @@ public class Database {
 					}
 
 					if(ntasks > 0 && cnt > 0) {
-						int nx = Math.ceil(((double) cnt) / ((double) ntasks));
+						int nx = (int) Math.ceil(((double) cnt) / ((double) ntasks));
 						ps.setInt(3, nx);
 						for(int i = 0; i < ntasks; i++) {
 							ps.setInt(1, Integer.valueOf(task_ids[i]));
