@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -189,10 +190,11 @@ public class Database {
 			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_examples " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " and category_no in " + makeInList(categories) + " " +
 					"group by tgtcorpus, category_no order by tgtcorpus, category_no");
-			HashMap<int[],Integer> proportions = new HashMap<int[],Integer>();
+			HashMap<List<Integer>,Integer> proportions = new HashMap<List<Integer>,Integer>();
 			int totalcnt = 0;
 			while(rs.next()) {
-				int[] key = { rs.getInt("tgtcorpus"), rs.getInt("category_no") };
+				List<Integer> key = Arrays.asList(Integer.valueOf(rs.getInt("tgtcorpus")),
+						Integer.valueOf(rs.getInt("category_no")));
 				int cnt = rs.getInt("cnt");
 				proportions.put(key, Integer.valueOf(cnt));
 				totalcnt += cnt;
@@ -206,7 +208,7 @@ public class Database {
 					ps.setInt(2, corpus);
 					ps.setInt(3, cat);
 
-					int[] key = { corpus, cat };
+					List<Integer> key = Arrays.asList(Integer.valueOf(corpus), Integer.valueOf(cat));
 					int cnt = proportions.get(key).intValue();
 
 					if(iaa > 0) {
