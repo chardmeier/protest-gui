@@ -19,11 +19,13 @@ public class SelectionTableModel extends AbstractTableModel {
 
 	public void resetCounts() {
 		Collections.fill(counts_, Integer.valueOf(0));
+		fireTableDataChanged();
 	}
 
 	public void setCount(String label, int count) {
 		int pos = items_.indexOf(label);
 		counts_.set(pos, Integer.valueOf(count));
+		fireTableCellUpdated(pos, 1);
 	}
 
 	public int[] translateSelection(int[] sel) {
