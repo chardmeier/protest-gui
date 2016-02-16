@@ -1,5 +1,6 @@
 package protest;
 
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,7 +40,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 
 		frame_ = new JFrame("Task Definition");
 		frame_.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		frame_.getContentPane().setLayout(new GridLayout(1, 3));
+		frame_.getContentPane().setLayout(new FlowLayout());
 
 		tgtcorpusModel_ = new SelectionTableModel();
 		List<TargetCorpus> corpora = db.getTargetCorpora();
