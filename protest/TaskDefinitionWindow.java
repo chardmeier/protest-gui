@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
@@ -20,6 +21,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 public class TaskDefinitionWindow implements ActionListener, ListSelectionListener {
+	private Database db_;
+
 	private JFrame frame_;
 	private JLabel countLabel_;
 	private JTable tgtcorpusTable_;
@@ -47,7 +50,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		tgtcorpusTable_.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tgtcorpusTable_.setRowSelectionAllowed(true);
 		tgtcorpusTable_.setColumnSelectionAllowed(false);
-		tgtcorpusTable_.addListSelectionListener(this);
+		tgtcorpusTable_.getSelectionModel().addListSelectionListener(this);
 		frame_.getContentPane().add(new JScrollPane(tgtcorpusTable_));
 
 		categoryModel_ = new SelectionTableModel();
@@ -59,7 +62,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		categoryTable_.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		categoryTable_.setRowSelectionAllowed(true);
 		categoryTable_.setColumnSelectionAllowed(false);
-		categoryTable_.addListSelectionListener(this);
+		categoryTable_.getSelectionModel().addListSelectionListener(this);
 		frame_.getContentPane().add(new JScrollPane(categoryTable_));
 
 		JPanel settingsPanel = new JPanel(new GridLayout(5, 2));
@@ -83,12 +86,12 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 
 		JButton createButton = new JButton("Create task");
 		createButton.setActionCommand("create");
-		createButton.setActionListener(this);
+		createButton.addActionListener(this);
 		settingsPanel.add(createButton);
 
 		JButton resetButton = new JButton("Reset");
 		resetButton.setActionCommand("reset");
-		resetButton.setActionListener(this);
+		resetButton.addActionListener(this);
 		settingsPanel.add(resetButton);
 
 		frame_.pack();
@@ -106,7 +109,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 	public void valueChanged(ListSelectionEvent e) {
 		if(e.getValueIsAdjusting())
 			return;
-		if(e.getSource() == tgtcorpusTable_)
+		if(e.getSource() == tgtcorpusTable_.getSelectionModel())
 			updateCategoryCounts();
 		updateTaskParameters();
 	}
@@ -122,14 +125,14 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 	private void updateTaskParameters() {
 		int[] tgtcorpora = tgtcorpusTable_.getSelectedRows();
 		int[] categories = categoryTable_.getSelectedRows();
-		Integer cnt = Integer.valueOf(db_.getFilteredExampleCount(tgtcorpora, categories));
-		countLabel_.setText(cnt.toString());
-		if(taskSpinnerModel_.getNumber().compareTo(cnt) > 0)
-			taskSpinnerModel_.setValue(cnt);
+		int cnt = db_.getFilteredExampleCount(tgtcorpora, categories);
+		countLabel_.setText(Integer.toString(cnt));
+		if(taskSpinnerModel_.getNumber().intValue() > cnt)
+			taskSpinnerModel_.setValue(Integer.valueOf(cnt));
 		taskSpinnerModel_.setMaximum(cnt);
-		if(iaaSpinnerModel_.getNumber().compareTo(cnt) > 0)
-			iaaSpinnerModel_.setValue(cnt);
-		iaaSpinnerModel_.setMaximum(cnt);
+		if(iaaSpinnerModel_.getNumber().intValue() > cnt)
+			iaaSpinnerModel_.setValue(Integer.valueOf(cnt));
+		iaaSpinnerModel_.setMaximum(Integer.valueOf(cnt));
 	}
 
 	private void createTasks() {
