@@ -192,13 +192,13 @@ public class Database {
 				totalcnt += cnt;
 			}
 
-			PreparedStatement ps_select = db_.prepareStatement("insert into annotation_tasks (task_no, example) " +
+			PreparedStatement ps = db_.prepareStatement("insert into annotation_tasks (task_no, example) " +
 					"select ?, id from pro_examples where tgtcorpus=? and category_no=? " + 
 					"order by random() limit ?");
 			for(int corpus : tgtcorpora) {
 				for(int cat : categories) {
-					ps_assign.setInt(2, corpus);
-					ps_assign.setInt(3, cat);
+					ps.setInt(2, corpus);
+					ps.setInt(3, cat);
 
 					int[] key = { corpus, cat };
 					int cnt = proportions.get(key).intValue();
@@ -206,18 +206,18 @@ public class Database {
 					if(iaa > 0) {
 						double prop = ((double) cnt) / ((double) totalcnt);
 						int nx = Math.ceil(prop * iaa);
-						ps_assign.setInt(1, iaa_id);
-						ps_assign.setInt(3, nx);
-						ps_assign.execute();
+						ps.setInt(1, iaa_id);
+						ps.setInt(3, nx);
+						ps.execute();
 						cnt -= nx;
 					}
 
 					if(ntasks > 0 && cnt > 0) {
 						int nx = Math.ceil(((double) cnt) / ((double) ntasks));
-						ps_assign.setInt(3, nx);
+						ps.setInt(3, nx);
 						for(int i = 0; i < ntasks; i++) {
-							ps_assign.setInt(1, Integer.valueOf(task_ids[i]));
-							ps_assign.execute();
+							ps.setInt(1, Integer.valueOf(task_ids[i]));
+							ps.execute();
 						}
 					}
 				}
