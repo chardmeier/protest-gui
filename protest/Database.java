@@ -190,13 +190,13 @@ public class Database {
 			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_examples " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " and category_no in " + makeInList(categories) + " " +
 					"group by tgtcorpus, category_no order by tgtcorpus, category_no");
-			HashMap<List<Integer>,Integer> proportions = new HashMap<List<Integer>,Integer>();
+			HashMap<List<Integer>,Integer> counts = new HashMap<List<Integer>,Integer>();
 			int totalcnt = 0;
 			while(rs.next()) {
 				List<Integer> key = Arrays.asList(Integer.valueOf(rs.getInt("tgtcorpus")),
 						Integer.valueOf(rs.getInt("category_no")));
 				int cnt = rs.getInt("cnt");
-				proportions.put(key, Integer.valueOf(cnt));
+				counts.put(key, Integer.valueOf(cnt));
 				totalcnt += cnt;
 			}
 
@@ -209,7 +209,7 @@ public class Database {
 					ps.setInt(3, cat);
 
 					List<Integer> key = Arrays.asList(Integer.valueOf(corpus), Integer.valueOf(cat));
-					int cnt = proportions.get(key).intValue();
+					int cnt = counts.get(key).intValue();
 
 					if(iaa > 0) {
 						double prop = ((double) cnt) / ((double) totalcnt);
