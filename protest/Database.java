@@ -106,17 +106,19 @@ public class Database {
 		if(tgtcorpora.length == 0 || categories.length == 0)
 			return 0;
 
+		int cnt = 0;
 		try {
 			Statement stmt = db_.createStatement();
 			ResultSet rs = stmt.executeQuery("select count(*) from pro_examples " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " " +
 					"and category_no in " + makeInList(categories));
 			rs.next();
-			return rs.getInt(1);
+			cnt = rs.getInt(1);
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		return cnt;
 	}
 
 	public HashMap<String,String> getMetadata() {
@@ -149,6 +151,8 @@ public class Database {
 			e.printStackTrace();
 			System.exit(1);
 		}
+
+		return false; // to make compiler happy
 	}
 
 	public void createAnnotationTasks(String taskset, int[] tgtcorpora, int[] categories, int ntasks, int iaa) {
