@@ -54,7 +54,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame_.getContentPane().getLayout()).setVgap(15);
 		
-		if(db_.isMasterDB()) {
+		if(db_.getMetadata("file_type").equals("master")) {
 			JToolBar toolbar = new JToolBar("Protest GUI");
 			frame_.getContentPane().add(toolbar, BorderLayout.PAGE_START);
 
@@ -77,6 +77,9 @@ public class ProtestGUI implements Runnable, ActionListener {
 			importBatchButton.setActionCommand("import-batch");
 			importBatchButton.addActionListener(this);
 			toolbar.add(importBatchButton);
+		} else {
+			String ann = String.format("Annotation batch for annotator %s", db_.getMetadata("annotator_name"));
+			frame_.getContentPane().add(new JLabel(ann), BorderLayout.PAGE_START);
 		}
 
 		JPanel mainPanel = new JPanel(new BorderLayout());

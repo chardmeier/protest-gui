@@ -143,8 +143,20 @@ public class Database {
 		return metadata;
 	}
 
-	public boolean isMasterDB() {
-		return getMetadata().get("file_type").equals("master");
+	public String getMetadata(String tag) {
+		try {
+			PreparedStatement ps = db_.prepareStatement("select tag_value from meta_data where tag=?");
+			ps.setString(1, tag);
+			ResultSet rs = ps.executeQuery();
+			if(!rs.next())
+				return "";
+			else
+				return rs.getString("tag_value");
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+
+		return "";
 	}
 
 	public boolean tasksetExists(String label) {
