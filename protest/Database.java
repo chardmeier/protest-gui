@@ -47,8 +47,8 @@ public class Database {
 			ResultSet rs = stmt.executeQuery("select c.id as category_no, c.description as description, " +
 						"a.conflict_status as conflict_status, p.example_no as example_no, " +
 						"p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus " +
-					"from categories as c left outer join pro_examples as p on c.id=p.category_no " +
-						"left outer join annotations as a on p.id=a.example " +
+					"from categories as c left outer join pro_candidates as p on c.id=p.category_no " +
+						"left outer join annotations as a on p.id=a.candidate " +
 					whereClause + " " +
 					"order by description, conflict_status");
 			int lastcat = -1;
@@ -93,8 +93,8 @@ public class Database {
 		try {
 			Statement stmt = db_.createStatement();
 			ResultSet rs = stmt.executeQuery("select corpora.id as id, corpora.name as name, count(*) as cnt " +
-					"from corpora, pro_examples " +
-					"where corpora.id=pro_examples.tgtcorpus group by name order by name");
+					"from corpora, pro_candidates " +
+					"where corpora.id=pro_candidates.tgtcorpus group by name order by name");
 			while(rs.next())
 				crplist.add(new TargetCorpus(rs.getInt("id"), rs.getString("name"), rs.getInt("cnt")));
 		} catch(SQLException e) {
@@ -112,7 +112,7 @@ public class Database {
 		int cnt = 0;
 		try {
 			Statement stmt = db_.createStatement();
-			ResultSet rs = stmt.executeQuery("select count(*) from pro_examples " +
+			ResultSet rs = stmt.executeQuery("select count(*) from pro_candidates " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " " +
 					"and category_no in " + makeInList(categories));
 			rs.next();
@@ -187,7 +187,7 @@ public class Database {
 				task_ids[i] = rs.getInt(1);
 			}
 
-			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_examples " +
+			ResultSet rs = stmt.executeQuery("select tgtcorpus, category_no, count(*) as cnt from pro_candidates " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " and category_no in " + makeInList(categories) + " " +
 					"group by tgtcorpus, category_no order by tgtcorpus, category_no");
 			HashMap<List<Integer>,Integer> counts = new HashMap<List<Integer>,Integer>();
@@ -203,11 +203,11 @@ public class Database {
 			// There shouldn't be any such records, but let's make sure.
 			stmt.execute("delete from annotation_tasks where task_no < 0");
 
-			PreparedStatement ps_select = db_.prepareStatement("insert into annotation_tasks (task_no, example) " +
-					"select -1, id from pro_examples where tgtcorpus=? and category_no=?");
+			PreparedStatement ps_select = db_.prepareStatement("insert into annotation_tasks (task_no, candidate) " +
+					"select -1, id from pro_candidates where tgtcorpus=? and category_no=?");
 		       	PreparedStatement ps_assign = db_.prepareStatement("update annotation_tasks set task_no=? " + 
-					"where task_no=-1 and example in " +
-						"(select example from annotation_tasks where task_no=-1 order by random() limit ?)");
+					"where task_no=-1 and candidate in " +
+						"(select candidate from annotation_tasks where task_no=-1 order by random() limit ?)");
 			for(int corpus : tgtcorpora) {
 				ps_select.setInt(1, corpus);
 				for(int cat : categories) {
@@ -314,7 +314,7 @@ public class Database {
 			// annotations
 			ps = conn.prepareStatement("insert into main.annotations " +
 					"select a.* from master.annotations as a, master.annotation_tasks as t " +
-					"where t.annotator_id=? and a.example=t.example" + andTaskNo);
+					"where t.annotator_id=? and a.candidate=t.candidate" + andTaskNo);
 			ps.setInt(1, annotator);
 			ps.execute();
 
@@ -329,8 +329,8 @@ public class Database {
 
 			// corpora
 			ps = conn.prepareStatement("insert into main.corpora " +
-					"select distinct c.* from master.corpora as c, master.pro_examples as e, master.annotation_tasks as t " +
-					"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.id=t.example and " +
+					"select distinct c.* from master.corpora as c, master.pro_candidates as e, master.annotation_tasks as t " +
+					"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.id=t.candidate and " +
 					"t.annotator_id=?" + andTaskNo);
 			ps.setInt(1, annotator);
 			ps.execute();
@@ -342,16 +342,16 @@ public class Database {
 			
 			// pro_antecedents
 			ps = conn.prepareStatement("insert into main.pro_antecedents " +
-					"select a.* from master.pro_antecedents as a, master.pro_examples as e, master.annotation_tasks as t " +
+					"select a.* from master.pro_antecedents as a, master.pro_candidates as e, master.annotation_tasks as t " +
 					"where t.annotator_id=? and " + andTaskNo +
-					"e.id=t.example and a.srccorpus=e.srccorpus and a.tgtcorpus=e.tgtcorpus and a.example_no=e.example_no");
+					"e.id=t.candidate and a.srccorpus=e.srccorpus and a.tgtcorpus=e.tgtcorpus and a.example_no=e.example_no");
 			ps.setInt(1, annotator);
 			ps.execute();
 
-			// pro_examples
-			ps = conn.prepareStatement("insert into main.pro_examples " +
-					"select e.* from master.pro_examples as e, master.annotation_tasks as t " +
-					"where t.annotator_id=? and e.id=t.example" + andTaskNo);
+			// pro_candidates
+			ps = conn.prepareStatement("insert into main.pro_candidates " +
+					"select e.* from master.pro_candidates as e, master.annotation_tasks as t " +
+					"where t.annotator_id=? and e.id=t.candidate" + andTaskNo);
 			ps.setInt(1, annotator);
 			ps.execute();
 
@@ -363,14 +363,14 @@ public class Database {
 			// token_annotations
 			ps = conn.prepareStatement("insert into main.token_annotations " +
 					"select a.* from master.token_annotations as a, master.annotation_tasks as t " +
-					"where t.annotator_id=? and a.example=t.example" + andTaskNo);
+					"where t.annotator_id=? and a.candidate=t.candidate" + andTaskNo);
 			ps.setInt(1, annotator);
 			ps.execute();
 
 			// translations
 			ps = conn.prepareStatement("insert into main.translations " +
-					"select tr.* from master.translations as tr, master.annotation_tasks as t " +
-					"where t.annotator_id=? and tr.example_no=t.example" + andTaskNo);
+					"select tr.* from master.translations as tr, master.annotation_tasks as t, master.pro_candidates as c " +
+					"where t.annotator_id=? and t.candidate=c.id and tr.example_no=c.example_no" + andTaskNo);
 			ps.setInt(1, annotator);
 			ps.execute();
 
@@ -414,12 +414,12 @@ public class Database {
 			ResultSet rs;
 
 			rs = stmt.executeQuery("select count(*) from main.annotations as a, master.annotations as b " +
-					"where a.example=b.example and a.annotator_id=b.annotator_id");
+					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id");
 			rs.next();
 			ret.setInstanceDuplicates(rs.getInt(1));
 
-			rs = stmt.executeQuery("select count(distinct a.example) from main.token_annotations as a, master.token_annotations as b " +
-					"where a.example=b.example and a.annotator_id=b.annotator_id");
+			rs = stmt.executeQuery("select count(distinct a.candidate) from main.token_annotations as a, master.token_annotations as b " +
+					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id");
 			rs.next();
 			ret.setTokenDuplicates(rs.getInt(1));
 
@@ -460,11 +460,11 @@ public class Database {
 
 			stmt.execute("delete from master.annotations where id in " +
 					"(select a.id from main.annotations as a, master.annotations as b " +
-					"where a.example=b.example and a.annotator_id=b.annotator_id)");
+					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id)");
 
 			stmt.execute("delete from master.token_annotations where id in " +
 					"(select a.id from main.token_annotations as a, master.token_annotations as b " +
-					"where a.example=b.example and a.annotator_id=b.annotator_id)");
+					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id)");
 
 			stmt.execute("insert into master.annotations select * from main.annotations");
 

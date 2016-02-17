@@ -12,9 +12,9 @@ import java.util.List;
 public class TestSuiteExample {
 	private Connection connection_;
 	
-	// id in the pro_examples table, uniquely identifying a
+	// id in the pro_candidates table, uniquely identifying a
 	// (srccorpus, tgtcorpus, example_no) combination
-	private int example_id_;
+	private int candidate_id_;
 
 	private int srccorpus_;
 	private int tgtcorpus_;
@@ -142,14 +142,14 @@ public class TestSuiteExample {
 
 	private Position retrieveAnaphorSourcePosition() throws SQLException {
 		PreparedStatement stmt = connection_.prepareStatement(
-			"select id, line, srcpos from pro_examples " +
+			"select id, line, srcpos from pro_candidates " +
 			"where srccorpus=? and tgtcorpus=? and example_no=?");
 		stmt.setInt(1, srccorpus_);
 		stmt.setInt(2, tgtcorpus_);
 		stmt.setInt(3, example_no_);
 		ResultSet res = stmt.executeQuery();
 		res.next();
-		example_id_ = res.getInt("id");
+		candidate_id_ = res.getInt("id");
 		int line = res.getInt("line");
 		int srcpos = res.getInt("srcpos");
 		return new Position(line, srcpos, srcpos);
@@ -224,15 +224,15 @@ public class TestSuiteExample {
 
 	private void loadAnnotations() throws SQLException {
 		PreparedStatement stmt = connection_.prepareStatement(
-			"select ant_annotation, anaph_annotation, remarks from annotations where example=?");
-		stmt.setInt(1, example_id_);
+			"select ant_annotation, anaph_annotation, remarks from annotations where candidate=?");
+		stmt.setInt(1, candidate_id_);
 		ResultSet res = stmt.executeQuery();
 		if(res.next()) {
 			antecedentAnnotation_ = res.getString(1);
 			anaphorAnnotation_ = res.getString(2);
 			remarks_ = res.getString(3);
 			if(res.next())
-				System.err.println("Warning: Multiple annotation records for example ID " + example_id_);
+				System.err.println("Warning: Multiple annotation records for candidate ID " + candidate_id_);
 		} else {
 			antecedentAnnotation_ = "";
 			anaphorAnnotation_ = "";
@@ -247,8 +247,8 @@ public class TestSuiteExample {
 		}
 
 		stmt = connection_.prepareStatement(
-			"select line, token, annotation from token_annotations where example=?");
-		stmt.setInt(1, example_id_);
+			"select line, token, annotation from token_annotations where candidate=?");
+		stmt.setInt(1, candidate_id_);
 		res = stmt.executeQuery();
 		while(res.next()) {
 			int line = res.getInt(1) - firstLine_;
@@ -262,15 +262,15 @@ public class TestSuiteExample {
 			connection_.setAutoCommit(false);
 
 			PreparedStatement stmt = connection_.prepareStatement(
-				"delete from annotations where example=? and annotator_id=?");
-			stmt.setInt(1, example_id_);
+				"delete from annotations where candidate=? and annotator_id=?");
+			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
 			stmt.execute();
 
 			stmt = connection_.prepareStatement(
-				"insert into annotations (example, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
+				"insert into annotations (candidate, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
 				"values (?, ?, ?, ?, ?, ?)");
-			stmt.setInt(1, example_id_);
+			stmt.setInt(1, candidate_id_);
 			stmt.setString(2, antecedentAnnotation_);
 			stmt.setString(3, anaphorAnnotation_);
 			stmt.setString(4, remarks_);
@@ -279,15 +279,15 @@ public class TestSuiteExample {
 			stmt.execute();
 
 			stmt = connection_.prepareStatement(
-				"delete from token_annotations where example=? and annotator_id=?");
-			stmt.setInt(1, example_id_);
+				"delete from token_annotations where candidate=? and annotator_id=?");
+			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
 			stmt.execute();
 
 			stmt = connection_.prepareStatement(
-				"insert into token_annotations (example, annotator_id, line, token, annotation) " +
+				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
 				"values (?, ?, ?, ?, ?)");
-			stmt.setInt(1, example_id_);
+			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
 			for(int i = 0; i < approvedTokens_.size(); i++)
 				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
@@ -379,7 +379,7 @@ public class TestSuiteExample {
 		try {
 			PreparedStatement stmt = connection_.prepareStatement(
 				"select c.antagreement from categories as c " +
-				"left join pro_examples as pe on pe.category_no = c.id " +
+				"left join pro_candidates as pe on pe.category_no = c.id " +
 				"where pe.srccorpus=? and pe.tgtcorpus=? and pe.example_no=?");
 			stmt.setInt(1, srccorpus_);
 			stmt.setInt(2, tgtcorpus_);
