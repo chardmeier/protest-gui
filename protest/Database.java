@@ -247,7 +247,10 @@ public class Database {
 		}
 	}
 
-	public void createAnnotationBatch(String outfile, int annotator, int task) throws SQLException {
+	public void createAnnotationBatch(String outfile, int annotator, int[] tasks) throws SQLException {
+		if(tasks != null && tasks.length == 0)
+			return;
+
 		new File(outfile).delete();
 
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outfile);
@@ -280,6 +283,10 @@ public class Database {
 
 			PreparedStatement ps;
 
+			String andTaskNo = "";
+			if(tasks != null)
+				andTaskNo = " and t.task_no in " + makeInList(tasks) + " ";
+
 			// meta_data
 			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_version', 'PROTEST 1.0')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_type', 'annotation_batch')");
@@ -299,18 +306,16 @@ public class Database {
 
 			// annotation_tasks
 			ps = conn.prepareStatement("insert into main.annotation_tasks " +
-					"select * from master.annotation_tasks " +
-					"where annotator_id=? and task_no=?");
+					"select * from master.annotation_tasks as t " +
+					"where t.annotator_id=?" + andTaskNo);
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			// annotations
 			ps = conn.prepareStatement("insert into main.annotations " +
 					"select a.* from master.annotations as a, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and a.example=t.example");
+					"where t.annotator_id=? and a.example=t.example" + andTaskNo);
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			// annotators
@@ -326,9 +331,8 @@ public class Database {
 			ps = conn.prepareStatement("insert into main.corpora " +
 					"select distinct c.* from master.corpora as c, master.pro_examples as e, master.annotation_tasks as t " +
 					"where (c.id=e.srccorpus or c.id=e.tgtcorpus) and e.id=t.example and " +
-					"t.annotator_id=? and t.task_no=?");
+					"t.annotator_id=?" + andTaskNo);
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			// documents
@@ -339,18 +343,16 @@ public class Database {
 			// pro_antecedents
 			ps = conn.prepareStatement("insert into main.pro_antecedents " +
 					"select a.* from master.pro_antecedents as a, master.pro_examples as e, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and " +
+					"where t.annotator_id=? and " + andTaskNo +
 					"e.id=t.example and a.srccorpus=e.srccorpus and a.tgtcorpus=e.tgtcorpus and a.example_no=e.example_no");
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			// pro_examples
 			ps = conn.prepareStatement("insert into main.pro_examples " +
 					"select e.* from master.pro_examples as e, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and e.id=t.example");
+					"where t.annotator_id=? and e.id=t.example" + andTaskNo);
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			// sentences
@@ -361,17 +363,15 @@ public class Database {
 			// token_annotations
 			ps = conn.prepareStatement("insert into main.token_annotations " +
 					"select a.* from master.token_annotations as a, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and a.example=t.example");
+					"where t.annotator_id=? and a.example=t.example" + andTaskNo);
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			// translations
 			ps = conn.prepareStatement("insert into main.translations " +
 					"select tr.* from master.translations as tr, master.annotation_tasks as t " +
-					"where t.annotator_id=? and t.task_no=? and tr.example_no=t.example");
+					"where t.annotator_id=? and tr.example_no=t.example" + andTaskNo);
 			ps.setInt(1, annotator);
-			ps.setInt(2, task);
 			ps.execute();
 
 			conn.commit();
