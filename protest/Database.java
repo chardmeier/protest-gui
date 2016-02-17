@@ -200,13 +200,19 @@ public class Database {
 				totalcnt += cnt;
 			}
 
-			PreparedStatement ps = db_.prepareStatement("insert into annotation_tasks (task_no, example) " +
-					"select ?, id from pro_examples where tgtcorpus=? and category_no=? " + 
-					"order by random() limit ?");
+			// There shouldn't be any such records, but let's make sure.
+			stmt.execute("delete from annotation_tasks where task_no < 0");
+
+			PreparedStatement ps_select = db_.prepareStatement("insert into annotation_tasks (task_no, example) " +
+					"select -1, id from pro_examples where tgtcorpus=? and category_no=?");
+		       	PreparedStatement ps_assign = db_.prepareStatement("update annotation_tasks set task_no=? " + 
+					"where task_no=-1 and example in " +
+						"(select example from annotation_tasks where task_no=-1 order by random() limit ?)");
 			for(int corpus : tgtcorpora) {
+				ps_select.setInt(1, corpus);
 				for(int cat : categories) {
-					ps.setInt(2, corpus);
-					ps.setInt(3, cat);
+					ps_select.setInt(2, cat);
+					ps_select.execute();
 
 					List<Integer> key = Arrays.asList(Integer.valueOf(corpus), Integer.valueOf(cat));
 					int cnt = counts.get(key).intValue();
@@ -214,18 +220,18 @@ public class Database {
 					if(iaa > 0) {
 						double prop = ((double) cnt) / ((double) totalcnt);
 						int nx = (int) Math.ceil(prop * iaa);
-						ps.setInt(1, iaa_id);
-						ps.setInt(4, nx);
-						ps.execute();
+						ps_assign.setInt(1, iaa_id);
+						ps_assign.setInt(2, nx);
+						ps_assign.execute();
 						cnt -= nx;
 					}
 
 					if(ntasks > 0 && cnt > 0) {
 						int nx = (int) Math.ceil(((double) cnt) / ((double) ntasks));
-						ps.setInt(4, nx);
+						ps_assign.setInt(2, nx);
 						for(int i = 0; i < ntasks; i++) {
-							ps.setInt(1, Integer.valueOf(task_ids[i]));
-							ps.execute();
+							ps_assign.setInt(1, Integer.valueOf(task_ids[i]));
+							ps_assign.execute();
 						}
 					}
 				}
