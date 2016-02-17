@@ -132,9 +132,9 @@ public class ProtestGUI implements Runnable, ActionListener {
 		else if(cmd.equals("assign-annotators"))
 			System.err.println("assign-annotators not implemented");
 		else if(cmd.equals("create-batch"))
-			System.err.println("create-batch not implemented");
+			createAnnotationBatch();
 		else if(cmd.equals("import-batch"))
-			System.err.println("import-batch not implemented");
+			importAnnotationBatch();
 		else if(cmd.startsWith("display")) {
 			String[] idx = cmd.split(" ");
 			currentCategory_ = Integer.parseInt(idx[1]);
@@ -143,6 +143,14 @@ public class ProtestGUI implements Runnable, ActionListener {
 			instWindow_.setData(categories_.get(currentCategory_).getLabel(), categories_.get(currentCategory_).getExamples(grp));
 			instWindow_.setVisible(true);
 		}
+	}
+
+	private void createAnnotationBatch() {
+		System.err.println("create-batch not implemented");
+	}
+
+	private void importAnnotationBatch() {
+		System.err.println("import-batch not implemented");
 	}
 
 	public void refresh() {
