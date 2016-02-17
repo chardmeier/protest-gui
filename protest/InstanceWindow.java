@@ -340,16 +340,13 @@ public class InstanceWindow implements ActionListener {
 			if(!force && !confirmConflict(conflictList)) 
 				return false;
 
-			System.err.println("Saving annotations.");
 			dirty_ = false; // set this now in case we get called again from an exit hook
 			current_.setRemarks(remarksField_.getText());
 			current_.saveAnnotations(annotator_, encodeConflictType(conflictList));
 			categorySelector_.refresh();
-			return true;
-		} else {
-			System.err.println("No need to save annotations.");
-			return true;
 		}
+
+		return true;
 	}
 
 	private void setContext() {
