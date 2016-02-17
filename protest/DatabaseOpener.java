@@ -34,6 +34,13 @@ public class DatabaseOpener implements PropertyChangeListener {
 			}
 	}
 
+	public String save() {
+		if(fileChooser_.showSaveDialog(null) != JFileChooser.APPROVE_OPTION)
+			return null;
+		else
+			return fileChooser_.getSelectedFile().toString();
+	}
+
 	public void propertyChange(PropertyChangeEvent e) {
 		String prop = e.getPropertyName();
 		if(prop.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
