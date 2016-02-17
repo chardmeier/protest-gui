@@ -180,7 +180,7 @@ public class Database {
 
 			int[] task_ids = new int[ntasks];
 			for(int i = 0; i < ntasks; i++) {
-				ps_descr.setString(2, Integer.toString(i));
+				ps_descr.setString(2, Integer.toString(i + 1));
 				ps_descr.execute();
 				ResultSet rs = ps_descr.getGeneratedKeys();
 				rs.next();
