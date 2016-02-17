@@ -84,7 +84,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 		taskSpinnerModel_ = new SpinnerNumberModel(1, 1, 1, 1);
 		settingsPanel.add(new JSpinner(taskSpinnerModel_));
 
-		settingsPanel.add(new JLabel("IAA set size:"));
+		settingsPanel.add(new JLabel("IAA set size (approximate):"));
 		iaaSpinnerModel_ = new SpinnerNumberModel(0, 0, 0, 1);
 		settingsPanel.add(new JSpinner(iaaSpinnerModel_));
 
