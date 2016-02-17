@@ -188,6 +188,7 @@ public class TaskDefinitionWindow implements ActionListener, ListSelectionListen
 				return;
 
 		db_.createAnnotationTasks(label, tgtcorpora, categories, ntasks, iaa);
+		setVisible(false);
 	}
 
 	private void reset() {
