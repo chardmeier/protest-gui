@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -79,7 +80,13 @@ public class ProtestGUI implements Runnable, ActionListener {
 			toolbar.add(importBatchButton);
 		} else {
 			String ann = String.format("Annotation batch for annotator %s", db_.getMetadata("annotator_name"));
-			frame_.getContentPane().add(new JLabel(ann), BorderLayout.PAGE_START);
+			JLabel annLabel = new JLabel(ann, JLabel.CENTER);
+			annLabel.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(5, 5, 5, 5),
+						BorderFactory.createCompoundBorder(
+							BorderFactory.createRaisedBevelBorder(),
+							BorderFactory.createLoweredBevelBorder())));
+			frame_.getContentPane().add(annLabel, BorderLayout.PAGE_START);
 		}
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
