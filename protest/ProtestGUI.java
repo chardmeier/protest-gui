@@ -54,28 +54,30 @@ public class ProtestGUI implements Runnable, ActionListener {
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		((BorderLayout) frame_.getContentPane().getLayout()).setVgap(15);
 		
-		JToolBar toolbar = new JToolBar("Protest GUI");
-		frame_.getContentPane().add(toolbar, BorderLayout.PAGE_START);
+		if(db_.isMasterDB()) {
+			JToolBar toolbar = new JToolBar("Protest GUI");
+			frame_.getContentPane().add(toolbar, BorderLayout.PAGE_START);
 
-		JButton defineTaskButton = new JButton("Define Tasks");
-		defineTaskButton.setActionCommand("define-tasks");
-		defineTaskButton.addActionListener(this);
-		toolbar.add(defineTaskButton);
+			JButton defineTaskButton = new JButton("Define Tasks");
+			defineTaskButton.setActionCommand("define-tasks");
+			defineTaskButton.addActionListener(this);
+			toolbar.add(defineTaskButton);
 
-		JButton assignButton = new JButton("Assign to Annotators");
-		assignButton.setActionCommand("assign-annotators");
-		assignButton.addActionListener(this);
-		toolbar.add(assignButton);
+			JButton assignButton = new JButton("Assign to Annotators");
+			assignButton.setActionCommand("assign-annotators");
+			assignButton.addActionListener(this);
+			toolbar.add(assignButton);
 
-		JButton createBatchButton = new JButton("Create Batch");
-		createBatchButton.setActionCommand("create-batch");
-		createBatchButton.addActionListener(this);
-		toolbar.add(createBatchButton);
+			JButton createBatchButton = new JButton("Create Batch");
+			createBatchButton.setActionCommand("create-batch");
+			createBatchButton.addActionListener(this);
+			toolbar.add(createBatchButton);
 
-		JButton importBatchButton = new JButton("Import Batch");
-		importBatchButton.setActionCommand("import-batch");
-		importBatchButton.addActionListener(this);
-		toolbar.add(importBatchButton);
+			JButton importBatchButton = new JButton("Import Batch");
+			importBatchButton.setActionCommand("import-batch");
+			importBatchButton.addActionListener(this);
+			toolbar.add(importBatchButton);
+		}
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		frame_.getContentPane().add(mainPanel, BorderLayout.CENTER);

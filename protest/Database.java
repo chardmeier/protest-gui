@@ -143,6 +143,10 @@ public class Database {
 		return metadata;
 	}
 
+	public boolean isMasterDB() {
+		return getMetadata().get("file_type").equals("master");
+	}
+
 	public boolean tasksetExists(String label) {
 		try {
 			PreparedStatement ps = db_.prepareStatement("select count(*) from task_definition where taskset=?");
