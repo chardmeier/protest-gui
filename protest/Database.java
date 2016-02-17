@@ -219,7 +219,7 @@ public class Database {
 
 					if(iaa > 0) {
 						double prop = ((double) cnt) / ((double) totalcnt);
-						int nx = (int) Math.ceil(prop * iaa);
+						int nx = Math.max(1, (int) Math.round(prop * iaa));
 						ps_assign.setInt(1, iaa_id);
 						ps_assign.setInt(2, nx);
 						ps_assign.execute();
