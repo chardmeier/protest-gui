@@ -50,7 +50,7 @@ public class Database {
 					"from categories as c left outer join pro_candidates as p on c.id=p.category_no " +
 						"left outer join annotations as a on p.id=a.candidate " +
 					whereClause + " " +
-					"order by description, conflict_status");
+					"order by description, conflict_status, sequence_no");
 			int lastcat = -1;
 			AnnotationCategory catobj = null;
 			while(rs.next()) {
