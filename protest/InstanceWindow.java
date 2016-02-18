@@ -310,9 +310,9 @@ public class InstanceWindow implements ActionListener {
 			}
 			switch (conflictList[1]) {
 				case 0: break;
-				case 1: conflictMessage += "ANTECEDENT: Pronoun translation marked as OK, but no tokens selected.\n";
+				case 1: conflictMessage += "ANTECEDENT: Antecedent head translation marked as OK, but no tokens selected.\n";
 					break;
-				case 2: conflictMessage += "ANTECEDENT: Tokens selected, but pronoun translation not marked as OK.\n";
+				case 2: conflictMessage += "ANTECEDENT: Tokens selected, but antecedent head translation not marked as OK.\n";
 					break;
 				default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
 					break;
