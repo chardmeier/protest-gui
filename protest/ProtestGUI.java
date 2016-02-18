@@ -60,7 +60,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 
 	public void run() {
 		frame_ = new JFrame(db_.getName());
-		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame_.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		((BorderLayout) frame_.getContentPane().getLayout()).setVgap(15);
 		
 		if(db_.getMetadata("file_type").equals("master")) {
