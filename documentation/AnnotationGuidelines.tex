@@ -127,9 +127,9 @@ To exit the PROTEST manual annotation tool, click on the \textbf{Quit} button in
 \section{Annotation Task Overview}
 The aim of the annotation task is to assess the ability of MT systems to translated pronouns, and to create a corpus of acceptable translations of pronouns.
 
-You will be asked to indicate, for each example you are shown, whether the pronoun is translated correctly. In the case of anaphoric pronouns, you will also be asked to assess the translation of the pronoun's antecedent. For those translations marked as ``correct'', you will also be asked to select the minimum set of tokens that constitute a correct translation.
+You will be asked to indicate, for each example you are shown, whether the pronoun is translated correctly. In the case of anaphoric pronouns, you will also be asked to assess the translation of the pronoun's antecedent head. For those translations marked as ``correct'', you will also be asked to select the minimum set of tokens that constitute a correct translation.
 
-We are not interested in the correctness of the other words in the translated sentences, except where this makes it impossible to assess the correctness of the pronoun and antecedent translations.
+We are not interested in the correctness of the other words in the translated sentences, except where this makes it impossible to assess the correctness of the pronoun and antecedent head translations.
 
 Please familiarise yourself with the annotation guidelines before starting the annotation task.
 
@@ -173,11 +173,11 @@ If the pronoun is anaphoric, you will need to consider both the translation of t
     \item If the pronoun or the antecedent head are present in the translation output but is not highlighted (i.e. a bad alignment), do not attempt to annotate the example. Instead, add a comment to the \textbf{remarks box}
   \end{itemize}  
   \item Select the minimum number of blue highlighted tokens that constitutes a correct translation of the source-language antecedent head. To select a token, click on it. The token highlight will change to a darker shad of blue, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a blue highlight
-  \item Second, answer the question: ``Pronoun Correctly Translated (given antecedent)?'' using the ``yes/no'' options in the \textbf{annotation panel}
+  \item Second, answer the question: ``Pronoun Correctly Translated (given antecedent head)?'' using the ``yes/no'' options in the \textbf{annotation panel}
   \begin{itemize}
-    \item A correctly translated pronoun is one that \textit{is compatible} with the translation of the antecedent head, regardless of whether the antecedent is translated correctly
+    \item A correctly translated pronoun is one that \textit{is compatible} with the translation of the antecedent head, regardless of whether the antecedent head is translated correctly
   \end{itemize}
-  \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun (given the antecedent)
+  \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun (given the antecedent head)
 \end{itemize}
 
 
@@ -193,11 +193,11 @@ There are a number of scenarios which give rise to warnings about conflicting an
   \item Anaphoric pronouns only:
   \begin{itemize}
     \item Antecedent is marked as correct, but no tokens are selected in the translation output
-    \item Tokens are selected in the translation output of the antecedent, but the antecedent is not marked as correct 
+    \item Tokens are selected in the translation output of the antecedent head, but the antecedent head is not marked as correct 
   \end{itemize}
 \end{itemize}
 
-In the case of anaphoric pronouns, conflicts may exist in the annotation of the pronoun, its antecedent, or both.
+In the case of anaphoric pronouns, conflicts may exist in the annotation of the pronoun, its antecedent head, or both.
 
 
 \end{document}
