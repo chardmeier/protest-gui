@@ -269,7 +269,7 @@ public class InstanceWindow implements ActionListener {
 			antOK_.setSelected(true);
 		else if(antecedentAnnotation.equals("bad"))
 			antBad_.setSelected(true);
-		else if(antecedentAnnotation.isEmpty())
+		else if(antecedentAnnotation.equals("unset"))
 			antUnset_.setSelected(true);
 		else {
 			System.err.println("Unknown antecedent annotation: " + antecedentAnnotation);
@@ -281,7 +281,7 @@ public class InstanceWindow implements ActionListener {
 			prnOK_.setSelected(true);
 		else if(anaphorAnnotation.equals("bad"))
 			prnBad_.setSelected(true);
-		else if(anaphorAnnotation.isEmpty())
+		else if(anaphorAnnotation.equals("unset"))
 			prnUnset_.setSelected(true);
 		else {
 			System.err.println("Unknown anaphor annotation: " + anaphorAnnotation);

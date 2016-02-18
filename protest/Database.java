@@ -492,8 +492,8 @@ public class Database {
 
 	public static void main(String[] args) throws SQLException {
 		Database db = new Database(args[0]);
-		db.createAnnotationBatch(args[0] + ".batch1", 1, new int[] { 1, 2 });
-		db.createAnnotationBatch(args[0] + ".batch2", 2, new int[] { 1, 3 });
+		db.createAnnotationBatch(args[0] + ".batchMiryam", 1, new int[] { 1 });
+		db.createAnnotationBatch(args[0] + ".batchMarie", 2, new int[] { 1 });
 	}
 }
 

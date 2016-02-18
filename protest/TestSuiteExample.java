@@ -234,8 +234,8 @@ public class TestSuiteExample {
 			if(res.next())
 				System.err.println("Warning: Multiple annotation records for candidate ID " + candidate_id_);
 		} else {
-			antecedentAnnotation_ = "";
-			anaphorAnnotation_ = "";
+			antecedentAnnotation_ = "unset";
+			anaphorAnnotation_ = "unset";
 			remarks_ = "";
 		}
 
@@ -266,7 +266,38 @@ public class TestSuiteExample {
 			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
 			stmt.execute();
+			
+			stmt = connection_.prepareStatement(
+				"delete from token_annotations where candidate=? and annotator_id=?");
+			stmt.setInt(1, candidate_id_);
+			stmt.setInt(2, annotator);
+			stmt.execute();
+			
+			boolean hasTokenAnnotations = false;
+			
+			stmt = connection_.prepareStatement(
+				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
+				"values (?, ?, ?, ?, ?)");
+			stmt.setInt(1, candidate_id_);
+			stmt.setInt(2, annotator);
+			for(int i = 0; i < approvedTokens_.size(); i++)
+				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
+					String app = approvedTokens_.get(i)[j];
+					if(app == null || app.isEmpty())
+						continue;
+					hasTokenAnnotations = true;
+					stmt.setInt(3, firstLine_ + i);
+					stmt.setInt(4, j);
+					stmt.setString(5, approvedTokens_.get(i)[j]);
+					stmt.execute();
+				}
 
+			if(antecedentAnnotation_.equals("unset") && anaphorAnnotation_.equals("unset") &&
+			   remarks_.isEmpty() && !hasTokenAnnotations) {
+				connection_.commit();
+				return;
+			}
+			
 			stmt = connection_.prepareStatement(
 				"insert into annotations (candidate, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
 				"values (?, ?, ?, ?, ?, ?)");
@@ -278,27 +309,6 @@ public class TestSuiteExample {
 			stmt.setString(6, conflictStatus);
 			stmt.execute();
 
-			stmt = connection_.prepareStatement(
-				"delete from token_annotations where candidate=? and annotator_id=?");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			stmt.execute();
-
-			stmt = connection_.prepareStatement(
-				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
-				"values (?, ?, ?, ?, ?)");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			for(int i = 0; i < approvedTokens_.size(); i++)
-				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
-					String app = approvedTokens_.get(i)[j];
-					if(app == null || app.isEmpty())
-						continue;
-					stmt.setInt(3, firstLine_ + i);
-					stmt.setInt(4, j);
-					stmt.setString(5, approvedTokens_.get(i)[j]);
-					stmt.execute();
-				}
 
 			connection_.commit();
 		} catch(SQLException e) {
