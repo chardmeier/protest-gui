@@ -18,8 +18,8 @@
 % \geometry{margin=2in} % for example, change the margins to 2 inches all round
 % \geometry{landscape} % set up the page for landscape
 %   read geometry.pdf for detailed page layout information
-\addtolength{\topmargin}{-.875in}
-\addtolength{\textheight}{1.75in}
+\addtolength{\topmargin}{-1in}
+\addtolength{\textheight}{2in}
 
 \usepackage{graphicx} % support the \includegraphics command and options
 
@@ -66,12 +66,12 @@
 \section{Introduction}
 \textit{PROTEST} is a pronoun test suite, designed to enable researchers to evaluate their Machine Translation (MT) systems on the specific task of pronoun translation. The test suite comprises:
 \begin{itemize}
-  \item A set of hand-selected pronoun tokens, categorised according to a number of features
+  \item 250 hand-selected pronoun tokens, categorised according to a number of features
   \item An automatic evaluation script
   \item A graphical user interface (GUI), which may be used to:
   \begin{itemize}
     \item Browse the translations of the set of hand-selected pronoun tokens
-    \item Manually annotate those pronoun tokens which cannot be evaluated automatically
+    \item Manually annotate pronoun tokens that cannot be evaluated automatically
   \end{itemize}
 \end{itemize}
 
@@ -84,16 +84,33 @@ To run the PROTEST manual annotation tool:
 \end{enumerate}
 
 \noindent
-This will open the \textbf{PROTEST Browser window} (see Figure \ref{fig:BrowserWindow}).
+This will open the \textbf{Database Selection window} (see Figure \ref{fig:DatabaseWindow}).
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.99\textwidth]{PROTESTBrowserWindow.png}
-    \caption{PROTEST Browser window}
-    \label{fig:BrowserWindow}
+    \includegraphics[width=0.60\textwidth]{DatabaseSelectionWindow.png}
+    \caption{Database Selection window}
+    \label{fig:DatabaseWindow}
 \end{figure}
 
-Select on the system output + pronoun category combination entry that you wish to annotate. This will open the \textbf{Manual Annotation window} (see Figure \ref{fig:AnnotationWindow}).
+Browse to and select the database that contains the annotation task that you wish to work on. Click on the \textbf{Open} button.
+
+The \textbf{Batch Selection window} will open (see Figure \ref{fig:BatchWindow}). The \textbf{Batch Selection window} displays a list of pronoun categories and a set of buttons for each:
+
+\begin{itemize}
+  \item New: unannotated pronouns
+  \item Done: annotated pronouns
+  \item Conflict: pronouns for which the annotations are conflicting (see Section \ref{ConflictingAnnotations})
+\end{itemize}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.85\textwidth]{BatchSelectionWindow.png}
+    \caption{Batch Selection window}
+    \label{fig:BatchWindow}
+\end{figure}
+
+Select the batch that you wish to annotate or review and click on the relevant button. This will open the \textbf{Manual Annotation window} (see Figure \ref{fig:AnnotationWindow}).
 
 \begin{figure}[h!]
     \centering
@@ -104,11 +121,22 @@ Select on the system output + pronoun category combination entry that you wish t
 
 Follow the annotation guidelines in Section \ref{AnnotationGuidelines} to complete the annotations. Your annotations will be saved automatically when you use the \textbf{Previous} and \textbf{Next} buttons to navigate between pronoun tokens in the set, or when you close the \textbf{Manual Annotation window}.
 
-To exit the PROTEST manual annotation tool, click on the \textbf{Quit} button in the \textbf{PROTEST Browser window}.
+To exit the PROTEST manual annotation tool, click on the \textbf{Quit} button in the \textbf{Batch Selection window}.
+
+
+\section{Annotation Task Overview}
+The aim of the annotation task is to assess the ability of MT systems to translated pronouns, and to create a corpus of acceptable translations of pronouns.
+
+You will be asked to indicate, for each example you are shown, whether the pronoun is translated correctly. In the case of anaphoric pronouns, you will also be asked to assess the translation of the pronoun's antecedent. For those translations marked as ``correct'', you will also be asked to select the minimum set of tokens that constitute a correct translation.
+
+We are not interested in the correctness of the other words in the translated sentences, except where this makes it impossible to assess the correctness of the pronoun and antecedent translations.
+
+Please familiarise yourself with the annotation guidelines before starting the annotation task.
+
 
 \section{Annotation Guidelines}
 \label{AnnotationGuidelines}
-Select a batch of pronoun tokens from the \textbf{PROTEST Browser window}, for the desired MT system and pronoun category. The \textbf{Manual Annotation window} will appear. For each highlighted pronoun token, read the source-language text (top frame) and the MT system output (bottom frame). Consider the translation of the source-language pronoun token that is highlighted in yellow. If the source-language pronoun was translated by the MT system, the translation (consisting of one or more tokens) in the MT system output will also be highlighted in yellow.
+Select a batch of pronoun tokens from the \textbf{Batch Selection window}, for the desired MT system and pronoun category. The \textbf{Manual Annotation window} will appear. For each highlighted pronoun token, read the source-language text (top frame) and the MT system output (bottom frame). Consider the translation of the source-language pronoun token that is highlighted in yellow. If the source-language pronoun was translated by the MT system, the translation (consisting of one or more tokens) in the MT system output will also be highlighted in yellow.
 
 Complete the annotation of each pronoun instance using the following guidelines:
 
@@ -154,7 +182,8 @@ If the pronoun is anaphoric, you will need to consider both the translation of t
 
 
 \section{Conflicting Annotations}
-There are a number of scenarios which give rise to conflicting annotations:
+\label{ConflictingAnnotations}
+There are a number of scenarios which give rise to warnings about conflicting annotations:
 \begin{itemize}
   \item All pronouns:
   \begin{itemize}
