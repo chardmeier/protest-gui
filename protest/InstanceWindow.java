@@ -112,7 +112,7 @@ public class InstanceWindow implements ActionListener {
 		instructionPanel_.setLayout(new FlowLayout(FlowLayout.LEFT));
 		frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
 		instructionLabel_ = new JLabel("");
-		instructionLabel_.setText("<html><b>All pronouns:</b> mark whether the pronoun is correctly translated, and select the minimum number of tokens necessary for a correct translation.<br><b>Anaphoric pronouns only:</b> mark whether the antecedent is correctly translated, and whether the pronoun translation is correct given the antecedent.<br>Select the minimum number of tokens necessary for a correct translation of both antecedent and pronoun.</html>");
+		instructionLabel_.setText("<html><b>All pronouns:</b> mark whether the pronoun is correctly translated, and select the minimum number of tokens necessary for a correct translation.<br><b>Anaphoric pronouns only:</b> mark whether the antecedent head is correctly translated, and whether the pronoun translation is correct given the antecedent head.<br>Select the minimum number of tokens necessary for a correct translation of both antecedent and pronoun.</html>");
 		instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
 		
 		// Source and target context
@@ -193,7 +193,7 @@ public class InstanceWindow implements ActionListener {
 		antButtonPanel_.add(antBad_);
 		antButtonPanel_.add(antUnset_);
 		
-		antLabel_ = new JLabel("Antecedent correctly translated?", JLabel.CENTER);
+		antLabel_ = new JLabel("Antecedent head correctly translated?", JLabel.CENTER);
 		annotationPanel_.add(antLabel_);
 		annotationPanel_.add(antButtonPanel_);
 
