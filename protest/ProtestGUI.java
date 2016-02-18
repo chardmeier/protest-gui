@@ -35,7 +35,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 		db_ = new DatabaseOpener().open();
 		if(db_ == null)
 			System.exit(0);
-		instWindow_ = new InstanceWindow(this, 0);
+		instWindow_ = new InstanceWindow(this, getAnnotatorID());
 		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
 
@@ -46,10 +46,18 @@ public class ProtestGUI implements Runnable, ActionListener {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		instWindow_ = new InstanceWindow(this, 0);
+		instWindow_ = new InstanceWindow(this, getAnnotatorID());
 		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
    
+	public int getAnnotatorID() {
+		String id = db_.getMetadata("annotator_id");
+		if(id.isEmpty())
+			return 0;
+		else
+			return Integer.parseInt(id);
+	}
+
 	public void run() {
 		frame_ = new JFrame(db_.getName());
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
