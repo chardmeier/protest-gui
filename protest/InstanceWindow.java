@@ -448,7 +448,7 @@ public class InstanceWindow implements ActionListener {
 			antButtonPanel_.setVisible(true);
 			antLabel_.setVisible(true);
 			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
-							  "(given antecedent)?</div></html>");
+							  "(given antecedent head)?</div></html>");
 		}
 		else {
 			//annotationPanel_.setVisible(false);
