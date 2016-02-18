@@ -229,6 +229,8 @@ public class InstanceWindow implements ActionListener {
 		//remarksField_.setBorder(BorderFactory.createLineBorder(Color.black));
 		remarksField_.setBorder(BorderFactory.createTitledBorder("Remarks:"));
 		remarksField_.setEditable(true);
+		remarksField_.setLineWrap(true);
+		remarksField_.setWrapStyleWord(true);
 		remarksField_.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				update(e);
