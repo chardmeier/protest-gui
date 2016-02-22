@@ -32,9 +32,15 @@ public class ProtestGUI implements Runnable, ActionListener {
 	private ArrayList<JButton> catButtons_;
 
 	public ProtestGUI() {
-		db_ = new DatabaseOpener().open();
-		if(db_ == null)
-			System.exit(0);
+		try {
+			String dbname = new DatabaseOpener().open();
+			if(dbname == null)
+				System.exit(0);
+			db_ = new Database(dbname);
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		instWindow_ = new InstanceWindow(this, getAnnotatorID());
 		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}

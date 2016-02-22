@@ -22,16 +22,11 @@ public class DatabaseOpener implements PropertyChangeListener {
 		fileChooser_.addPropertyChangeListener(this);
 	}
 
-	public Database open() {
+	public String open() {
 		if(fileChooser_.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 			return null;
 		else
-			try {
-				return new Database(fileChooser_.getSelectedFile().toString());
-			} catch(SQLException e) {
-				e.printStackTrace();
-				return null;
-			}
+			return (fileChooser_.getSelectedFile().toString());
 	}
 
 	public String save() {
