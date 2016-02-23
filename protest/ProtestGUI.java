@@ -203,12 +203,12 @@ public class ProtestGUI implements Runnable, ActionListener {
 				String importMsg = "Unable to import annotator database: " + rep.getMessage();
 				JOptionPane.showMessageDialog(null, importMsg);
 			}
-		}
-		catch(SQLException e) {
+		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 
+		refresh();
 	}
 
 	public void refresh() {
