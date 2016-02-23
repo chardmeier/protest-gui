@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TestSuiteExample {
-	private Connection connection_;
+	private Database db_;
 	
 	// id in the pro_candidates table, uniquely identifying a
 	// (srccorpus, tgtcorpus, example_no) combination
@@ -40,8 +40,8 @@ public class TestSuiteExample {
 	private String remarks_;
 	private List<String[]> approvedTokens_;
 
-	public TestSuiteExample(Connection conn, int srccorpus, int tgtcorpus, int example_no) {
-		connection_ = conn;
+	public TestSuiteExample(Database db, int srccorpus, int tgtcorpus, int example_no) {
+		db_ = db;
 		srccorpus_ = srccorpus;
 		tgtcorpus_ = tgtcorpus;
 		example_no_ = example_no;
@@ -141,7 +141,7 @@ public class TestSuiteExample {
 	}
 
 	private Position retrieveAnaphorSourcePosition() throws SQLException {
-		PreparedStatement stmt = connection_.prepareStatement(
+		PreparedStatement stmt = db_.getConnection().prepareStatement(
 			"select id, line, srcpos from pro_candidates " +
 			"where srccorpus=? and tgtcorpus=? and example_no=?");
 		stmt.setInt(1, srccorpus_);
@@ -156,7 +156,7 @@ public class TestSuiteExample {
 	}
 
 	private List<Position> retrieveAntecedentSourcePositions() throws SQLException {
-		PreparedStatement stmt = connection_.prepareStatement(
+		PreparedStatement stmt = db_.getConnection().prepareStatement(
 			"select line, srcheadpos from pro_antecedents " +
 			"where srccorpus=? and tgtcorpus=? and example_no=? " +
 			"order by line, srcheadpos");
@@ -175,7 +175,7 @@ public class TestSuiteExample {
 	}
 
 	private List<Position> retrieveAnaphorTargetPositions() throws SQLException {
-		PreparedStatement stmt = connection_.prepareStatement(
+		PreparedStatement stmt = db_.getConnection().prepareStatement(
 			"select line, tgtpos from translations " +
 			"where tgtcorpus=? and example_no=? and ant_no is null " +
 			"order by line, tgtpos");
@@ -192,7 +192,7 @@ public class TestSuiteExample {
 	}
 
 	private List<Position> retrieveAntecedentTargetPositions() throws SQLException {
-		PreparedStatement stmt = connection_.prepareStatement(
+		PreparedStatement stmt = db_.getConnection().prepareStatement(
 			"select line, tgtpos from translations " +
 			"where tgtcorpus=? and example_no=? and ant_no is not null " +
 			"order by line, tgtpos");
@@ -210,7 +210,7 @@ public class TestSuiteExample {
 
 	private List<String> retrieveSentences(int corpus, int minsnt, int maxsnt)
 			throws SQLException {
-		PreparedStatement stmt = connection_.prepareStatement(
+		PreparedStatement stmt = db_.getConnection().prepareStatement(
 			"select sentence from sentences where corpus=? and line between ? and ? order by line");
 		stmt.setInt(1, corpus);
 		stmt.setInt(2, minsnt);
@@ -223,7 +223,7 @@ public class TestSuiteExample {
 	}
 
 	private void loadAnnotations() throws SQLException {
-		PreparedStatement stmt = connection_.prepareStatement(
+		PreparedStatement stmt = db_.getConnection().prepareStatement(
 			"select ant_annotation, anaph_annotation, remarks from annotations where candidate=?");
 		stmt.setInt(1, candidate_id_);
 		ResultSet res = stmt.executeQuery();
@@ -246,7 +246,7 @@ public class TestSuiteExample {
 			approvedTokens_.add(new String[t.length]);
 		}
 
-		stmt = connection_.prepareStatement(
+		stmt = db_.getConnection().prepareStatement(
 			"select line, token, annotation from token_annotations where candidate=?");
 		stmt.setInt(1, candidate_id_);
 		res = stmt.executeQuery();
@@ -258,16 +258,18 @@ public class TestSuiteExample {
 	}
 
 	public void saveAnnotations(int annotator, String conflictStatus) {
+		Connection conn = null;
 		try {
-			connection_.setAutoCommit(false);
+			conn = db_.getConnection();
+			conn.setAutoCommit(false);
 
-			PreparedStatement stmt = connection_.prepareStatement(
+			PreparedStatement stmt = conn.prepareStatement(
 				"delete from annotations where candidate=? and annotator_id=?");
 			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
 			stmt.execute();
 			
-			stmt = connection_.prepareStatement(
+			stmt = conn.prepareStatement(
 				"delete from token_annotations where candidate=? and annotator_id=?");
 			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
@@ -275,7 +277,7 @@ public class TestSuiteExample {
 			
 			boolean hasTokenAnnotations = false;
 			
-			stmt = connection_.prepareStatement(
+			stmt = conn.prepareStatement(
 				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
 				"values (?, ?, ?, ?, ?)");
 			stmt.setInt(1, candidate_id_);
@@ -294,11 +296,11 @@ public class TestSuiteExample {
 
 			if(antecedentAnnotation_.equals("unset") && anaphorAnnotation_.equals("unset") &&
 			   remarks_.isEmpty() && !hasTokenAnnotations) {
-				connection_.commit();
+				conn.commit();
 				return;
 			}
 			
-			stmt = connection_.prepareStatement(
+			stmt = conn.prepareStatement(
 				"insert into annotations (candidate, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
 				"values (?, ?, ?, ?, ?, ?)");
 			stmt.setInt(1, candidate_id_);
@@ -310,11 +312,13 @@ public class TestSuiteExample {
 			stmt.execute();
 
 
-			connection_.commit();
+			conn.commit();
 		} catch(SQLException e) {
-			try {
-				connection_.rollback();
-			} catch(SQLException e2) {}
+			if(conn != null) {
+				try {
+					conn.rollback();
+				} catch(SQLException e2) {}
+			}
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -387,7 +391,7 @@ public class TestSuiteExample {
 	public boolean getAntecedentAgreementRequired() {
 		boolean agree = false;
 		try {
-			PreparedStatement stmt = connection_.prepareStatement(
+			PreparedStatement stmt = db_.getConnection().prepareStatement(
 				"select c.antagreement from categories as c " +
 				"left join pro_candidates as pe on pe.category_no = c.id " +
 				"where pe.srccorpus=? and pe.tgtcorpus=? and pe.example_no=?");

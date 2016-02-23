@@ -1,5 +1,7 @@
 package protest;
 
+import java.beans.PropertyVetoException;
+
 import java.io.File;
 
 import java.sql.Connection;
@@ -15,16 +17,36 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.sql.DataSource;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 import org.jdbcdslog.ConnectionLoggingProxy;
 
 public class Database {
-	private Connection db_;
+	private DataSource db_;
 	private String dbfile_;
 
 	public Database(String dbfile) throws SQLException {
-		Connection originalConnection = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
-		db_ = ConnectionLoggingProxy.wrap(originalConnection);
+		ComboPooledDataSource cpds = new ComboPooledDataSource();
+		try {
+			cpds.setDriverClass("org.sqlite.JDBC");
+			cpds.setJdbcUrl("jdbc:sqlite:" + dbfile);
+			cpds.setMinPoolSize(2);
+			cpds.setAcquireIncrement(2);
+			cpds.setMaxPoolSize(10);
+			cpds.setMaxStatements(50);
+		} catch(PropertyVetoException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		db_ = cpds;
+
 		dbfile_ = dbfile;
+	}
+
+	public Connection getConnection() throws SQLException {
+		return ConnectionLoggingProxy.wrap(db_.getConnection());
 	}
 
 	public String getName() {
@@ -46,7 +68,8 @@ public class Database {
 		ArrayList<AnnotationCategory> catlist = new ArrayList<AnnotationCategory>();
 
 		try {
-			Statement stmt = db_.createStatement();
+			Connection conn = getConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select c.id as category_no, c.description as description, " +
 						"a.conflict_status as conflict_status, p.example_no as example_no, " +
 						"p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus " +
@@ -72,7 +95,7 @@ public class Database {
 				int example_no = rs.getInt("example_no");
 
 				if(!rs.wasNull()) {
-					TestSuiteExample exmpl = new TestSuiteExample(db_, srccorpus, tgtcorpus, example_no);
+					TestSuiteExample exmpl = new TestSuiteExample(this, srccorpus, tgtcorpus, example_no);
 
 					if(conflict == null)
 						catobj.addExample(AnnotationCategory.NEW, exmpl);
@@ -95,7 +118,8 @@ public class Database {
 		ArrayList<TargetCorpus> crplist = new ArrayList<TargetCorpus>();
 
 		try {
-			Statement stmt = db_.createStatement();
+			Connection conn = getConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select corpora.id as id, corpora.name as name, count(*) as cnt " +
 					"from corpora, pro_candidates " +
 					"where corpora.id=pro_candidates.tgtcorpus group by name order by name");
@@ -115,7 +139,8 @@ public class Database {
 
 		int cnt = 0;
 		try {
-			Statement stmt = db_.createStatement();
+			Connection conn = getConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select count(*) from pro_candidates " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " " +
 					"and category_no in " + makeInList(categories));
@@ -129,7 +154,14 @@ public class Database {
 	}
 
 	public HashMap<String,String> getMetadata() {
-		return getMetadata(db_);
+		Connection conn = null;
+		try {
+			conn = getConnection();
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return getMetadata(conn);
 	}
 
 	private HashMap<String,String> getMetadata(Connection conn) {
@@ -149,7 +181,8 @@ public class Database {
 
 	public String getMetadata(String tag) {
 		try {
-			PreparedStatement ps = db_.prepareStatement("select tag_value from meta_data where tag=?");
+			Connection conn = getConnection();
+			PreparedStatement ps = conn.prepareStatement("select tag_value from meta_data where tag=?");
 			ps.setString(1, tag);
 			ResultSet rs = ps.executeQuery();
 			if(!rs.next())
@@ -165,7 +198,8 @@ public class Database {
 
 	public boolean tasksetExists(String label) {
 		try {
-			PreparedStatement ps = db_.prepareStatement("select count(*) from task_definition where taskset=?");
+			Connection conn = getConnection();
+			PreparedStatement ps = conn.prepareStatement("select count(*) from task_definition where taskset=?");
 			ps.setString(1, label);
 			ResultSet rs = ps.executeQuery();
 			rs.next();
@@ -179,12 +213,14 @@ public class Database {
 	}
 
 	public void createAnnotationTasks(String taskset, int[] tgtcorpora, int[] categories, int ntasks, int iaa) {
+		Connection conn = null;
 		try {
-			db_.setAutoCommit(false);
+			conn = getConnection();
+			conn.setAutoCommit(false);
 
-			Statement stmt = db_.createStatement();
+			Statement stmt = conn.createStatement();
 
-			PreparedStatement ps_descr = db_.prepareStatement(
+			PreparedStatement ps_descr = conn.prepareStatement(
 					"insert into task_definition (taskset, label) values (?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
 			ps_descr.setString(1, taskset);
@@ -223,9 +259,9 @@ public class Database {
 			// There shouldn't be any such records, but let's make sure.
 			stmt.execute("delete from annotation_tasks where task_no < 0");
 
-			PreparedStatement ps_select = db_.prepareStatement("insert into annotation_tasks (task_no, candidate) " +
+			PreparedStatement ps_select = conn.prepareStatement("insert into annotation_tasks (task_no, candidate) " +
 					"select -1, id from pro_candidates where tgtcorpus=? and category_no=?");
-		       	PreparedStatement ps_assign = db_.prepareStatement("update annotation_tasks set task_no=? " + 
+		       	PreparedStatement ps_assign = conn.prepareStatement("update annotation_tasks set task_no=? " + 
 					"where task_no=-1 and candidate in " +
 						"(select candidate from annotation_tasks where task_no=-1 order by random() limit ?)");
 			for(int corpus : tgtcorpora) {
@@ -257,11 +293,13 @@ public class Database {
 				}
 			}
 
-			db_.commit();
+			conn.commit();
 		} catch(SQLException e) {
-			try {
-				db_.rollback();
-			} catch(SQLException e2) {}
+			if(conn != null) {
+				try {
+					conn.rollback();
+				} catch(SQLException e2) {}
+			}
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -284,7 +322,7 @@ public class Database {
 			// connection that only has the new DB attached so we don't have to manipulate them
 			// to add DB identifiers.
 			Statement stmt = conn.createStatement();
-			Statement maindb_stmt = db_.createStatement();
+			Statement maindb_stmt = getConnection().createStatement();
 			ResultSet rs = maindb_stmt.executeQuery("select sql from sqlite_master " +
 					"where tbl_name not like 'sqlite_%' and sql is not null order by type desc");
 			while(rs.next())
@@ -396,7 +434,7 @@ public class Database {
 		try {
 			Connection conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
 
-			HashMap<String,String> mastermd = getMetadata(db_);
+			HashMap<String,String> mastermd = getMetadata(getConnection());
 			HashMap<String,String> annmd = getMetadata(conn);
 
 			if(!checkMetadata(mastermd, "file_type", "master")) {
