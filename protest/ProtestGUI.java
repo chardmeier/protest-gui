@@ -20,6 +20,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
+//For message dialogs
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 public class ProtestGUI implements Runnable, ActionListener {
 	private Database db_;
 	private List<AnnotationCategory> categories_;
@@ -176,7 +180,35 @@ public class ProtestGUI implements Runnable, ActionListener {
 	}
 
 	private void importAnnotationBatch() {
-		System.err.println("import-batch not implemented");
+		try {
+			// Get name of database to be imported
+			String dbname = new DatabaseOpener().open();
+			if(dbname == null)
+				System.exit(0);
+			// Get PrecheckReport object and test "canImport" (should be yes if compatible) and "shouldWarn"
+			PrecheckReport rep = db_.precheckAnnotationBatch(dbname);
+			// If PrecheckReport is ok, import annotations
+			JDialog.setDefaultLookAndFeelDecorated(true);
+			if (rep.canImport() == true) {
+				if (rep.shouldWarn() == true) {
+					int response = JOptionPane.showConfirmDialog(null, rep.getMessage(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+					if (response == JOptionPane.YES_OPTION) {
+						System.err.println("Importing...");
+						System.err.println(dbname);
+						db_.importAnnotationBatch(dbname);
+					}
+				}
+			}
+			else {
+				String importMsg = "Unable to import annotator database: " + rep.getMessage();
+				JOptionPane.showMessageDialog(null, importMsg);
+			}
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
 	}
 
 	public void refresh() {

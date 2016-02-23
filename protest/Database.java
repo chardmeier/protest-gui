@@ -15,12 +15,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.jdbcdslog.ConnectionLoggingProxy;
+
 public class Database {
 	private Connection db_;
 	private String dbfile_;
 
 	public Database(String dbfile) throws SQLException {
-		db_ = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
+		Connection originalConnection = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
+		db_ = ConnectionLoggingProxy.wrap(originalConnection);
 		dbfile_ = dbfile;
 	}
 
@@ -79,6 +82,7 @@ public class Database {
 						catobj.addExample(AnnotationCategory.CONFLICT, exmpl);
 				}
 			}
+			rs.close();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -399,7 +403,7 @@ public class Database {
 				ret.setError("Import target must be a master DB.");
 				return ret;
 			}
-			if(!checkMetadata(annmd, "file_type", "annotator")) {
+			if(!checkMetadata(annmd, "file_type", "annotation_batch")) {
 				ret.setError("Import source must be an annotator DB.");
 				return ret;
 			}
@@ -449,6 +453,7 @@ public class Database {
 	}
 
 	public void importAnnotationBatch(String infile) throws SQLException {
+		//db_.close();
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
 
 		try {
