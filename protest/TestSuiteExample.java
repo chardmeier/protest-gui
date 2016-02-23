@@ -141,134 +141,202 @@ public class TestSuiteExample {
 	}
 
 	private Position retrieveAnaphorSourcePosition() throws SQLException {
-		PreparedStatement stmt = db_.getConnection().prepareStatement(
-			"select id, line, srcpos from pro_candidates " +
-			"where srccorpus=? and tgtcorpus=? and example_no=?");
-		stmt.setInt(1, srccorpus_);
-		stmt.setInt(2, tgtcorpus_);
-		stmt.setInt(3, example_no_);
-		ResultSet res = stmt.executeQuery();
-		res.next();
-		candidate_id_ = res.getInt("id");
-		int line = res.getInt("line");
-		int srcpos = res.getInt("srcpos");
+		int line = -1;
+		int srcpos = -1;
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
+				"select id, line, srcpos from pro_candidates " +
+				"where srccorpus=? and tgtcorpus=? and example_no=?");
+			stmt.setInt(1, srccorpus_);
+			stmt.setInt(2, tgtcorpus_);
+			stmt.setInt(3, example_no_);
+			ResultSet res = stmt.executeQuery();
+			res.next();
+			candidate_id_ = res.getInt("id");
+			line = res.getInt("line");
+			srcpos = res.getInt("srcpos");
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
+		}
 		return new Position(line, srcpos, srcpos);
 	}
 
 	private List<Position> retrieveAntecedentSourcePositions() throws SQLException {
-		PreparedStatement stmt = db_.getConnection().prepareStatement(
-			"select line, srcheadpos from pro_antecedents " +
-			"where srccorpus=? and tgtcorpus=? and example_no=? " +
-			"order by line, srcheadpos");
-		stmt.setInt(1, srccorpus_);
-		stmt.setInt(2, tgtcorpus_);
-		stmt.setInt(3, example_no_);
-		ResultSet res = stmt.executeQuery();
 		ArrayList<Position> out = new ArrayList<Position>();
-		while(res.next()) {
-			int line = res.getInt("line");
-			int srcstartpos = res.getInt("srcheadpos");
-			int srcendpos = res.getInt("srcheadpos");
-			out.add(new Position(line, srcstartpos, srcendpos));
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
+				"select line, srcheadpos from pro_antecedents " +
+				"where srccorpus=? and tgtcorpus=? and example_no=? " +
+				"order by line, srcheadpos");
+			stmt.setInt(1, srccorpus_);
+			stmt.setInt(2, tgtcorpus_);
+			stmt.setInt(3, example_no_);
+			ResultSet res = stmt.executeQuery();
+			while(res.next()) {
+				int line = res.getInt("line");
+				int srcstartpos = res.getInt("srcheadpos");
+				int srcendpos = res.getInt("srcheadpos");
+				out.add(new Position(line, srcstartpos, srcendpos));
+			}
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 		return out;
 	}
 
 	private List<Position> retrieveAnaphorTargetPositions() throws SQLException {
-		PreparedStatement stmt = db_.getConnection().prepareStatement(
-			"select line, tgtpos from translations " +
-			"where tgtcorpus=? and example_no=? and ant_no is null " +
-			"order by line, tgtpos");
-		stmt.setInt(1, tgtcorpus_);
-		stmt.setInt(2, example_no_);
-		ResultSet res = stmt.executeQuery();
 		ArrayList<Position> out = new ArrayList<Position>();
-		while(res.next()) {
-			int line = res.getInt("line");
-			int tgtpos = res.getInt("tgtpos");
-			out.add(new Position(line, tgtpos, tgtpos));
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
+				"select line, tgtpos from translations " +
+				"where tgtcorpus=? and example_no=? and ant_no is null " +
+				"order by line, tgtpos");
+			stmt.setInt(1, tgtcorpus_);
+			stmt.setInt(2, example_no_);
+			ResultSet res = stmt.executeQuery();
+			while(res.next()) {
+				int line = res.getInt("line");
+				int tgtpos = res.getInt("tgtpos");
+				out.add(new Position(line, tgtpos, tgtpos));
+			}
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
+
 		return out;
 	}
 
 	private List<Position> retrieveAntecedentTargetPositions() throws SQLException {
-		PreparedStatement stmt = db_.getConnection().prepareStatement(
-			"select line, tgtpos from translations " +
-			"where tgtcorpus=? and example_no=? and ant_no is not null " +
-			"order by line, tgtpos");
-		stmt.setInt(1, tgtcorpus_);
-		stmt.setInt(2, example_no_);
-		ResultSet res = stmt.executeQuery();
 		ArrayList<Position> out = new ArrayList<Position>();
-		while(res.next()) {
-			int line = res.getInt("line");
-			int tgtpos = res.getInt("tgtpos");
-			out.add(new Position(line, tgtpos, tgtpos));
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
+				"select line, tgtpos from translations " +
+				"where tgtcorpus=? and example_no=? and ant_no is not null " +
+				"order by line, tgtpos");
+			stmt.setInt(1, tgtcorpus_);
+			stmt.setInt(2, example_no_);
+			ResultSet res = stmt.executeQuery();
+			while(res.next()) {
+				int line = res.getInt("line");
+				int tgtpos = res.getInt("tgtpos");
+				out.add(new Position(line, tgtpos, tgtpos));
+			}
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
+
 		return out;
 	}
 
 	private List<String> retrieveSentences(int corpus, int minsnt, int maxsnt)
 			throws SQLException {
-		PreparedStatement stmt = db_.getConnection().prepareStatement(
-			"select sentence from sentences where corpus=? and line between ? and ? order by line");
-		stmt.setInt(1, corpus);
-		stmt.setInt(2, minsnt);
-		stmt.setInt(3, maxsnt);
-		ResultSet res = stmt.executeQuery();
 		ArrayList<String> out = new ArrayList<String>();
-		while(res.next())
-			out.add(res.getString(1));
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
+				"select sentence from sentences where corpus=? and line between ? and ? order by line");
+			stmt.setInt(1, corpus);
+			stmt.setInt(2, minsnt);
+			stmt.setInt(3, maxsnt);
+			ResultSet res = stmt.executeQuery();
+			while(res.next())
+				out.add(res.getString(1));
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
+		}
+
 		return out;
 	}
 
 	private void loadAnnotations() throws SQLException {
-		PreparedStatement stmt = db_.getConnection().prepareStatement(
-			"select ant_annotation, anaph_annotation, remarks from annotations where candidate=?");
-		stmt.setInt(1, candidate_id_);
-		ResultSet res = stmt.executeQuery();
-		if(res.next()) {
-			antecedentAnnotation_ = res.getString(1);
-			anaphorAnnotation_ = res.getString(2);
-			remarks_ = res.getString(3);
-			if(res.next())
-				System.err.println("Warning: Multiple annotation records for candidate ID " + candidate_id_);
-		} else {
-			antecedentAnnotation_ = "unset";
-			anaphorAnnotation_ = "unset";
-			remarks_ = "";
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
+				"select ant_annotation, anaph_annotation, remarks from annotations where candidate=?");
+			stmt.setInt(1, candidate_id_);
+			ResultSet res = stmt.executeQuery();
+			if(res.next()) {
+				antecedentAnnotation_ = res.getString(1);
+				anaphorAnnotation_ = res.getString(2);
+				remarks_ = res.getString(3);
+				if(res.next())
+					System.err.println("Warning: Multiple annotation records for candidate ID " + candidate_id_);
+			} else {
+				antecedentAnnotation_ = "unset";
+				anaphorAnnotation_ = "unset";
+				remarks_ = "";
+			}
+
+			int nsent = lastLine_ - firstLine_ + 1;
+			approvedTokens_ = new ArrayList<String[]>(nsent);
+			for(int i = 0; i < nsent; i++) {
+				String[] t = targetSentences_.get(i).split(" ");
+				approvedTokens_.add(new String[t.length]);
+			}
+
+			stmt.close();
+			stmt = conn.prepareStatement(
+				"select line, token, annotation from token_annotations where candidate=?");
+			stmt.setInt(1, candidate_id_);
+			res = stmt.executeQuery();
+			while(res.next()) {
+				int line = res.getInt(1) - firstLine_;
+				int token = res.getInt(2);
+				approvedTokens_.get(line)[token] = res.getString(3);
+			}
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 
-		int nsent = lastLine_ - firstLine_ + 1;
-		approvedTokens_ = new ArrayList<String[]>(nsent);
-		for(int i = 0; i < nsent; i++) {
-			String[] t = targetSentences_.get(i).split(" ");
-			approvedTokens_.add(new String[t.length]);
-		}
-
-		stmt = db_.getConnection().prepareStatement(
-			"select line, token, annotation from token_annotations where candidate=?");
-		stmt.setInt(1, candidate_id_);
-		res = stmt.executeQuery();
-		while(res.next()) {
-			int line = res.getInt(1) - firstLine_;
-			int token = res.getInt(2);
-			approvedTokens_.get(line)[token] = res.getString(3);
-		}
 	}
 
 	public void saveAnnotations(int annotator, String conflictStatus) {
 		Connection conn = null;
+		PreparedStatement stmt = null;
 		try {
 			conn = db_.getConnection();
 			conn.setAutoCommit(false);
 
-			PreparedStatement stmt = conn.prepareStatement(
+			stmt = conn.prepareStatement(
 				"delete from annotations where candidate=? and annotator_id=?");
 			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator);
 			stmt.execute();
 			
+			stmt.close();
 			stmt = conn.prepareStatement(
 				"delete from token_annotations where candidate=? and annotator_id=?");
 			stmt.setInt(1, candidate_id_);
@@ -277,6 +345,7 @@ public class TestSuiteExample {
 			
 			boolean hasTokenAnnotations = false;
 			
+			stmt.close();
 			stmt = conn.prepareStatement(
 				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
 				"values (?, ?, ?, ?, ?)");
@@ -300,6 +369,7 @@ public class TestSuiteExample {
 				return;
 			}
 			
+			stmt.close();
 			stmt = conn.prepareStatement(
 				"insert into annotations (candidate, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
 				"values (?, ?, ?, ?, ?, ?)");
@@ -321,6 +391,9 @@ public class TestSuiteExample {
 			}
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 	}
 
@@ -390,8 +463,13 @@ public class TestSuiteExample {
 	//Return True if pronoun example category requires antecedent agreement
 	public boolean getAntecedentAgreementRequired() {
 		boolean agree = false;
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
 		try {
-			PreparedStatement stmt = db_.getConnection().prepareStatement(
+			conn = db_.getConnection();
+			stmt = conn.prepareStatement(
 				"select c.antagreement from categories as c " +
 				"left join pro_candidates as pe on pe.category_no = c.id " +
 				"where pe.srccorpus=? and pe.tgtcorpus=? and pe.example_no=?");
@@ -404,11 +482,14 @@ public class TestSuiteExample {
 			if (res.getInt("antagreement") == 1){
 				agree = true;
 			}
-		}
-		catch(SQLException e) {
+		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
+
 		return agree;
 	}
 	

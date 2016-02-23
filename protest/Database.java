@@ -67,9 +67,12 @@ public class Database {
 	private List<AnnotationCategory> doGetCategories(String whereClause) {
 		ArrayList<AnnotationCategory> catlist = new ArrayList<AnnotationCategory>();
 
+		Connection conn = null;
+		Statement stmt = null;
+
 		try {
-			Connection conn = getConnection();
-			Statement stmt = conn.createStatement();
+			conn = getConnection();
+			stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select c.id as category_no, c.description as description, " +
 						"a.conflict_status as conflict_status, p.example_no as example_no, " +
 						"p.srccorpus as srccorpus, p.tgtcorpus as tgtcorpus " +
@@ -109,6 +112,9 @@ public class Database {
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 
 		return catlist;
@@ -117,9 +123,12 @@ public class Database {
 	public List<TargetCorpus> getTargetCorpora() {
 		ArrayList<TargetCorpus> crplist = new ArrayList<TargetCorpus>();
 
+		Connection conn = null;
+		Statement stmt = null;
+
 		try {
-			Connection conn = getConnection();
-			Statement stmt = conn.createStatement();
+			conn = getConnection();
+			stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select corpora.id as id, corpora.name as name, count(*) as cnt " +
 					"from corpora, pro_candidates " +
 					"where corpora.id=pro_candidates.tgtcorpus group by name order by name");
@@ -128,6 +137,9 @@ public class Database {
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 
 		return crplist;
@@ -137,10 +149,14 @@ public class Database {
 		if(tgtcorpora.length == 0 || categories.length == 0)
 			return 0;
 
+		Connection conn = null;
+		Statement stmt = null;
+
 		int cnt = 0;
 		try {
-			Connection conn = getConnection();
-			Statement stmt = conn.createStatement();
+			conn = getConnection();
+			stmt = conn.createStatement();
+
 			ResultSet rs = stmt.executeQuery("select count(*) from pro_candidates " +
 					"where tgtcorpus in " + makeInList(tgtcorpora) + " " +
 					"and category_no in " + makeInList(categories));
@@ -149,41 +165,57 @@ public class Database {
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
+
 		return cnt;
 	}
 
 	public HashMap<String,String> getMetadata() {
+		HashMap<String,String> md = null;
 		Connection conn = null;
 		try {
 			conn = getConnection();
+			md = getMetadata(conn);
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(conn);
 		}
-		return getMetadata(conn);
+		return md;
 	}
 
 	private HashMap<String,String> getMetadata(Connection conn) {
 		HashMap<String,String> metadata = new HashMap<String,String>();
 
+		Statement stmt = null;
 		try {
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select tag, tag_value from meta_data");
 			while(rs.next())
 				metadata.put(rs.getString("tag"), rs.getString("tag_value"));
 		} catch(SQLException e) {
 			metadata = null;
+		} finally {
+			Database.close(stmt);
 		}
 
 		return metadata;
 	}
 
 	public String getMetadata(String tag) {
+		Connection conn = null;
+		PreparedStatement ps = null;
+
 		try {
-			Connection conn = getConnection();
-			PreparedStatement ps = conn.prepareStatement("select tag_value from meta_data where tag=?");
+			conn = getConnection();
+
+			ps = conn.prepareStatement("select tag_value from meta_data where tag=?");
 			ps.setString(1, tag);
+
 			ResultSet rs = ps.executeQuery();
 			if(!rs.next())
 				return "";
@@ -191,15 +223,22 @@ public class Database {
 				return rs.getString("tag_value");
 		} catch(SQLException e) {
 			e.printStackTrace();
+		} finally {
+			Database.close(ps);
+			Database.close(conn);
 		}
 
 		return "";
 	}
 
 	public boolean tasksetExists(String label) {
+		Connection conn = null;
+		PreparedStatement ps = null;
+
 		try {
-			Connection conn = getConnection();
-			PreparedStatement ps = conn.prepareStatement("select count(*) from task_definition where taskset=?");
+			conn = getConnection();
+			ps = conn.prepareStatement("select count(*) from task_definition where taskset=?");
+
 			ps.setString(1, label);
 			ResultSet rs = ps.executeQuery();
 			rs.next();
@@ -207,6 +246,9 @@ public class Database {
 		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			Database.close(ps);
+			Database.close(conn);
 		}
 
 		return false; // to make compiler happy
@@ -214,15 +256,19 @@ public class Database {
 
 	public void createAnnotationTasks(String taskset, int[] tgtcorpora, int[] categories, int ntasks, int iaa) {
 		Connection conn = null;
+		Statement stmt = null;
+		ArrayList<PreparedStatement> ps_to_close = new ArrayList<PreparedStatement>();
+
 		try {
 			conn = getConnection();
-			conn.setAutoCommit(false);
+			stmt = conn.createStatement();
 
-			Statement stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 
 			PreparedStatement ps_descr = conn.prepareStatement(
 					"insert into task_definition (taskset, label) values (?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
+			ps_to_close.add(ps_descr);
 			ps_descr.setString(1, taskset);
 
 			int iaa_id = -1;
@@ -259,11 +305,15 @@ public class Database {
 			// There shouldn't be any such records, but let's make sure.
 			stmt.execute("delete from annotation_tasks where task_no < 0");
 
-			PreparedStatement ps_select = conn.prepareStatement("insert into annotation_tasks (task_no, candidate) " +
+			PreparedStatement ps_select = conn.prepareStatement(
+					"insert into annotation_tasks (task_no, candidate) " +
 					"select -1, id from pro_candidates where tgtcorpus=? and category_no=?");
-		       	PreparedStatement ps_assign = conn.prepareStatement("update annotation_tasks set task_no=? " + 
+			ps_to_close.add(ps_select);
+			PreparedStatement ps_assign = conn.prepareStatement(
+					"update annotation_tasks set task_no=? " + 
 					"where task_no=-1 and candidate in " +
 						"(select candidate from annotation_tasks where task_no=-1 order by random() limit ?)");
+			ps_to_close.add(ps_assign);
 			for(int corpus : tgtcorpora) {
 				ps_select.setInt(1, corpus);
 				for(int cat : categories) {
@@ -302,6 +352,11 @@ public class Database {
 			}
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			for(PreparedStatement ps : ps_to_close)
+				Database.close(ps);
+			Database.close(stmt);
+			Database.close(conn);
 		}
 	}
 
@@ -312,21 +367,28 @@ public class Database {
 		new File(outfile).delete();
 
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outfile);
-
-		conn.setAutoCommit(false);
+		Statement stmt = null;
+		ArrayList<PreparedStatement> ps_to_close = new ArrayList<PreparedStatement>();
 
 		try {
+			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
+
 			// copy DB schema -- totally specific to sqlite, using internal data structures!
 			// The order by clause makes sure all tables are created before we start adding indices.
 			// We fetch the schema from the main DB connection and execute the create statements on a
 			// connection that only has the new DB attached so we don't have to manipulate them
 			// to add DB identifiers.
-			Statement stmt = conn.createStatement();
-			Statement maindb_stmt = getConnection().createStatement();
-			ResultSet rs = maindb_stmt.executeQuery("select sql from sqlite_master " +
-					"where tbl_name not like 'sqlite_%' and sql is not null order by type desc");
-			while(rs.next())
-				stmt.execute(rs.getString(1));
+			Statement maindb_stmt = null;
+			try {
+				maindb_stmt = getConnection().createStatement();
+				ResultSet rs = maindb_stmt.executeQuery("select sql from sqlite_master " +
+						"where tbl_name not like 'sqlite_%' and sql is not null order by type desc");
+				while(rs.next())
+					stmt.execute(rs.getString(1));
+			} finally {
+				Database.close(maindb_stmt);
+			}
 
 			// must turn off transactions now because ATTACH doesn't work within a transaction
 			conn.commit();
@@ -339,8 +401,6 @@ public class Database {
 			// and turn on transactions again
 			conn.setAutoCommit(false);
 
-			PreparedStatement ps;
-
 			String taskInList = makeInList(tasks);
 			String andTaskNo = " and t.task_no in " + taskInList + " ";
 
@@ -352,12 +412,16 @@ public class Database {
 			stmt.execute("insert into main.meta_data (tag, tag_value) " +
 					"select tag, tag_value from master.meta_data where tag in ('master_id', 'master_description')");
 
+			PreparedStatement ps;
+
 			ps = conn.prepareStatement("insert into main.meta_data (tag, tag_value) values ('annotator_id', ?)");
+			ps_to_close.add(ps);
 			ps.setInt(1, annotator);
 			ps.execute();
 
 			ps = conn.prepareStatement("insert into main.meta_data (tag, tag_value) " +
 					"select 'annotator_name', name from master.annotators where id=?");
+			ps_to_close.add(ps);
 			ps.setInt(1, annotator);
 			ps.execute();
 
@@ -374,6 +438,7 @@ public class Database {
 			// annotators
 			ps = conn.prepareStatement("insert into main.annotators " +
 					"select * from master.annotators where id=?");
+			ps_to_close.add(ps);
 			ps.setInt(1, annotator);
 			ps.execute();
 
@@ -417,24 +482,34 @@ public class Database {
 					"where t.candidate=c.id and tr.example_no=c.example_no and tr.tgtcorpus=c.tgtcorpus " + andTaskNo);
 
 			conn.commit();
-			conn.close();
+			Database.close(conn);
 		} catch(SQLException e) {
-			try {
-				conn.rollback();
-				conn.close();
-				new File(outfile).delete();
-			} catch(SQLException e2) {}
+			if(conn != null) {
+				try {
+					conn.rollback();
+					conn.close();
+					new File(outfile).delete();
+				} catch(SQLException e2) {}
+			}
 			throw e;
+		} finally {
+			for(PreparedStatement ps : ps_to_close)
+				Database.close(ps);
+			Database.close(stmt);
+			Database.close(conn);
 		}
 	}
 
 	public PrecheckReport precheckAnnotationBatch(String infile) {
 		PrecheckReport ret = new PrecheckReport();
 
-		try {
-			Connection conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
+		Connection conn = null;
+		Statement stmt = null;
 
-			HashMap<String,String> mastermd = getMetadata(getConnection());
+		try {
+			conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
+
+			HashMap<String,String> mastermd = getMetadata();
 			HashMap<String,String> annmd = getMetadata(conn);
 
 			if(!checkMetadata(mastermd, "file_type", "master")) {
@@ -450,7 +525,7 @@ public class Database {
 				return ret;
 			}
 
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("attach database \"" + dbfile_ + "\" as master");
 
 			ResultSet rs;
@@ -464,10 +539,11 @@ public class Database {
 					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id");
 			rs.next();
 			ret.setTokenDuplicates(rs.getInt(1));
-
-			conn.close();
 		} catch(SQLException e) {
 			ret.setError(e.getMessage());
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 
 		return ret;
@@ -491,11 +567,11 @@ public class Database {
 	}
 
 	public void importAnnotationBatch(String infile) throws SQLException {
-		//db_.close();
-		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
+		Connection conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
+		Statement stmt = null;
 
 		try {
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 
 			stmt.execute("attach database \"" + dbfile_ + "\" as master");
 			
@@ -513,13 +589,17 @@ public class Database {
 
 			stmt.execute("insert into master.token_annotations select * from main.token_annotations");
 
+			System.err.println("before commit");
 			conn.commit();
-			conn.close();
+			System.err.println("after commit");
 		} catch(SQLException e) {
 			try {
 				conn.rollback();
 			} catch(SQLException e2) {}
 			throw e;
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
 		}
 	}
 
@@ -531,6 +611,24 @@ public class Database {
 			sb.append(',').append(ids[i]);
 		sb.append(')');
 		return sb.toString();
+	}
+
+	public static void close(Connection conn) {
+		try {
+			if(conn != null)
+				conn.close();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void close(Statement conn) {
+		try {
+			if(conn != null)
+				conn.close();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) throws SQLException {
