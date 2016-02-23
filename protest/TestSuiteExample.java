@@ -415,6 +415,10 @@ public class TestSuiteExample {
 		return currline_;
 	}
 
+	public String getCandidateLocator() {
+		return String.format("%d - %d - %d", srccorpus_, tgtcorpus_, example_no_);
+	}
+
 	public Sentence getSourceSentence() {
 		return new Sentence(sourceSentences_.get(currline_),
 				anaphorSourceHighlight_.get(currline_),

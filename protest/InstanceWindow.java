@@ -79,6 +79,7 @@ public class InstanceWindow implements ActionListener {
 	private TestSuiteExample current_;
 	private int currentIdx_;
 
+	private String title_;
 	private int annotator_;
 
 	private boolean dirty_ = false;
@@ -256,6 +257,7 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private void showCurrentInstance() {
+		frame_.setTitle(title_ + " - " + current_.getCandidateLocator());
 		idxField_.setText(String.format("%d/%d", currentIdx_ + 1, instances_.size()));
 		prevButton_.setEnabled(currentIdx_ > 0);
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
@@ -563,10 +565,10 @@ public class InstanceWindow implements ActionListener {
 		if(!saveAnnotations(false))
 			return;
 
+		title_ = title;
 		instances_ = instances;
 		current_ = instances_.get(0);
 		currentIdx_ = 0;
-		frame_.setTitle(title);
 		showCurrentInstance();
 	}
 
