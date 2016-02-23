@@ -192,14 +192,14 @@ public class ProtestGUI implements Runnable, ActionListener {
 			if (rep.canImport() == true) {
 				if (rep.shouldWarn() == true) {
 					int response = JOptionPane.showConfirmDialog(null, rep.getMessage(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-					if (response == JOptionPane.YES_OPTION) {
-						System.err.println("Importing...");
-						System.err.println(dbname);
-						db_.importAnnotationBatch(dbname);
-					}
+					if (response != JOptionPane.YES_OPTION)
+						return;
 				}
-			}
-			else {
+
+				System.err.println("Importing...");
+				System.err.println(dbname);
+				db_.importAnnotationBatch(dbname);
+			} else {
 				String importMsg = "Unable to import annotator database: " + rep.getMessage();
 				JOptionPane.showMessageDialog(null, importMsg);
 			}
