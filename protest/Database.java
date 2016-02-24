@@ -585,9 +585,9 @@ public class Database {
 					"(select a.id from main.token_annotations as a, master.token_annotations as b " +
 					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id)");
 
-			stmt.execute("insert into master.annotations select * from main.annotations");
+			stmt.execute("insert into master.annotations select NULL, candidate, annotator_id, ant_annotation, anaph_annotation, remarks, conflict_status from main.annotations");
 
-			stmt.execute("insert into master.token_annotations select * from main.token_annotations");
+			stmt.execute("insert into master.token_annotations select NULL, candidate, line, token, annotation, annotator_id from main.token_annotations");
 
 			System.err.println("before commit");
 			conn.commit();
