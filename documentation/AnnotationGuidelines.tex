@@ -136,7 +136,7 @@ Please familiarise yourself with the annotation guidelines before starting the a
 
 \section{Annotation Guidelines}
 \label{AnnotationGuidelines}
-Select a batch of pronoun tokens from the \textbf{Batch Selection window}, for the desired MT system and pronoun category. The \textbf{Manual Annotation window} will appear. For each highlighted pronoun token, read the source-language text (top frame) and the MT system output (bottom frame). Consider the translation of the source-language pronoun token that is highlighted in yellow. If the source-language pronoun was translated by the MT system, the translation (consisting of one or more tokens) in the MT system output will also be highlighted in yellow.
+Select a batch of pronoun tokens from the \textbf{Batch Selection window}, for the desired MT system and pronoun category. The \textbf{Manual Annotation window} will appear. For each highlighted pronoun token, read the source-language text (top frame) and the MT system output (bottom frame). Please note that you may need to use the scroll bars on the right-hand side of the text boxes to read the complete source text and translation. Consider the translation of the source-language pronoun token that is highlighted in yellow. If the source-language pronoun was translated by the MT system, the translation (consisting of one or more tokens) in the MT system output will also be highlighted in yellow.
 
 Complete the annotation of each pronoun instance using the following guidelines:
 
@@ -147,13 +147,15 @@ Complete the annotation of each pronoun instance using the following guidelines:
   \item Answer the question: ``Pronoun Correctly Translated?'' using the ``yes/no'' options in the \textbf{annotation panel} in the top right-hand corner of the \textbf{Manual Annotation window}
   \begin{itemize}
     \item You should answer this question for all source-language pronouns, whether or not they are translated by the MT system
+    \item As the aim of the annotation task is to produce a corpus of acceptable translations for use in automatic evaluation, we place a higher value on precision. This means that you should only mark translations as correct if you feel that it is something ``natural'' that you might say yourself, or that you might expect to hear someone else say
     \item If a source-language pronoun is left untranslated by the MT system, use the ``yes/no'' options to mark whether this is correct/incorrect
-    \item If you are unsure, you may use the default ``unset'' option and complete the annotation later. Please use the \textbf{remarks box} on the right-hand side of the \textbf{Manual Annotation window} to record any notes that may be useful to you later on
+    \item If you are unsure because something looks to be ``unusual'', it is best to mark the translation as incorrect, and add the relevant tag to indicate what you are unsure about. More information on the use of tags is included in Section \ref{Tags}. Please also use the \textbf{remarks box} on the right-hand side of the \textbf{Manual Annotation window} to record any notes that you believe may be useful later on
+    \item For singular, deictic addressee reference pronouns, we wish to record additional information about the politeness of the pronoun (``tu'' vs. ``vous''). Pronouns where ``tu'' would have been more appropriate than ``vous'' (and vice versa) should be labelled as correctly translated. The appropriate level of politeness should be marked by inserting the relevant tag in the \textbf{tags list} (on the right-hand side of the \textbf{Manual Annotation window})
     \item You may come across incorrect translations. If you believe that it is possible to assess the translation of the pronoun independently of the remainder of the translation output, you should annotate the example as normal. If not, you should leave the example un-annotated and add a comment to the \textbf{remarks box}
     \item If the pronoun is present in the translation output but is not highlighted (i.e. a bad alignment), do not attempt to annotate the example. Instead, add a comment to the \textbf{remarks box}
     \item Note: if the pronoun is anaphoric, follow the guidelines in Section \ref{AnaphoricGuidelines}
   \end{itemize}
-  \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun. To select a token, click on it. The token highlight will change to orange, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a yellow highlight
+  \item \textit{If you have marked the pronoun translation as correct:} Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun. To select a token, click on it. The token highlight will change to orange, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a yellow highlight
   \item Please use the \textbf{remarks box} to record any issues that you would like to discuss, e.g. relating to any difficulties or problems that you encounter during the annotation of a given pronoun
   \item Once you have completed the annotation of the current pronoun instance, move to the next one using the \textbf{Next} button in the top right hand corner of the \textbf{Manual Annotation window}
   \begin{itemize}
@@ -170,14 +172,37 @@ If the pronoun is anaphoric, you will need to consider both the translation of t
 \begin{itemize}
   \item First, answer the question: ``Antecedent Correctly Translated?'' using the ``yes/no'' options in the \textbf{annotation panel} in the top right-hand corner of the \textbf{Manual Annotation window}
   \begin{itemize}
-    \item If the pronoun or the antecedent head are present in the translation output but is not highlighted (i.e. a bad alignment), do not attempt to annotate the example. Instead, add a comment to the \textbf{remarks box}
+    \item Antecedent heads have been manually labelled and should therefore be correct in the majority of cases. However, if you believe that the antecedent head choice is incorrect, please add the ``ANT\_UNSURE'' tag to the \textbf{tags list}
+    \item If the pronoun or the antecedent head are present in the translation output but is not highlighted (i.e. a bad alignment), do not attempt to annotate the example. Instead, add the ``INCORRECT\_WORD\_ALIGNMENT'' tag to the \textbf{tags list}
   \end{itemize}  
-  \item Select the minimum number of blue highlighted tokens that constitutes a correct translation of the source-language antecedent head. To select a token, click on it. The token highlight will change to a darker shad of blue, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a blue highlight
+  \item \textit{If you have marked the antecedent head translation as correct:} Select the minimum number of blue highlighted tokens that constitutes a correct translation of the source-language antecedent head. Note that we are interested in noun tokens, not articles or punctuation etc. To select a token, click on it. The token highlight will change to a darker shad of blue, indicating that it has been selected. You can select as many highlighted tokens as are required. It is not possible to select tokens that do not have a blue highlight
   \item Second, answer the question: ``Pronoun Correctly Translated (given antecedent head)?'' using the ``yes/no'' options in the \textbf{annotation panel}
   \begin{itemize}
-    \item A correctly translated pronoun is one that \textit{is compatible} with the translation of the antecedent head, regardless of whether the antecedent head is translated correctly
+    \item A correctly translated pronoun is one that \textit{is compatible} with the translation of the antecedent head, regardless of whether the antecedent head is translated correctly. An example of a compatible pronoun-antecedent pair is the use of singular ``they'' in English to refer to a single person - here the number of the pronoun and the antecedent will not agree, but the use of singular ``they'' is acceptable (for example in the case where the gender of the person is unknown)
   \end{itemize}
-  \item Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun (given the antecedent head)
+  \item \textit{If you have marked the pronoun translation as correct:} Select the minimum number of yellow highlighted tokens that constitutes a correct translation of the source-language pronoun (given the antecedent head)
+\end{itemize}
+
+
+\section{Annotation Tags}
+\label{Tags}
+Tags are used to denote specific recurring patterns, where errors may be present.
+
+The following tags may be entered into the \textbf{tags list} for any pronoun category:
+
+\begin{itemize}
+  \item ANT\_UNSURE: Unsure if antecedent has been correctly identified in English source sentence
+  \item BAD\_TRANS: Translation is so poor that it is not possible to judge whether the translation of the pronoun/antecedent is correct
+  \item NONCOMPOSITIONAL\_TRANS: For example, if an English event pronoun is translated as ``il faut'' (a fixed expression where ``il'' is a pleonastic pronoun), the English pronoun cannot be said to be translated as ``il''
+  \item INCORRECT\_WORD\_ALIGNMENT: Pronoun/antecedent translation exists in the translation but has not been highlighted due to a problem with the word alignments
+\end{itemize}  
+
+The following tags may be used for the addressee reference, deictic, singular pronouns category:
+
+\begin{itemize}  
+  \item POLITENESS\_TU: You are sure that the pronoun should be ``tu''
+  \item POLITENESS\_VOUS: You are sure that the pronoun should be ``vous''
+  \item POLITENESS\_UNKNOWN: You are unable to tell whether the pronoun should be ``tu'' or ``vous'' given the available context
 \end{itemize}
 
 
