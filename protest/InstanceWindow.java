@@ -325,7 +325,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 			prnUnset_.setSelected(true);
 		}
 
-		setTagList();
+		displayTagList();
 
 		// This is going to set the dirty flag, so we clear it afterwards.
 		remarksField_.setText(current_.getRemarks());
@@ -606,6 +606,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		} else if(cmd[0].equals("add-tag")) {
 			current_.addTag((String) newTag_.getSelectedItem());
 			newTag_.setSelectedItem("");
+			displayTagList();
 		}
 	}
 
