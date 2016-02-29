@@ -256,6 +256,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		newTagModel_ = new DefaultComboBoxModel();
 		newTag_ = new JComboBox(newTagModel_);
 		newTag_.setEditable(true);
+		newTag_.setPrototypeDisplayValue("123456789");
 		removeTagButton_ = new JButton("-");
 		removeTagButton_.setActionCommand("remove-tag");
 		removeTagButton_.addActionListener(this);
