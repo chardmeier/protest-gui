@@ -34,6 +34,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
@@ -66,6 +68,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 
 	private JTable tagList_;
 	private TagTableModel tagListModel_;
+	private JButton removeTagButton_;
 	private JComboBox newTag_;
 	private DefaultComboBoxModel newTagModel_;
 	private JTextArea remarksField_;
@@ -238,19 +241,29 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		tagListModel_ = new TagTableModel();
 		tagList_ = new JTable(tagListModel_);
 		tagList_.setRowSelectionAllowed(true);
+		ListSelectionModel selModel = tagList_.getSelectionModel();
+		selModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		selModel.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				if(e.getValueIsAdjusting())
+					return;
+				removeTagButton_.setEnabled(tagList_.getSelectedRow() >= 0);
+			}
+		});
 		tagPanel.add(new JScrollPane(tagList_), BorderLayout.CENTER);
 
 		JPanel newTagPanel = new JPanel();
 		newTagModel_ = new DefaultComboBoxModel();
 		newTag_ = new JComboBox(newTagModel_);
 		newTag_.setEditable(true);
-		JButton removeTagButton = new JButton("-");
-		removeTagButton.setActionCommand("remove-tag");
-		removeTagButton.addActionListener(this);
+		removeTagButton_ = new JButton("-");
+		removeTagButton_.setActionCommand("remove-tag");
+		removeTagButton_.addActionListener(this);
+		removeTagButton_.setEnabled(false);
 		JButton addTagButton = new JButton("+");
 		addTagButton.setActionCommand("add-tag");
 		addTagButton.addActionListener(this);
-		newTagPanel.add(removeTagButton);
+		newTagPanel.add(removeTagButton_);
 		newTagPanel.add(newTag_);
 		newTagPanel.add(addTagButton);
 		tagPanel.add(newTagPanel, BorderLayout.PAGE_END);
