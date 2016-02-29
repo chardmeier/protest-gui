@@ -64,7 +64,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 	private JButton nextButton_;
 	private JLabel idxField_;
 
-	private DefaultTableModel tagListModel_;
+	private TagTableModel tagListModel_;
 	private JComboBox newTag_;
 	private DefaultComboBoxModel newTagModel_;
 	private JTextArea remarksField_;
@@ -234,7 +234,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 
 		JPanel tagPanel = new JPanel(new BorderLayout());
 
-		tagListModel_ = new DefaultTableModel();
+		tagListModel_ = new TagTableModel();
 		JTable tagList = new JTable(tagListModel_);
 		TableButton removeTagButton = new TableButton("-");
 		removeTagButton.addTableButtonListener(this);
@@ -334,9 +334,8 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 	}
 
 	private void displayTagList() {
-		String[][] dataVector = new String[][] { current_.getTags().toArray(new String[0]) };
-		String[] columnIdentifiers = new String[] { "Tag" };
-		tagListModel_.setDataVector(dataVector, columnIdentifiers);
+		System.err.println("Displaying tag list: " + current_.getTags().toString());
+		tagListModel_.setData(current_.getTags());
 		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
 		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
 		newTagModel_.removeAllElements();
@@ -604,7 +603,8 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 			current_.setAnaphorAnnotation(cmd[1]);
 			System.err.println("Button change: " + e.getActionCommand());
 		} else if(cmd[0].equals("add-tag")) {
-			current_.addTag((String) newTag_.getSelectedItem());
+			String tag = (String) newTag_.getSelectedItem();
+			current_.addTag(tag);
 			newTag_.setSelectedItem("");
 			displayTagList();
 		}
@@ -613,9 +613,9 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 	public void tableButtonClicked(int row, int col) {
 		if(col != 1)
 			throw new IllegalArgumentException("All buttons should be in row 1");
-		String tag = (String) tagListModel_.getValueAt(row, 0);
+		String tag = tagListModel_.getValueAt(row, 0);
 		current_.removeTag(tag);
-		tagListModel_.removeRow(row);
+		tagListModel_.removeTag(tag);
 	}
 
 	public void setData(String title, List<TestSuiteExample> instances) {
