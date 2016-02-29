@@ -295,12 +295,12 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		prevButton_.setEnabled(currentIdx_ > 0);
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
 		//Make "annotationPanel_" invisible if pronoun-antecedent agreement is not required
-		setAntAgreeVisible();
-		setContext();
-		setAnnotations();
+		displayAntAgreeVisible();
+		displayContext();
+		displayAnnotations();
 	}
 
-	private void setAnnotations() {
+	private void displayAnnotations() {
 		String antecedentAnnotation = current_.getAntecedentAnnotation();
 		if(antecedentAnnotation.equals("ok"))
 			antOK_.setSelected(true);
@@ -333,7 +333,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		dirty_ = false;
 	}
 
-	private void setTagList() {
+	private void displayTagList() {
 		String[][] dataVector = new String[][] { current_.getTags().toArray(new String[0]) };
 		String[] columnIdentifiers = new String[] { "Tag" };
 		tagListModel_.setDataVector(dataVector, columnIdentifiers);
@@ -399,7 +399,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		return true;
 	}
 
-	private void setContext() {
+	private void displayContext() {
 		String XHTML_HEADER =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 			"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
@@ -489,7 +489,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
 	
-	private void setAntAgreeVisible() {
+	private void displayAntAgreeVisible() {
 		boolean agree = current_.getAntecedentAgreementRequired();
 		if (agree==true) {
 			//annotationPanel_.setVisible(true);
@@ -606,7 +606,6 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		} else if(cmd[0].equals("add-tag")) {
 			current_.addTag((String) newTag_.getSelectedItem());
 			newTag_.setSelectedItem("");
-			setTagList();
 		}
 	}
 
