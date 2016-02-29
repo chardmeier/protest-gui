@@ -589,6 +589,8 @@ public class TestSuiteExample {
 			// Pronoun annotation conflicts
 			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
 				anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
+			else if (anaph_annotation.equals("unset") && !tags_.isEmpty())
+				anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
 			else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
 				anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
 
