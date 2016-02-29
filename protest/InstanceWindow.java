@@ -34,7 +34,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
 
@@ -235,11 +235,14 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		JPanel tagPanel = new JPanel(new BorderLayout());
 
 		tagListModel_ = new TagTableModel();
-		JTable tagList = new JTable(tagListModel_);
+		DefaultTableColumnModel tagListColumns = new DefaultTableColumnModel();
 		TableButton removeTagButton = new TableButton("-");
 		removeTagButton.addTableButtonListener(this);
-		tagList.addColumn(new TableColumn(0, 30));
-		tagList.addColumn(new TableColumn(0, 10, removeTagButton, removeTagButton));
+		tagListColumns.addColumn(new TableColumn(0, 30));
+		tagListColumns.addColumn(new TableColumn(0, 10, removeTagButton, removeTagButton));
+		tagListColumns.setColumnSelectionAllowed(false);
+		JTable tagList = new JTable(tagListModel_, tagListColumns);
+		tagList.setRowSelectionAllowed(false);
 		tagPanel.add(new JScrollPane(tagList), BorderLayout.CENTER);
 
 		JPanel newTagPanel = new JPanel();
