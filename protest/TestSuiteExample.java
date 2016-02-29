@@ -571,9 +571,9 @@ public class TestSuiteExample {
 		return result;
 	}
 	
-	public int[] checkAnnotationConflict(){
-		int anaphConflictType = 0;
-		int antConflictType = 0;
+	public ConflictStatus checkAnnotationConflict() {
+		int anaphConflictType = ConflictStatus.NO_CONFLICT;
+		int antConflictType = ConflictStatus.NO_CONFLICT;
 		try {
 			String anaph_annotation = getAnaphorAnnotation();
 			String ant_annotation = getAntecedentAnnotation();
@@ -587,23 +587,23 @@ public class TestSuiteExample {
 			boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget,approved);
 			// Pronoun annotation conflicts
 			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty()){
-				anaphConflictType = 1;
+				anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
 			}
 			else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true) {
-				anaphConflictType = 2;
+				anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
 			}
 			// Antecedent annotation conflicts
 			if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty()){
-				antConflictType = 1;
+				antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
 			}
 			else if (!ant_annotation.equals("ok") && antTokAnnotated == true) {
-				antConflictType = 2;
+				antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
 			}
 		}
 		catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		return new int[] {anaphConflictType, antConflictType};
+		return new ConflictStatus(anaphConflictType, antConflictType);
 	}
 }

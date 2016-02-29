@@ -359,55 +359,25 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 			newTagModel_.addElement(tag);
 	}
 
-	private boolean confirmConflict(int[] conflictList) {
-		// Check if annotator wishes to make a correction
-		String conflictMessage = "";
-		if (conflictList[0] != 0 || conflictList[1] != 0) {
-			JDialog.setDefaultLookAndFeelDecorated(true);
-			switch (conflictList[0]) {
-				case 0: break;
-				case 1: conflictMessage += "PRONOUN: Pronoun translation marked as OK, but no tokens selected.\n";
-					break;
-				case 2: conflictMessage += "PRONOUN: Tokens selected, but pronoun translation not marked as OK.\n";
-					break;
-				default: conflictMessage += "PRONOUN: Conflicting annotations.\n";
-					break;
-			}
-			switch (conflictList[1]) {
-				case 0: break;
-				case 1: conflictMessage += "ANTECEDENT: Antecedent head translation marked as OK, but no tokens selected.\n";
-					break;
-				case 2: conflictMessage += "ANTECEDENT: Tokens selected, but antecedent head translation not marked as OK.\n";
-					break;
-				default: conflictMessage += "ANTECEDENT: Conflicting annotations.\n";
-					break;
-			}
-			if (!conflictMessage.equals("")){
-				conflictMessage += "Do you want to correct this?";
-			}
-			int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-			if (response == JOptionPane.YES_OPTION)
-				return false;
-		}
+	private boolean confirmConflict(ConflictStatus conflicts) {
+		if(!conflicts.hasConflict())
+			return true;
 
-		return true;
-	}
-
-	private String encodeConflictType(int[] conflictList) {
-		final String[] anaTypes = { "ana_ok", "ana_notokens", "ana_unset" };
-		final String[] antTypes = { "ant_ok", "ant_notokens", "ant_unset" };
-		return String.format("%s %s", anaTypes[conflictList[0]], antTypes[conflictList[1]]);
+		String conflictMessage = conflicts.explain() + "Do you want to correct this?";
+		int response = JOptionPane.showConfirmDialog(null, conflictMessage, "Confirm",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		return (response != JOptionPane.YES_OPTION);
 	}
 
 	private boolean saveAnnotations(boolean force) {
 		if(dirty_) {
-			int[] conflictList = current_.checkAnnotationConflict(); // 0=none; 1=pronoun; 2=antecedent; 3=both
-			if(!force && !confirmConflict(conflictList)) 
+			ConflictStatus conflicts = current_.checkAnnotationConflict();
+			if(!force && !confirmConflict(conflicts)) 
 				return false;
 
 			dirty_ = false; // set this now in case we get called again from an exit hook
 			current_.setRemarks(remarksField_.getText());
-			current_.saveAnnotations(annotator_, encodeConflictType(conflictList));
+			current_.saveAnnotations(annotator_, conflicts.encode());
 			categorySelector_.refresh();
 		}
 
