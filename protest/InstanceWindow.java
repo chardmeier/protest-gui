@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -334,7 +333,9 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 	}
 
 	private void setTagList() {
-		tagListModel_.setDataVector(new Vector<String>(current_.getTags()), new Vector<String>(Arrays.asList("Tag")));
+		String[][] dataVector = new String[][] { current_.getTags().toArray(new String[0]) };
+		String[] columnIdentifiers = new String[] { "Tag" };
+		tagListModel_.setDataVector(dataVector, columnIdentifiers);
 		newTagModel_.removeAllElements();
 		for(String tag : current_.getDatabase().getTags())
 			newTagModel_.addElement(tag);
