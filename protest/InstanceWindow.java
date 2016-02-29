@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -336,8 +337,10 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		String[][] dataVector = new String[][] { current_.getTags().toArray(new String[0]) };
 		String[] columnIdentifiers = new String[] { "Tag" };
 		tagListModel_.setDataVector(dataVector, columnIdentifiers);
+		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
+		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
 		newTagModel_.removeAllElements();
-		for(String tag : current_.getDatabase().getTags())
+		for(String tag : availableTags)
 			newTagModel_.addElement(tag);
 	}
 
