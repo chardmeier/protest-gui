@@ -585,22 +585,19 @@ public class TestSuiteExample {
 			// Compare
 			boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget,approved);
 			boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget,approved);
+
 			// Pronoun annotation conflicts
-			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty()){
+			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
 				anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-			}
-			else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true) {
+			else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
 				anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
-			}
+
 			// Antecedent annotation conflicts
-			if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty()){
+			if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())
 				antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-			}
-			else if (!ant_annotation.equals("ok") && antTokAnnotated == true) {
+			else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
 				antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
-			}
-		}
-		catch(SQLException e) {
+		} catch(SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
