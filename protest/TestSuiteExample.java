@@ -38,6 +38,7 @@ public class TestSuiteExample {
 	private String antecedentAnnotation_;
 	private String anaphorAnnotation_;
 	private String remarks_;
+	private List<String> tags_;
 	private List<String[]> approvedTokens_;
 
 	public TestSuiteExample(Database db, int srccorpus, int tgtcorpus, int example_no) {
@@ -47,6 +48,10 @@ public class TestSuiteExample {
 		example_no_ = example_no;
 		loaded_ = false;
 		currline_ = -1;
+	}
+
+	public Database getDatabase() {
+		return db_;
 	}
 
 	private void load() {
@@ -299,6 +304,15 @@ public class TestSuiteExample {
 				remarks_ = "";
 			}
 
+			stmt.close();
+			stmt = conn.prepareStatement(
+				"select tag from tag_annotations where candidate=? order by tag");
+			stmt.setInt(1, candidate_id_);
+			res = stmt.executeQuery();
+			tags_ = new ArrayList<String>();
+			while(res.next())
+				tags_.add(res.getString("tag"));
+
 			int nsent = lastLine_ - firstLine_ + 1;
 			approvedTokens_ = new ArrayList<String[]>(nsent);
 			for(int i = 0; i < nsent; i++) {
@@ -343,6 +357,24 @@ public class TestSuiteExample {
 			stmt.setInt(2, annotator);
 			stmt.execute();
 			
+			stmt.close();
+			stmt = conn.prepareStatement(
+				"delete from tag_annotations where candidate=? and annotator_id=?");
+			stmt.setInt(1, candidate_id_);
+			stmt.setInt(2, annotator);
+			stmt.execute();
+
+			stmt.close();
+			stmt = conn.prepareStatement(
+				"insert into tag_annotations (candidate, annotator_id, tag) " +
+				"values (?, ?, ?)");
+			stmt.setInt(1, candidate_id_);
+			stmt.setInt(2, annotator);
+			for(String tag : tags_) {
+				stmt.setString(3, tag);
+				stmt.execute();
+			}
+			
 			boolean hasTokenAnnotations = false;
 			
 			stmt.close();
@@ -364,7 +396,7 @@ public class TestSuiteExample {
 				}
 
 			if(antecedentAnnotation_.equals("unset") && anaphorAnnotation_.equals("unset") &&
-			   remarks_.isEmpty() && !hasTokenAnnotations) {
+				   tags_.isEmpty() && remarks_.isEmpty() && !hasTokenAnnotations) {
 				conn.commit();
 				return;
 			}
@@ -464,6 +496,20 @@ public class TestSuiteExample {
 		approvedTokens_.get(line)[token] = approved;
 	}
 	
+	public List<String> getTags() {
+		return tags_;
+	}
+
+	public void addTag(String tag) {
+		int pos = Collections.binarySearch(tags_, tag);
+		if (pos < 0)
+			tags_.add(-pos-1, tag);
+	}
+
+	public void removeTag(String tag) {
+		tags_.remove(tag);
+	}
+
 	//Return True if pronoun example category requires antecedent agreement
 	public boolean getAntecedentAgreementRequired() {
 		boolean agree = false;

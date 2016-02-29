@@ -15,22 +15,27 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
 
 //For message dialogs
@@ -49,7 +54,7 @@ import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 
-public class InstanceWindow implements ActionListener {
+public class InstanceWindow implements ActionListener, TableButtonListener {
 	private ProtestGUI categorySelector_;
 
 	private JFrame frame_;
@@ -59,6 +64,9 @@ public class InstanceWindow implements ActionListener {
 	private JButton nextButton_;
 	private JLabel idxField_;
 
+	private DefaultTableModel tagListModel_;
+	private JComboBox newTag_;
+	private DefaultComboBoxModel newTagModel_;
 	private JTextArea remarksField_;
 	private JRadioButton antOK_;
 	private JRadioButton antBad_;
@@ -224,6 +232,26 @@ public class InstanceWindow implements ActionListener {
 		annotationPanel_.add(proLabel_);
 		annotationPanel_.add(prnButtonPanel);
 
+		JPanel tagPanel = new JPanel(new BorderLayout());
+
+		tagListModel_ = new DefaultTableModel();
+		JTable tagList = new JTable(tagListModel_);
+		TableButton removeTagButton = new TableButton("-");
+		removeTagButton.addTableButtonListener(this);
+		tagList.addColumn(new TableColumn(0, 30));
+		tagList.addColumn(new TableColumn(0, 10, removeTagButton, removeTagButton));
+		tagPanel.add(new JScrollPane(tagList), BorderLayout.CENTER);
+
+		JPanel newTagPanel = new JPanel();
+		newTagModel_ = new DefaultComboBoxModel();
+		JComboBox newTag_ = new JComboBox(newTagModel_);
+		newTagPanel.add(newTag_);
+		JButton addTagButton = new JButton("+");
+		addTagButton.setActionCommand("add-tag");
+		addTagButton.addActionListener(this);
+		newTagPanel.add(addTagButton);
+		tagPanel.add(newTagPanel, BorderLayout.PAGE_END);
+
 		// Text field for annotator's notes
 		
 		remarksField_ = new JTextArea(10, 30);
@@ -292,10 +320,19 @@ public class InstanceWindow implements ActionListener {
 			prnUnset_.setSelected(true);
 		}
 
+		setTagList();
+
 		// This is going to set the dirty flag, so we clear it afterwards.
 		remarksField_.setText(current_.getRemarks());
 
 		dirty_ = false;
+	}
+
+	private void setTagList() {
+		tagListModel_.setDataVector(new Vector<String>(current_.getTags()), new Vector<String>(Arrays.asList("Tag")));
+		newTagModel_.removeAllElements();
+		for(String tag : current_.getDatabase().getTags())
+			newTagModel_.addElement(tag);
 	}
 
 	private boolean confirmConflict(int[] conflictList) {
@@ -557,7 +594,19 @@ public class InstanceWindow implements ActionListener {
 			dirty_ = true;
 			current_.setAnaphorAnnotation(cmd[1]);
 			System.err.println("Button change: " + e.getActionCommand());
+		} else if(cmd[0].equals("add-tag")) {
+			current_.addTag((String) newTag_.getSelectedItem());
+			newTag_.setSelectedItem("");
+			setTagList();
 		}
+	}
+
+	public void tableButtonClicked(int row, int col) {
+		if(col != 1)
+			throw new IllegalArgumentException("All buttons should be in row 1");
+		String tag = (String) tagListModel_.getValueAt(row, 0);
+		current_.removeTag(tag);
+		tagListModel_.removeRow(row);
 	}
 
 	public void setData(String title, List<TestSuiteExample> instances) {

@@ -173,6 +173,27 @@ public class Database {
 		return cnt;
 	}
 
+	public List<String> getTags() {
+		ArrayList<String> out = new ArrayList<String>();
+		Connection conn = null;
+		Statement stmt = null;
+		try {
+			conn = getConnection();
+			stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select distinct tag from tag_annotations order by tag");
+			while(rs.next())
+				out.add(rs.getString("tag"));
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			Database.close(stmt);
+			Database.close(conn);
+		}
+
+		return out;
+	}
+
 	public HashMap<String,String> getMetadata() {
 		HashMap<String,String> md = null;
 		Connection conn = null;
