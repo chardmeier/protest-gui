@@ -289,7 +289,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		idxField_.setText(String.format("%d/%d", currentIdx_ + 1, instances_.size()));
 		prevButton_.setEnabled(currentIdx_ > 0);
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
-		//Make "annotationPanel_" invisible if pronoun-antetecedent agreement is not required
+		//Make "annotationPanel_" invisible if pronoun-antecedent agreement is not required
 		setAntAgreeVisible();
 		setContext();
 		setAnnotations();
