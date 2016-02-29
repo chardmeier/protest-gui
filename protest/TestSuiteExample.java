@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class TestSuiteExample {
 	private Database db_;
@@ -38,7 +40,7 @@ public class TestSuiteExample {
 	private String antecedentAnnotation_;
 	private String anaphorAnnotation_;
 	private String remarks_;
-	private List<String> tags_;
+	private Set<String> tags_;
 	private List<String[]> approvedTokens_;
 
 	public TestSuiteExample(Database db, int srccorpus, int tgtcorpus, int example_no) {
@@ -309,7 +311,7 @@ public class TestSuiteExample {
 				"select tag from tag_annotations where candidate=? order by tag");
 			stmt.setInt(1, candidate_id_);
 			res = stmt.executeQuery();
-			tags_ = new ArrayList<String>();
+			tags_ = new TreeSet<String>();
 			while(res.next())
 				tags_.add(res.getString("tag"));
 
@@ -496,14 +498,12 @@ public class TestSuiteExample {
 		approvedTokens_.get(line)[token] = approved;
 	}
 	
-	public List<String> getTags() {
+	public Set<String> getTags() {
 		return tags_;
 	}
 
 	public void addTag(String tag) {
-		int pos = Collections.binarySearch(tags_, tag);
-		if (pos < 0)
-			tags_.add(-pos-1, tag);
+		tags_.add(tag);
 	}
 
 	public void removeTag(String tag) {
