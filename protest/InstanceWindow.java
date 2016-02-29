@@ -244,7 +244,8 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 
 		JPanel newTagPanel = new JPanel();
 		newTagModel_ = new DefaultComboBoxModel();
-		JComboBox newTag_ = new JComboBox(newTagModel_);
+		newTag_ = new JComboBox(newTagModel_);
+		newTag_.setEditable(true);
 		newTagPanel.add(newTag_);
 		JButton addTagButton = new JButton("+");
 		addTagButton.setActionCommand("add-tag");
