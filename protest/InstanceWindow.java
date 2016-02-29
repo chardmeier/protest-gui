@@ -252,6 +252,10 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		newTagPanel.add(addTagButton);
 		tagPanel.add(newTagPanel, BorderLayout.PAGE_END);
 
+		JPanel annotationAndTagPanel = new JPanel(new BorderLayout());
+		annotationAndTagPanel.add(annotationPanel_, BorderLayout.PAGE_START);
+		annotationAndTagPanel.add(tagPanel, BorderLayout.PAGE_END);
+
 		// Text field for annotator's notes
 		
 		remarksField_ = new JTextArea(10, 30);
@@ -276,7 +280,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		});
 
 		JPanel wrapperPanel = new JPanel(new BorderLayout());
-		wrapperPanel.add(annotationPanel_, BorderLayout.PAGE_START);
+		wrapperPanel.add(annotationAndTagPanel, BorderLayout.PAGE_START);
 		wrapperPanel.add(remarksField_, BorderLayout.CENTER);
 		detailPanel.add(wrapperPanel, BorderLayout.CENTER);
 
