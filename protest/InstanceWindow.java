@@ -355,6 +355,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
 		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
 		newTagModel_.removeAllElements();
+		newTagModel_.addElement("");
 		for(String tag : availableTags)
 			newTagModel_.addElement(tag);
 	}
@@ -591,6 +592,8 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		} else if(cmd[0].equals("add-tag")) {
 			dirty_ = true;
 			String tag = (String) newTag_.getSelectedItem();
+			if(tag.isEmpty())
+				return;
 			current_.addTag(tag);
 			newTag_.setSelectedItem("");
 			displayTagList();
