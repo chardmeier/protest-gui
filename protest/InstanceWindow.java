@@ -64,6 +64,7 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 	private JButton nextButton_;
 	private JLabel idxField_;
 
+	private JTable tagList_;
 	private TagTableModel tagListModel_;
 	private JComboBox newTag_;
 	private DefaultComboBoxModel newTagModel_;
@@ -235,24 +236,22 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 		JPanel tagPanel = new JPanel(new BorderLayout());
 
 		tagListModel_ = new TagTableModel();
-		DefaultTableColumnModel tagListColumns = new DefaultTableColumnModel();
-		TableButton removeTagButton = new TableButton("-");
-		removeTagButton.addTableButtonListener(this);
-		tagListColumns.addColumn(new TableColumn(0, 30));
-		tagListColumns.addColumn(new TableColumn(0, 10, removeTagButton, removeTagButton));
-		tagListColumns.setColumnSelectionAllowed(false);
-		JTable tagList = new JTable(tagListModel_, tagListColumns);
-		tagList.setRowSelectionAllowed(false);
-		tagPanel.add(new JScrollPane(tagList), BorderLayout.CENTER);
+		tagList_ = new JTable(tagListModel_);
+		tagList_.setRowSelectionAllowed(true);
+		tagPanel.add(new JScrollPane(tagList_), BorderLayout.CENTER);
 
 		JPanel newTagPanel = new JPanel();
 		newTagModel_ = new DefaultComboBoxModel();
 		newTag_ = new JComboBox(newTagModel_);
 		newTag_.setEditable(true);
-		newTagPanel.add(newTag_);
+		JButton removeTagButton = new JButton("-");
+		removeTagButton.setActionCommand("remove-tag");
+		removeTagButton.addActionListener(this);
 		JButton addTagButton = new JButton("+");
 		addTagButton.setActionCommand("add-tag");
 		addTagButton.addActionListener(this);
+		newTagPanel.add(removeTagButton);
+		newTagPanel.add(newTag_);
 		newTagPanel.add(addTagButton);
 		tagPanel.add(newTagPanel, BorderLayout.PAGE_END);
 
@@ -606,9 +605,19 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 			current_.setAnaphorAnnotation(cmd[1]);
 			System.err.println("Button change: " + e.getActionCommand());
 		} else if(cmd[0].equals("add-tag")) {
+			dirty_ = true;
 			String tag = (String) newTag_.getSelectedItem();
 			current_.addTag(tag);
 			newTag_.setSelectedItem("");
+			displayTagList();
+		} else if(cmd[0].equals("remove-tag")) {
+			dirty_ = true;
+			int pos = tagList_.getSelectedRow();
+			if(pos == -1)
+				return;
+			String tag = tagListModel_.getValueAt(pos, 0);
+			current_.removeTag(tag);
+			tagListModel_.removeTag(tag);
 			displayTagList();
 		}
 	}
