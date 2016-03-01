@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.sql.SQLException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
@@ -44,7 +43,7 @@ public class DatabaseOpener implements PropertyChangeListener {
 			if(f != null && f.isFile()) {
 				try {
 					db = new Database(f.toString());
-				} catch(SQLException ex) {
+				} catch(DatabaseException ex) {
 					// no need to do anything
 				}
 			}

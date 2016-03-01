@@ -24,10 +24,12 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.jdbcdslog.ConnectionLoggingProxy;
 
 public class Database {
+	private final static String FILE_VERSION = "PROTEST 1.1";
+
 	private DataSource db_;
 	private String dbfile_;
 
-	public Database(String dbfile) throws SQLException {
+	public Database(String dbfile) throws DatabaseException {
 		ComboPooledDataSource cpds = new ComboPooledDataSource();
 		try {
 			cpds.setDriverClass("org.sqlite.JDBC");
@@ -37,12 +39,16 @@ public class Database {
 			cpds.setMaxPoolSize(10);
 			cpds.setMaxStatements(50);
 		} catch(PropertyVetoException e) {
-			e.printStackTrace();
-			System.exit(1);
+			throw new DatabaseException("Error setting up DB connection", e);
 		}
 		db_ = cpds;
 
 		dbfile_ = dbfile;
+
+		String version = getMetadata("file_version");
+		if(!version.equals(FILE_VERSION)) {
+			throw new DatabaseException("File version " + version + " not supported.");
+		}
 	}
 
 	public Connection getConnection() throws SQLException {
@@ -587,11 +593,12 @@ public class Database {
 			return val1.equals(val2);
 	}
 
-	public void importAnnotationBatch(String infile) throws SQLException {
-		Connection conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
+	public void importAnnotationBatch(String infile) throws DatabaseException {
+		Connection conn = null;
 		Statement stmt = null;
 
 		try {
+			conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
 			stmt = conn.createStatement();
 
 			stmt.execute("attach database \"" + dbfile_ + "\" as master");
@@ -617,7 +624,7 @@ public class Database {
 			try {
 				conn.rollback();
 			} catch(SQLException e2) {}
-			throw e;
+			throw new DatabaseException(e);
 		} finally {
 			Database.close(stmt);
 			Database.close(conn);
@@ -652,7 +659,7 @@ public class Database {
 		}
 	}
 
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) throws DatabaseException, SQLException {
 		Database db = new Database(args[0]);
 		db.createAnnotationBatch(args[0] + ".batchMiryam", 1, new int[] { 1 });
 		db.createAnnotationBatch(args[0] + ".batchMarie", 2, new int[] { 1 });

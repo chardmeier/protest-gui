@@ -36,23 +36,22 @@ public class ProtestGUI implements Runnable, ActionListener {
 	private ArrayList<JButton> catButtons_;
 
 	public ProtestGUI() {
-		try {
-			String dbname = new DatabaseOpener().open();
-			if(dbname == null)
-				System.exit(0);
-			db_ = new Database(dbname);
-		} catch(SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-		instWindow_ = new InstanceWindow(this, getAnnotatorID());
-		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
+		String dbname = new DatabaseOpener().open();
+		init(dbname);
 	}
 
 	public ProtestGUI(String dbfile) {
+		init(dbfile);
+	}
+
+	private void init(String dbfile) {
+		JDialog.setDefaultLookAndFeelDecorated(true);
+
 		try {
 			db_ = new Database(dbfile);
-		} catch(SQLException e) {
+		} catch(DatabaseException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(),
+					"Error opening file", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -188,7 +187,6 @@ public class ProtestGUI implements Runnable, ActionListener {
 			// Get PrecheckReport object and test "canImport" (should be yes if compatible) and "shouldWarn"
 			PrecheckReport rep = db_.precheckAnnotationBatch(dbname);
 			// If PrecheckReport is ok, import annotations
-			JDialog.setDefaultLookAndFeelDecorated(true);
 			if (rep.canImport() == true) {
 				if (rep.shouldWarn() == true) {
 					int response = JOptionPane.showConfirmDialog(null, rep.getMessage(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -203,7 +201,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 				String importMsg = "Unable to import annotator database: " + rep.getMessage();
 				JOptionPane.showMessageDialog(null, importMsg);
 			}
-		} catch(SQLException e) {
+		} catch(DatabaseException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
