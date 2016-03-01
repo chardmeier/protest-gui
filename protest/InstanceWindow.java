@@ -56,7 +56,7 @@ import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 
-public class InstanceWindow implements ActionListener, TableButtonListener {
+public class InstanceWindow implements ActionListener {
 	private ProtestGUI categorySelector_;
 
 	private JFrame frame_;
@@ -607,14 +607,6 @@ public class InstanceWindow implements ActionListener, TableButtonListener {
 			tagListModel_.removeTag(tag);
 			displayTagList();
 		}
-	}
-
-	public void tableButtonClicked(int row, int col) {
-		if(col != 1)
-			throw new IllegalArgumentException("All buttons should be in row 1");
-		String tag = tagListModel_.getValueAt(row, 0);
-		current_.removeTag(tag);
-		tagListModel_.removeTag(tag);
 	}
 
 	public void setData(String title, List<TestSuiteExample> instances) {
