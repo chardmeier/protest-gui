@@ -617,9 +617,7 @@ public class Database {
 
 			stmt.execute("insert into master.token_annotations select NULL, candidate, line, token, annotation, annotator_id from main.token_annotations");
 
-			System.err.println("before commit");
 			conn.commit();
-			System.err.println("after commit");
 		} catch(SQLException e) {
 			try {
 				conn.rollback();
