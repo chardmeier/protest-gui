@@ -613,9 +613,20 @@ public class Database {
 					"(select a.id from main.token_annotations as a, master.token_annotations as b " +
 					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id)");
 
-			stmt.execute("insert into master.annotations select NULL, candidate, annotator_id, ant_annotation, anaph_annotation, remarks, conflict_status from main.annotations");
+			stmt.execute("delete from master.tag_annotations where id in " +
+					"(select a.id from main.tag_annotations as a, master.tag_annotations as b " +
+					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id)");
 
-			stmt.execute("insert into master.token_annotations select NULL, candidate, line, token, annotation, annotator_id from main.token_annotations");
+			stmt.execute("insert into master.annotations " +
+					"(candidate, annotator_id, ant_annotation, anaph_annotation, remarks, confict_status) " +
+					"select candidate, annotator_id, ant_annotation, anaph_annotation, remarks, conflict_status from main.annotations");
+
+			stmt.execute("insert into master.token_annotations " +
+					"(candidate, line, token, annotation, annotator_id) " +
+					"select candidate, line, token, annotation, annotator_id from main.token_annotations");
+
+			stmt.execute("insert into master.tag_annotations (candidate, annotator_id, tag) " +
+					"select candidate, annotator_id, tag from main.tag_annotations");
 
 			conn.commit();
 		} catch(SQLException e) {
