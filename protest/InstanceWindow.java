@@ -25,10 +25,10 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -66,8 +66,8 @@ public class InstanceWindow implements ActionListener {
 	private JButton nextButton_;
 	private JLabel idxField_;
 
-	private JTable tagList_;
-	private TagTableModel tagListModel_;
+	private JList tagList_;
+	private DefaultListModel tagListModel_;
 	private JButton removeTagButton_;
 	private JComboBox newTag_;
 	private DefaultComboBoxModel newTagModel_;
@@ -238,16 +238,15 @@ public class InstanceWindow implements ActionListener {
 
 		JPanel tagPanel = new JPanel(new BorderLayout());
 
-		tagListModel_ = new TagTableModel();
-		tagList_ = new JTable(tagListModel_);
-		tagList_.setRowSelectionAllowed(true);
+		tagListModel_ = new DefaultListModel();
+		tagList_ = new JList(tagListModel_);
 		ListSelectionModel selModel = tagList_.getSelectionModel();
 		selModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		selModel.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				if(e.getValueIsAdjusting())
 					return;
-				removeTagButton_.setEnabled(tagList_.getSelectedRow() >= 0);
+				removeTagButton_.setEnabled(tagList_.getSelectedIndex() >= 0);
 			}
 		});
 		tagPanel.add(new JScrollPane(tagList_), BorderLayout.CENTER);
@@ -351,7 +350,9 @@ public class InstanceWindow implements ActionListener {
 
 	private void displayTagList() {
 		System.err.println("Displaying tag list: " + current_.getTags().toString());
-		tagListModel_.setData(current_.getTags());
+		tagListModel_.clear();
+		for(String tag : current_.getTags())
+			tagListModel_.addElement(tag);
 		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
 		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
 		newTagModel_.removeAllElements();
@@ -599,12 +600,11 @@ public class InstanceWindow implements ActionListener {
 			displayTagList();
 		} else if(cmd[0].equals("remove-tag")) {
 			dirty_ = true;
-			int pos = tagList_.getSelectedRow();
-			if(pos == -1)
+			String tag = (String) tagList_.getSelectedValue();
+			if(tag == null)
 				return;
-			String tag = tagListModel_.getValueAt(pos, 0);
 			current_.removeTag(tag);
-			tagListModel_.removeTag(tag);
+			tagListModel_.removeElement(tag);
 			displayTagList();
 		}
 	}
