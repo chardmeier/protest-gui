@@ -591,18 +591,18 @@ public class InstanceWindow implements ActionListener {
 			current_.setAnaphorAnnotation(cmd[1]);
 			System.err.println("Button change: " + e.getActionCommand());
 		} else if(cmd[0].equals("add-tag")) {
-			dirty_ = true;
 			String tag = (String) newTag_.getSelectedItem();
 			if(tag.isEmpty())
 				return;
+			dirty_ = true;
 			current_.addTag(tag);
 			newTag_.setSelectedItem("");
 			displayTagList();
 		} else if(cmd[0].equals("remove-tag")) {
-			dirty_ = true;
 			String tag = (String) tagList_.getSelectedValue();
 			if(tag == null)
 				return;
+			dirty_ = true;
 			current_.removeTag(tag);
 			tagListModel_.removeElement(tag);
 			displayTagList();
