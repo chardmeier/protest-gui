@@ -237,6 +237,8 @@ public class InstanceWindow implements ActionListener {
 		annotationPanel_.add(prnButtonPanel);
 
 		JPanel tagPanel = new JPanel(new BorderLayout());
+		tagPanel.setPreferredSize(new Dimension(300, 180));
+		tagPanel.setBorder(BorderFactory.createTitledBorder("Tags:"));
 
 		tagListModel_ = new DefaultListModel();
 		tagList_ = new JList(tagListModel_);
@@ -275,7 +277,6 @@ public class InstanceWindow implements ActionListener {
 		// Text field for annotator's notes
 		
 		remarksField_ = new JTextArea(10, 30);
-		//remarksField_.setBorder(BorderFactory.createLineBorder(Color.black));
 		remarksField_.setBorder(BorderFactory.createTitledBorder("Remarks:"));
 		remarksField_.setEditable(true);
 		remarksField_.setLineWrap(true);
