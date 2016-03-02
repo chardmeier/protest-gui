@@ -60,7 +60,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 	public int getAnnotatorID() {
 		String id = db_.getMetadata("annotator_id");
 		if(id.isEmpty())
-			return 0;
+			return -1;
 		else
 			return Integer.parseInt(id);
 	}
