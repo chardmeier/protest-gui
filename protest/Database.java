@@ -621,7 +621,7 @@ public class Database {
 					"where a.candidate=b.candidate and a.annotator_id=b.annotator_id)");
 
 			stmt.execute("insert into master.annotations " +
-					"(candidate, annotator_id, ant_annotation, anaph_annotation, remarks, confict_status) " +
+					"(candidate, annotator_id, ant_annotation, anaph_annotation, remarks, conflict_status) " +
 					"select candidate, annotator_id, ant_annotation, anaph_annotation, remarks, conflict_status from main.annotations");
 
 			stmt.execute("insert into master.token_annotations " +
