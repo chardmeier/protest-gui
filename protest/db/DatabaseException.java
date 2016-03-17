@@ -1,4 +1,4 @@
-package protest;
+package protest.db;
 
 public class DatabaseException extends Exception {
 	public DatabaseException() {

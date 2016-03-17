@@ -1,4 +1,4 @@
-package protest;
+package protest.db;
 
 public class Position {
 	private int line_;

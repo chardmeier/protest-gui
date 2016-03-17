@@ -1,4 +1,4 @@
-package protest;
+package protest.gui.instance;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

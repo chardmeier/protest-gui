@@ -1,4 +1,4 @@
-package protest;
+package protest.db;
 
 public class PrecheckReport {
 	private boolean error_ = false;

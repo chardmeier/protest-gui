@@ -1,4 +1,4 @@
-package protest;
+package protest.gui.taskdef;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;

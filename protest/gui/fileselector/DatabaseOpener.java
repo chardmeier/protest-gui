@@ -1,4 +1,4 @@
-package protest;
+package protest.gui.fileselector;
 
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;

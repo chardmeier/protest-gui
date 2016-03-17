@@ -1,4 +1,4 @@
-package protest;
+package protest.db;
 
 import java.util.Arrays;
 import java.util.List;

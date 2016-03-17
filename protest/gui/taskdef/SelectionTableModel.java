@@ -1,4 +1,4 @@
-package protest;
+package protest.gui.taskdef;
 
 import java.util.ArrayList;
 import java.util.Arrays;

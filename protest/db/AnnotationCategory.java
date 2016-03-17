@@ -1,4 +1,4 @@
-package protest;
+package protest.db;
 
 import java.awt.Color;
 import java.util.ArrayList;

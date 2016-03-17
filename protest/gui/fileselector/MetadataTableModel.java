@@ -1,4 +1,4 @@
-package protest;
+package protest.gui.fileselector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
