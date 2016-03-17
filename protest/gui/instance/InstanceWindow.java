@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,34 +14,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.TreeSet;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableColumn;
-import javax.swing.text.BadLocationException;
-
-//For message dialogs
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -68,6 +47,8 @@ public class InstanceWindow implements ActionListener {
 	private JButton nextButton_;
 	private JLabel idxField_;
 
+	private AbstractRightHandPanel rightHandPanel_;
+
 	private JPanel instructionPanel_;
 	private JLabel instructionLabel_;
 
@@ -77,8 +58,6 @@ public class InstanceWindow implements ActionListener {
 
 	private String title_;
 	private int annotator_;
-
-	private boolean dirty_ = false;
 
 	public InstanceWindow(int annotator) {
 		annotator_ = annotator;
@@ -164,8 +143,8 @@ public class InstanceWindow implements ActionListener {
 		nextButton_.addActionListener(this);
 		browsePanel.add(nextButton_, BorderLayout.LINE_END);
 
-		AnnotationPanel annotationPanel = new AnnotationPanel();
-		detailPanel.add(annotationPanel, BorderLayout.CENTER);
+		rightHandPanel_ = new AnnotationPanel();
+		detailPanel.add(rightHandPanel_, BorderLayout.CENTER);
 
 		frame_.setLocationByPlatform(true);
 		frame_.pack();
@@ -176,56 +155,8 @@ public class InstanceWindow implements ActionListener {
 		idxField_.setText(String.format("%d/%d", currentIdx_ + 1, instances_.size()));
 		prevButton_.setEnabled(currentIdx_ > 0);
 		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
-		//Make "annotationPanel_" invisible if pronoun-antecedent agreement is not required
-		displayAntAgreeVisible();
+		rightHandPanel_.setCurrentInstance(current_);
 		displayContext();
-		displayAnnotations();
-	}
-
-	private void displayAnnotations() {
-		String antecedentAnnotation = current_.getAntecedentAnnotation();
-		if(antecedentAnnotation.equals("ok"))
-			antOK_.setSelected(true);
-		else if(antecedentAnnotation.equals("bad"))
-			antBad_.setSelected(true);
-		else if(antecedentAnnotation.equals("unset"))
-			antUnset_.setSelected(true);
-		else {
-			System.err.println("Unknown antecedent annotation: " + antecedentAnnotation);
-			antUnset_.setSelected(true);
-		}
-
-		String anaphorAnnotation = current_.getAnaphorAnnotation();
-		if(anaphorAnnotation.equals("ok"))
-			prnOK_.setSelected(true);
-		else if(anaphorAnnotation.equals("bad"))
-			prnBad_.setSelected(true);
-		else if(anaphorAnnotation.equals("unset"))
-			prnUnset_.setSelected(true);
-		else {
-			System.err.println("Unknown anaphor annotation: " + anaphorAnnotation);
-			prnUnset_.setSelected(true);
-		}
-
-		displayTagList();
-
-		// This is going to set the dirty flag, so we clear it afterwards.
-		remarksField_.setText(current_.getRemarks());
-
-		dirty_ = false;
-	}
-
-	private void displayTagList() {
-		System.err.println("Displaying tag list: " + current_.getTags().toString());
-		tagListModel_.clear();
-		for(String tag : current_.getTags())
-			tagListModel_.addElement(tag);
-		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
-		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
-		newTagModel_.removeAllElements();
-		newTagModel_.addElement("");
-		for(String tag : availableTags)
-			newTagModel_.addElement(tag);
 	}
 
 	private boolean confirmConflict(ConflictStatus conflicts) {
@@ -239,13 +170,11 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private boolean saveAnnotations(boolean force) {
-		if(dirty_) {
+		if(current_.needsSaving()) {
 			ConflictStatus conflicts = current_.checkAnnotationConflict();
 			if(!force && !confirmConflict(conflicts)) 
 				return false;
 
-			dirty_ = false; // set this now in case we get called again from an exit hook
-			current_.setRemarks(remarksField_.getText());
 			current_.saveAnnotations(annotator_, conflicts.encode());
 		}
 
@@ -341,23 +270,6 @@ public class InstanceWindow implements ActionListener {
 
 		targetContext_.setDocumentFromString(tgthtml.toString(), "", new XhtmlNamespaceHandler());
 	}
-	
-	private void displayAntAgreeVisible() {
-		boolean agree = current_.getAntecedentAgreementRequired();
-		if (agree==true) {
-			//annotationPanel_.setVisible(true);
-			antButtonPanel_.setVisible(true);
-			antLabel_.setVisible(true);
-			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
-							  "(given antecedent head)?</div></html>");
-		}
-		else {
-			//annotationPanel_.setVisible(false);
-			antButtonPanel_.setVisible(false);
-			antLabel_.setVisible(false);
-			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated?</div></html>");
-		}
-	}
 
 	private String escapeXml(String s) {
 		return s.replace("&", "&amp;").replace("\"", "&quot;")
@@ -386,13 +298,11 @@ public class InstanceWindow implements ActionListener {
 			int pos = Integer.parseInt(cc[2]);
 			int state = toggleHighlight(panel, box, celem, Arrays.asList(antClasses));
 			current_.setTokenApproval(line, pos, states[state]);
-			dirty_ = true;
 		} else if(cc[0].equals("ana")) {
 			int line = Integer.parseInt(cc[1]);
 			int pos = Integer.parseInt(cc[2]);
 			int state = toggleHighlight(panel, box, celem, Arrays.asList(anaClasses));
 			current_.setTokenApproval(line, pos, states[state]);
-			dirty_ = true;
 		}
 	}
 
@@ -448,30 +358,6 @@ public class InstanceWindow implements ActionListener {
 					showCurrentInstance();
 				}
 			}
-		} else if(cmd[0].equals("ant")) {
-			dirty_ = true;
-			current_.setAntecedentAnnotation(cmd[1]);
-			System.err.println("Button change: " + e.getActionCommand());
-		} else if(cmd[0].equals("prn")) {
-			dirty_ = true;
-			current_.setAnaphorAnnotation(cmd[1]);
-			System.err.println("Button change: " + e.getActionCommand());
-		} else if(cmd[0].equals("add-tag")) {
-			String tag = (String) newTag_.getSelectedItem();
-			if(tag.isEmpty())
-				return;
-			dirty_ = true;
-			current_.addTag(tag);
-			newTag_.setSelectedItem("");
-			displayTagList();
-		} else if(cmd[0].equals("remove-tag")) {
-			String tag = (String) tagList_.getSelectedValue();
-			if(tag == null)
-				return;
-			dirty_ = true;
-			current_.removeTag(tag);
-			tagListModel_.removeElement(tag);
-			displayTagList();
 		}
 	}
 

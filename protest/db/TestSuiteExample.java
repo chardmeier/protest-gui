@@ -26,6 +26,7 @@ public class TestSuiteExample {
 	private int lastLine_;
 
 	private boolean loaded_;
+	private boolean dirty_;
 
 	private List<int[]> anaphorSourceHighlight_;
 	private List<int[]> anaphorTargetHighlight_;
@@ -49,6 +50,7 @@ public class TestSuiteExample {
 		tgtcorpus_ = tgtcorpus;
 		example_no_ = example_no;
 		loaded_ = false;
+		dirty_ = false;
 		currline_ = -1;
 	}
 
@@ -145,6 +147,7 @@ public class TestSuiteExample {
 		}
 
 		loaded_ = true;
+		dirty_ = false;
 	}
 
 	private Position retrieveAnaphorSourcePosition() throws SQLException {
@@ -339,6 +342,10 @@ public class TestSuiteExample {
 
 	}
 
+	public boolean needsSaving() {
+		return dirty_;
+	}
+
 	public void saveAnnotations(int annotator, String conflictStatus) {
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -415,8 +422,8 @@ public class TestSuiteExample {
 			stmt.setString(6, conflictStatus);
 			stmt.execute();
 
-
 			conn.commit();
+			dirty_ = false;
 		} catch(SQLException e) {
 			if(conn != null) {
 				try {
@@ -472,7 +479,10 @@ public class TestSuiteExample {
 	}
 
 	public void setAntecedentAnnotation(String annotation) {
-		antecedentAnnotation_ = annotation;
+		if(!antecedentAnnotation_.equals(annotation)) {
+			antecedentAnnotation_ = annotation;
+			dirty_ = true;
+		}
 	}
 
 	public String getAnaphorAnnotation() {
@@ -480,7 +490,10 @@ public class TestSuiteExample {
 	}
 
 	public void setAnaphorAnnotation(String annotation) {
-		anaphorAnnotation_ = annotation;
+		if(!anaphorAnnotation_.equals(annotation)) {
+			anaphorAnnotation_ = annotation;
+			dirty_ = true;
+		}
 	}
 
 	public String getRemarks() {
@@ -488,7 +501,10 @@ public class TestSuiteExample {
 	}
 
 	public void setRemarks(String remarks) {
-		remarks_ = remarks;
+		if(!remarks_.equals(remarks)) {
+			remarks_ = remarks;
+			dirty_ = true;
+		}
 	}
 
 	public String getTokenApproval(int line, int token) {
@@ -497,7 +513,10 @@ public class TestSuiteExample {
 	}
 
 	public void setTokenApproval(int line, int token, String approved) {
-		approvedTokens_.get(line)[token] = approved;
+		if(!approvedTokens_.get(line)[token].equals(approved)) {
+			approvedTokens_.get(line)[token] = approved;
+			dirty_ = true;
+		}
 	}
 	
 	public Set<String> getTags() {

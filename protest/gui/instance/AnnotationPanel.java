@@ -1,6 +1,37 @@
 package protest.gui.instance;
 
-class AnnotationPanel extends JPanel {
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import java.util.TreeSet;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import protest.db.TestSuiteExample;
+
+class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
+	private TestSuiteExample current_;
+
 	private JList tagList_;
 	private DefaultListModel tagListModel_;
 	private JButton removeTagButton_;
@@ -19,7 +50,7 @@ class AnnotationPanel extends JPanel {
 	private JLabel antLabel_;
 	private JLabel proLabel_;
 	
-	public AnnotationPanel() implements ActionListener {
+	public AnnotationPanel() {
 		super(new BorderLayout());
 
 		// Annotation buttons
@@ -133,12 +164,108 @@ class AnnotationPanel extends JPanel {
 				update(e);
 			}
 			private void update(DocumentEvent e) {
-				dirty_ = true;
+				current_.setRemarks(remarksField_.getText());
 			}
 		});
 
 		this.add(annotationAndTagPanel, BorderLayout.PAGE_START);
 		this.add(remarksField_, BorderLayout.CENTER);
+	}
+
+	public boolean isEditable() {
+		return true;
+	}
+
+	public void setCurrentInstance(TestSuiteExample ex) {
+		current_ = ex;
+		displayAnnotations();
+		displayAntAgreeVisible();
+	}
+
+	private void displayAnnotations() {
+		String antecedentAnnotation = current_.getAntecedentAnnotation();
+		if(antecedentAnnotation.equals("ok"))
+			antOK_.setSelected(true);
+		else if(antecedentAnnotation.equals("bad"))
+			antBad_.setSelected(true);
+		else if(antecedentAnnotation.equals("unset"))
+			antUnset_.setSelected(true);
+		else {
+			System.err.println("Unknown antecedent annotation: " + antecedentAnnotation);
+			antUnset_.setSelected(true);
+		}
+
+		String anaphorAnnotation = current_.getAnaphorAnnotation();
+		if(anaphorAnnotation.equals("ok"))
+			prnOK_.setSelected(true);
+		else if(anaphorAnnotation.equals("bad"))
+			prnBad_.setSelected(true);
+		else if(anaphorAnnotation.equals("unset"))
+			prnUnset_.setSelected(true);
+		else {
+			System.err.println("Unknown anaphor annotation: " + anaphorAnnotation);
+			prnUnset_.setSelected(true);
+		}
+
+		displayTagList();
+
+		// This is going to set the dirty flag, so we clear it afterwards.
+		remarksField_.setText(current_.getRemarks());
+	}
+
+	private void displayTagList() {
+		System.err.println("Displaying tag list: " + current_.getTags().toString());
+		tagListModel_.clear();
+		for(String tag : current_.getTags())
+			tagListModel_.addElement(tag);
+		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
+		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
+		newTagModel_.removeAllElements();
+		newTagModel_.addElement("");
+		for(String tag : availableTags)
+			newTagModel_.addElement(tag);
+	}
+
+	private void displayAntAgreeVisible() {
+		boolean agree = current_.getAntecedentAgreementRequired();
+		if (agree==true) {
+			//annotationPanel_.setVisible(true);
+			antButtonPanel_.setVisible(true);
+			antLabel_.setVisible(true);
+			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
+							  "(given antecedent head)?</div></html>");
+		}
+		else {
+			//annotationPanel_.setVisible(false);
+			antButtonPanel_.setVisible(false);
+			antLabel_.setVisible(false);
+			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated?</div></html>");
+		}
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		String[] cmd = e.getActionCommand().split(" ");
+		if(cmd[0].equals("ant")) {
+			current_.setAntecedentAnnotation(cmd[1]);
+			System.err.println("Button change: " + e.getActionCommand());
+		} else if(cmd[0].equals("prn")) {
+			current_.setAnaphorAnnotation(cmd[1]);
+			System.err.println("Button change: " + e.getActionCommand());
+		} else if(cmd[0].equals("add-tag")) {
+			String tag = (String) newTag_.getSelectedItem();
+			if(tag.isEmpty())
+				return;
+			current_.addTag(tag);
+			newTag_.setSelectedItem("");
+			displayTagList();
+		} else if(cmd[0].equals("remove-tag")) {
+			String tag = (String) tagList_.getSelectedValue();
+			if(tag == null)
+				return;
+			current_.removeTag(tag);
+			tagListModel_.removeElement(tag);
+			displayTagList();
+		}
 	}
 }
 
