@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,11 @@ public class TestSuiteExample {
 	private boolean loaded_;
 	private boolean dirty_;
 
+	private Position anaphorSourcePosition_;
+	private List<Position> anaphorTargetPositions_;
+	private List<Position> antecedentSourcePositions_;
+	private List<Position> antecedentTargetPositions_;
+
 	private List<int[]> anaphorSourceHighlight_;
 	private List<int[]> anaphorTargetHighlight_;
 	private List<int[]> antecedentSourceHighlight_;
@@ -37,12 +43,6 @@ public class TestSuiteExample {
 	private List<String> targetSentences_;
 
 	private int currline_;
-
-	private String antecedentAnnotation_;
-	private String anaphorAnnotation_;
-	private String remarks_;
-	private Set<String> tags_;
-	private List<String[]> approvedTokens_;
 
 	public TestSuiteExample(Database db, int srccorpus, int tgtcorpus, int example_no) {
 		db_ = db;
@@ -63,14 +63,14 @@ public class TestSuiteExample {
 			return;
 
 		try {
-			Position anaphorSource = retrieveAnaphorSourcePosition();
-			List<Position> anaphorTarget = retrieveAnaphorTargetPositions();
-			List<Position> antecedentSource = retrieveAntecedentSourcePositions();
-			List<Position> antecedentTarget = retrieveAntecedentTargetPositions();
+			anaphorSourcePosition_ = retrieveAnaphorSourcePosition();
+			anaphorTargetPositions_ = retrieveAnaphorTargetPositions();
+			antecedentSourcePositions_ = retrieveAntecedentSourcePositions();
+			antecedentTargetPositions_ = retrieveAntecedentTargetPositions();
 
-			firstLine_ = anaphorSource.getLine();
-			lastLine_ = anaphorSource.getLine();
-			for(Position p : antecedentSource) {
+			firstLine_ = anaphorSourcePosition_.getLine();
+			lastLine_ = anaphorSourcePosition_.getLine();
+			for(Position p : antecedentSourcePosition_) {
 				if(p.getLine() < firstLine_)
 					firstLine_ = p.getLine();
 				if(p.getLine() > lastLine_)
@@ -95,10 +95,10 @@ public class TestSuiteExample {
 
 			int[] buf = new int[100];
 
-			if(!anaphorTarget.isEmpty()) {
-				int line = anaphorTarget.get(0).getLine();
+			if(!anaphorTargetPositions_.isEmpty()) {
+				int line = anaphorTargetPositions_.get(0).getLine();
 				int i = 0;
-				for(Position p : anaphorTarget) {
+				for(Position p : anaphorTargetPositions_) {
 					if(p.getLine() != line) {
 						anaphorTargetHighlight_.set(line - firstLine_,
 								Arrays.copyOf(buf, i));
@@ -111,9 +111,9 @@ public class TestSuiteExample {
 			}
 
 			if(!antecedentSource.isEmpty()) {
-				int line = antecedentSource.get(0).getLine();
+				int line = antecedentSourcePositions_.get(0).getLine();
 				int i = 0;
-				for(Position p : antecedentSource) {
+				for(Position p : antecedentSourcePositions_) {
 					if(p.getLine() != line) {
 						antecedentSourceHighlight_.set(line - firstLine_,
 								Arrays.copyOf(buf, i));
@@ -125,10 +125,10 @@ public class TestSuiteExample {
 				antecedentSourceHighlight_.set(line - firstLine_, Arrays.copyOf(buf, i));
 			}
 
-			if(!antecedentTarget.isEmpty()) {
-				int line = antecedentTarget.get(0).getLine();
+			if(!antecedentTargetPositions_.isEmpty()) {
+				int line = antecedentTargetPositions_.get(0).getLine();
 				int i = 0;
-				for(Position p : antecedentTarget) {
+				for(Position p : antecedentTargetPositions_) {
 					if(p.getLine() != line) {
 						antecedentTargetHighlight_.set(line - firstLine_,
 								Arrays.copyOf(buf, i));
@@ -174,7 +174,7 @@ public class TestSuiteExample {
 			Database.close(stmt);
 			Database.close(conn);
 		}
-		return new Position(line, srcpos, srcpos);
+		return new Position(line, srcpos);
 	}
 
 	private List<Position> retrieveAntecedentSourcePositions() throws SQLException {
@@ -224,7 +224,7 @@ public class TestSuiteExample {
 			while(res.next()) {
 				int line = res.getInt("line");
 				int tgtpos = res.getInt("tgtpos");
-				out.add(new Position(line, tgtpos, tgtpos));
+				out.add(new Position(line, tgtpos));
 			}
 		} finally {
 			Database.close(stmt);
@@ -252,7 +252,7 @@ public class TestSuiteExample {
 			while(res.next()) {
 				int line = res.getInt("line");
 				int tgtpos = res.getInt("tgtpos");
-				out.add(new Position(line, tgtpos, tgtpos));
+				out.add(new Position(line, tgtpos));
 			}
 		} finally {
 			Database.close(stmt);
@@ -287,65 +287,73 @@ public class TestSuiteExample {
 		return out;
 	}
 
-	private void loadAnnotations() throws SQLException {
+	public boolean needsSaving() {
+		return dirty_;
+	}
+
+	private List<AnnotationRecord> loadAnnotations() throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
+
+		HashMap<Integer,AnnotationRecord> annmap = new HashMap<Integer,AnnotationRecord>();
 
 		try {
 			conn = db_.getConnection();
 			stmt = conn.prepareStatement(
-				"select ant_annotation, anaph_annotation, remarks from annotations where candidate=?");
+				"select annotator_id, ant_annotation, anaph_annotation, remarks from annotations " +
+				"where candidate=? order by annotator_id");
 			stmt.setInt(1, candidate_id_);
 			ResultSet res = stmt.executeQuery();
-			if(res.next()) {
-				antecedentAnnotation_ = res.getString(1);
-				anaphorAnnotation_ = res.getString(2);
-				remarks_ = res.getString(3);
-				if(res.next())
-					System.err.println("Warning: Multiple annotation records for candidate ID " + candidate_id_);
-			} else {
-				antecedentAnnotation_ = "unset";
-				anaphorAnnotation_ = "unset";
-				remarks_ = "";
+			while(res.next()) {
+				int annotator_id = res.getInt("annotator_id");
+				AnnotationRecord rec = new AnnotationRecord(candidate_id_, annotator_id);
+				rec.setAntecedentAnnotation(res.getString("ant_annotation"));
+				rec.setAnaphorAnnotation(res.getString("anaph_annotation"));
+				rec.setRemarks(res.getString("remarks"));
+				annmap.put(Integer.valueOf(annotator_id), rec);
 			}
-
+			
 			stmt.close();
 			stmt = conn.prepareStatement(
-				"select tag from tag_annotations where candidate=? order by tag");
-			stmt.setInt(1, candidate_id_);
-			res = stmt.executeQuery();
-			tags_ = new TreeSet<String>();
-			while(res.next())
-				tags_.add(res.getString("tag"));
-
-			int nsent = lastLine_ - firstLine_ + 1;
-			approvedTokens_ = new ArrayList<String[]>(nsent);
-			for(int i = 0; i < nsent; i++) {
-				String[] t = targetSentences_.get(i).split(" ");
-				approvedTokens_.add(new String[t.length]);
-			}
-
-			stmt.close();
-			stmt = conn.prepareStatement(
-				"select line, token, annotation from token_annotations where candidate=?");
+				"select annotator_id, tag from tag_annotations where candidate=? order by annotator_id, tag");
 			stmt.setInt(1, candidate_id_);
 			res = stmt.executeQuery();
 			while(res.next()) {
-				int line = res.getInt(1) - firstLine_;
-				int token = res.getInt(2);
-				approvedTokens_.get(line)[token] = res.getString(3);
+				int annotator_id = res.getInt("annotator_id");
+				AnnotationRecord rec = annmap.get(Integer.valueOf(annotator_id));
+				if(rec == null) {
+					rec = new AnnotationRecord(candidate_id_, annotator_id);
+					annmap.put(Integer.valueOf(annotator_id), rec);
+				}
+				rec.addTag(res.getString("tag"));
 			}
+
+			stmt.close();
+			stmt = conn.prepareStatement(
+				"select annotator_id, line, token, annotation from token_annotations where candidate=?");
+			stmt.setInt(1, candidate_id_);
+			res = stmt.executeQuery();
+			while(res.next()) {
+				int annotator_id = res.getInt("annotator_id");
+				AnnotationRecord rec = annmap.get(Integer.valueOf(annotator_id));
+				if(rec == null) {
+					rec = new AnnotationRecord(candidate_id_, annotator_id);
+					annmap.put(Integer.valueOf(annotator_id), rec);
+				}
+				int line = res.getInt("line") - firstLine_;
+				int token = res.getInt("token");
+				rec.setTokenApproval(line, token, res.getString("annotation"));
+			}
+
+			for(AnnotationRecord rec : out)
+				rec.resetDirty();
 		} finally {
 			Database.close(stmt);
 			Database.close(conn);
 		}
 
+		return new ArrayList(annmap.values());
 	}
-
-	public boolean needsSaving() {
-		return dirty_;
-	}
-
 	public void saveAnnotations(int annotator, String conflictStatus) {
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -474,69 +482,6 @@ public class TestSuiteExample {
 				antecedentTargetHighlight_.get(currline_));
 	}
 
-	public String getAntecedentAnnotation() {
-		load();
-		return antecedentAnnotation_;
-	}
-
-	public void setAntecedentAnnotation(String annotation) {
-		if(!antecedentAnnotation_.equals(annotation)) {
-			antecedentAnnotation_ = annotation;
-			dirty_ = true;
-		}
-	}
-
-	public String getAnaphorAnnotation() {
-		load();
-		return anaphorAnnotation_;
-	}
-
-	public void setAnaphorAnnotation(String annotation) {
-		if(!anaphorAnnotation_.equals(annotation)) {
-			anaphorAnnotation_ = annotation;
-			dirty_ = true;
-		}
-	}
-
-	public String getRemarks() {
-		load();
-		return remarks_;
-	}
-
-	public void setRemarks(String remarks) {
-		if(!remarks_.equals(remarks)) {
-			remarks_ = remarks;
-			dirty_ = true;
-		}
-	}
-
-	public String getTokenApproval(int line, int token) {
-		load();
-
-		String a = approvedTokens_.get(line)[token];
-		return a == null ? "" : a;
-	}
-
-	public void setTokenApproval(int line, int token, String approved) {
-		if(!approvedTokens_.get(line)[token].equals(approved)) {
-			approvedTokens_.get(line)[token] = approved;
-			dirty_ = true;
-		}
-	}
-	
-	public Set<String> getTags() {
-		load();
-		return tags_;
-	}
-
-	public void addTag(String tag) {
-		tags_.add(tag);
-	}
-
-	public void removeTag(String tag) {
-		tags_.remove(tag);
-	}
-
 	//Return True if pronoun example category requires antecedent agreement
 	public boolean getAntecedentAgreementRequired() {
 		boolean agree = false;
@@ -570,23 +515,7 @@ public class TestSuiteExample {
 		return agree;
 	}
 	
-	private List<Position> retrieveApprovedPositions() {
-		ArrayList<Position> out = new ArrayList<Position>();
-		int lineNo;
-		int tokNo;
-		for(int i = 0; i < approvedTokens_.size(); i++)
-			for(int j = 0; j < approvedTokens_.get(i).length; j++) {
-				String app = approvedTokens_.get(i)[j];
-				if(app == null || app.isEmpty())
-					continue;
-				lineNo = firstLine_ + i;
-				tokNo = j;
-				out.add(new Position(lineNo, tokNo, tokNo));
-			}
-		return out;
-	}
-	
-	private boolean checkIfTokensAnnotated(List<Position> all, List<Position> approved) {
+	private boolean checkIfTokensAnnotated(Collection<Position> all, Collection<Position> approved) {
 		boolean result = false;
 		for(Position p : all) {
 			for(Position q : approved) {
@@ -598,38 +527,32 @@ public class TestSuiteExample {
 		return result;
 	}
 	
-	public ConflictStatus checkAnnotationConflict() {
+	public ConflictStatus checkAnnotationConflict(AnnotationRecord rec) {
 		int anaphConflictType = ConflictStatus.NO_CONFLICT;
 		int antConflictType = ConflictStatus.NO_CONFLICT;
-		try {
-			String anaph_annotation = getAnaphorAnnotation();
-			String ant_annotation = getAntecedentAnnotation();
-			// Get positions of anaphor and antecedent in target
-			List<Position> anaphorTarget = retrieveAnaphorTargetPositions();
-			List<Position> antecedentTarget = retrieveAntecedentTargetPositions();
-			// Get positions of highlighted tokens from: approvedTokens_
-			List<Position> approved = retrieveApprovedPositions();
-			// Compare
-			boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget,approved);
-			boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget,approved);
 
-			// Pronoun annotation conflicts
-			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
-				anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-			else if (anaph_annotation.equals("unset") && !tags_.isEmpty())
-				anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
-			else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
-				anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
+		String anaph_annotation = getAnaphorAnnotation();
+		String ant_annotation = getAntecedentAnnotation();
+		// Get positions of highlighted tokens from: approvedTokens_
+		Collection<Position> approved = rec.getApprovedPositions();
+		// Compare
+		boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTargetPositions_, approved);
+		boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTargetPositions_, approved);
 
-			// Antecedent annotation conflicts
-			if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())
-				antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-			else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
-				antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
-		} catch(SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		// Pronoun annotation conflicts
+		if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
+			anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
+		else if (anaph_annotation.equals("unset") && !tags_.isEmpty())
+			anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
+		else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
+			anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
+
+		// Antecedent annotation conflicts
+		if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())
+			antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
+		else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
+			antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
+
 		return new ConflictStatus(anaphConflictType, antConflictType);
 	}
 }
