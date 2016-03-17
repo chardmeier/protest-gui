@@ -429,6 +429,8 @@ public class TestSuiteExample {
 			Database.close(stmt);
 			Database.close(conn);
 		}
+
+		db_.fireDatabaseUpdate(this);
 	}
 
 	public void reset() {

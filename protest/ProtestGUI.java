@@ -8,6 +8,8 @@ import java.awt.FlowLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -31,7 +33,7 @@ import protest.gui.fileselector.DatabaseOpener;
 import protest.gui.instance.InstanceWindow;
 import protest.gui.taskdef.TaskDefinitionWindow;
 
-public class ProtestGUI implements Runnable, ActionListener {
+public class ProtestGUI implements Runnable, ActionListener, Observer {
 	private Database db_;
 	private List<AnnotationCategory> categories_;
 	private int currentCategory_;
@@ -62,7 +64,7 @@ public class ProtestGUI implements Runnable, ActionListener {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		instWindow_ = new InstanceWindow(this, getAnnotatorID());
+		instWindow_ = new InstanceWindow(getAnnotatorID());
 		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
    
@@ -156,6 +158,9 @@ public class ProtestGUI implements Runnable, ActionListener {
 		frame_.setLocationByPlatform(true);
 		frame_.pack();
 		frame_.setVisible(true);
+
+		// to refresh example counts on DB changes
+		db_.addObserver(this);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -212,11 +217,12 @@ public class ProtestGUI implements Runnable, ActionListener {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		refresh();
 	}
 
-	public void refresh() {
+	public void update(Observable obs, Object o) {
+		if(obs != db_)
+			throw new IllegalArgumentException("Unexcepted observable triggered event.");
+
 		categories_ = db_.getCategories();
 		for(int i = 0; i < categories_.size(); i++) {
 			for(int j = 0; j < AnnotationCategory.GROUP_COUNT; j++) {

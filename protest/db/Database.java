@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Observable;
 
 import javax.sql.DataSource;
 
@@ -23,7 +24,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import org.jdbcdslog.ConnectionLoggingProxy;
 
-public class Database {
+public class Database extends Observable {
 	private final static String FILE_VERSION = "PROTEST 1.1";
 
 	private DataSource db_;
@@ -641,6 +642,8 @@ public class Database {
 			Database.close(stmt);
 			Database.close(conn);
 		}
+
+		fireDatabaseUpdate();
 	}
 
 	private String makeInList(int[] ids) {
@@ -651,6 +654,15 @@ public class Database {
 			sb.append(',').append(ids[i]);
 		sb.append(')');
 		return sb.toString();
+	}
+
+	protected void fireDatabaseUpdate() {
+		fireDatabaseUpdate(null);
+	}
+
+	protected void fireDatabaseUpdate(Object o) {
+		setChanged();
+		notifyObservers(o);
 	}
 
 	public static void close(Connection conn) {
