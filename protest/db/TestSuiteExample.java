@@ -475,6 +475,7 @@ public class TestSuiteExample {
 	}
 
 	public String getAntecedentAnnotation() {
+		load();
 		return antecedentAnnotation_;
 	}
 
@@ -486,6 +487,7 @@ public class TestSuiteExample {
 	}
 
 	public String getAnaphorAnnotation() {
+		load();
 		return anaphorAnnotation_;
 	}
 
@@ -497,6 +499,7 @@ public class TestSuiteExample {
 	}
 
 	public String getRemarks() {
+		load();
 		return remarks_;
 	}
 
@@ -508,6 +511,8 @@ public class TestSuiteExample {
 	}
 
 	public String getTokenApproval(int line, int token) {
+		load();
+
 		String a = approvedTokens_.get(line)[token];
 		return a == null ? "" : a;
 	}
@@ -520,6 +525,7 @@ public class TestSuiteExample {
 	}
 	
 	public Set<String> getTags() {
+		load();
 		return tags_;
 	}
 

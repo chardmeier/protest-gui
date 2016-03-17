@@ -170,7 +170,7 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private boolean saveAnnotations(boolean force) {
-		if(current_.needsSaving()) {
+		if(current_ != null && current_.needsSaving()) {
 			ConflictStatus conflicts = current_.checkAnnotationConflict();
 			if(!force && !confirmConflict(conflicts)) 
 				return false;
