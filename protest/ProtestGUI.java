@@ -22,6 +22,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
+import protest.db.AnnotationCategory;
+import protest.db.Database;
+import protest.db.DatabaseException;
+import protest.db.PrecheckReport;
+import protest.db.TargetCorpus;
+import protest.gui.fileselector.DatabaseOpener;
+import protest.gui.instance.InstanceWindow;
+import protest.gui.taskdef.TaskDefinitionWindow;
+
 public class ProtestGUI implements Runnable, ActionListener {
 	private Database db_;
 	private List<AnnotationCategory> categories_;

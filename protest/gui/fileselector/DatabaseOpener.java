@@ -9,6 +9,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+import protest.db.Database;
+import protest.db.DatabaseException;
+
 public class DatabaseOpener implements PropertyChangeListener {
 	private JFileChooser fileChooser_;
 	private MetadataTable metadataTable_;

@@ -6,6 +6,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
+import protest.db.Database;
+
 public class MetadataTable extends JPanel {
 	private JTable table_;
 	private JLabel emptyLabel_;

@@ -22,6 +22,10 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import protest.db.AnnotationCategory;
+import protest.db.Database;
+import protest.db.TargetCorpus;
+
 public class TaskDefinitionWindow implements ActionListener, ListSelectionListener {
 	private Database db_;
 

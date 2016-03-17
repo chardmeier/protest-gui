@@ -56,6 +56,11 @@ import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 
+import protest.ProtestGUI;
+import protest.db.ConflictStatus;
+import protest.db.Sentence;
+import protest.db.TestSuiteExample;
+
 public class InstanceWindow implements ActionListener {
 	private ProtestGUI categorySelector_;
 
