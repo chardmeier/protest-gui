@@ -387,6 +387,15 @@ public class TestSuiteExample {
 				antecedentTargetHighlight_.get(currline_));
 	}
 
+	public AnnotationRecord getAnnotationRecord(int annotator_id) {
+		AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
+		if(rec == null) {
+			rec = new AnnotationRecord(this, candidate_id_, annotator_id);
+			annotationRecords_.put(Integer.valueOf(annotator_id), rec);
+		}
+		return rec;
+	}
+
 	//Return True if pronoun example category requires antecedent agreement
 	public boolean getAntecedentAgreementRequired() {
 		boolean agree = false;
