@@ -306,7 +306,7 @@ public class TestSuiteExample {
 			ResultSet res = stmt.executeQuery();
 			while(res.next()) {
 				int annotator_id = res.getInt("annotator_id");
-				AnnotationRecord rec = new AnnotationRecord(this, candidate_id_, annotator_id);
+				AnnotationRecord rec = getAnnotationRecord(annotator_id);
 				rec.setAntecedentAnnotation(res.getString("ant_annotation"));
 				rec.setAnaphorAnnotation(res.getString("anaph_annotation"));
 				rec.setRemarks(res.getString("remarks"));
@@ -320,11 +320,7 @@ public class TestSuiteExample {
 			res = stmt.executeQuery();
 			while(res.next()) {
 				int annotator_id = res.getInt("annotator_id");
-				AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
-				if(rec == null) {
-					rec = new AnnotationRecord(this, candidate_id_, annotator_id);
-					annotationRecords_.put(Integer.valueOf(annotator_id), rec);
-				}
+				AnnotationRecord rec = getAnnotationRecord(annotator_id);
 				rec.addTag(res.getString("tag"));
 			}
 
@@ -335,11 +331,7 @@ public class TestSuiteExample {
 			res = stmt.executeQuery();
 			while(res.next()) {
 				int annotator_id = res.getInt("annotator_id");
-				AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
-				if(rec == null) {
-					rec = new AnnotationRecord(this, candidate_id_, annotator_id);
-					annotationRecords_.put(Integer.valueOf(annotator_id), rec);
-				}
+				AnnotationRecord rec = getAnnotationRecord(annotator_id);
 				int line = res.getInt("line") - firstLine_;
 				int token = res.getInt("token");
 				rec.setTokenApproval(line, token, res.getString("annotation"));
