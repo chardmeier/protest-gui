@@ -88,7 +88,7 @@ public class InstanceWindow implements ActionListener {
 
 		// Browsing buttons
 
-		BrowsePanel browsePanel_ = new BrowsePanel("browse");
+		browsePanel_ = new BrowsePanel("browse");
 		browsePanel_.addActionListener(this);
 		detailPanel.add(browsePanel_, BorderLayout.PAGE_START);
 
