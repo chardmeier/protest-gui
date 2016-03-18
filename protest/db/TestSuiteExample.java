@@ -392,6 +392,8 @@ public class TestSuiteExample {
 	}
 
 	public AnnotationRecord getAnnotationRecord(int annotator_id) {
+		load();
+
 		AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
 		if(rec == null) {
 			rec = new AnnotationRecord(this, candidate_id_, annotator_id);
@@ -401,6 +403,8 @@ public class TestSuiteExample {
 	}
 
 	public List<AnnotationRecord> getAnnotationRecords() {
+		load();
+
 		ArrayList<AnnotationRecord> out = new ArrayList<AnnotationRecord>(annotationRecords_.values());
 		Collections.sort(out);
 		return out;
