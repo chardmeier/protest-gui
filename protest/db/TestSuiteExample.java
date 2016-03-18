@@ -40,6 +40,8 @@ public class TestSuiteExample {
 	private List<String> sourceSentences_;
 	private List<String> targetSentences_;
 
+	private HashMap<Integer,AnnotationRecord> annotationRecords_;
+
 	private int currline_;
 
 	public TestSuiteExample(Database db, int srccorpus, int tgtcorpus, int example_no) {
@@ -289,11 +291,11 @@ public class TestSuiteExample {
 		return dirty_;
 	}
 
-	private List<AnnotationRecord> loadAnnotations() throws SQLException {
+	private void loadAnnotations() throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 
-		HashMap<Integer,AnnotationRecord> annmap = new HashMap<Integer,AnnotationRecord>();
+		annotationRecords_ = new HashMap<Integer,AnnotationRecord>();
 
 		try {
 			conn = db_.getConnection();
@@ -308,7 +310,7 @@ public class TestSuiteExample {
 				rec.setAntecedentAnnotation(res.getString("ant_annotation"));
 				rec.setAnaphorAnnotation(res.getString("anaph_annotation"));
 				rec.setRemarks(res.getString("remarks"));
-				annmap.put(Integer.valueOf(annotator_id), rec);
+				annotationRecords_.put(Integer.valueOf(annotator_id), rec);
 			}
 			
 			stmt.close();
@@ -318,10 +320,10 @@ public class TestSuiteExample {
 			res = stmt.executeQuery();
 			while(res.next()) {
 				int annotator_id = res.getInt("annotator_id");
-				AnnotationRecord rec = annmap.get(Integer.valueOf(annotator_id));
+				AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
 				if(rec == null) {
 					rec = new AnnotationRecord(this, candidate_id_, annotator_id);
-					annmap.put(Integer.valueOf(annotator_id), rec);
+					annotationRecords_.put(Integer.valueOf(annotator_id), rec);
 				}
 				rec.addTag(res.getString("tag"));
 			}
@@ -333,10 +335,10 @@ public class TestSuiteExample {
 			res = stmt.executeQuery();
 			while(res.next()) {
 				int annotator_id = res.getInt("annotator_id");
-				AnnotationRecord rec = annmap.get(Integer.valueOf(annotator_id));
+				AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
 				if(rec == null) {
 					rec = new AnnotationRecord(this, candidate_id_, annotator_id);
-					annmap.put(Integer.valueOf(annotator_id), rec);
+					annotationRecords_.put(Integer.valueOf(annotator_id), rec);
 				}
 				int line = res.getInt("line") - firstLine_;
 				int token = res.getInt("token");
@@ -349,8 +351,6 @@ public class TestSuiteExample {
 			Database.close(stmt);
 			Database.close(conn);
 		}
-
-		return new ArrayList(annmap.values());
 	}
 
 	public void reset() {
