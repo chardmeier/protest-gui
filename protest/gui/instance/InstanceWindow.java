@@ -21,14 +21,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 
+import protest.db.AnnotationRecord;
 import protest.db.ConflictStatus;
 import protest.db.TestSuiteExample;
 
 public class InstanceWindow implements ActionListener {
 	private JFrame frame_;
 
+	private BrowsePanel browsePanel_;
 	private AbstractRightHandPanel rightHandPanel_;
 	private ContextPanel contextPanel_;
 
@@ -40,6 +41,8 @@ public class InstanceWindow implements ActionListener {
 	private AnnotationRecord currentAnnotation_;
 
 	private String title_;
+
+	private int annotator_;
 
 	public InstanceWindow(int annotator) {
 		annotator_ = annotator;
@@ -77,7 +80,7 @@ public class InstanceWindow implements ActionListener {
 		contextPanel_ = new ContextPanel();
 		frame_.getContentPane().add(contextPanel_, BorderLayout.LINE_START);
 		
-		bl = new BorderLayout();
+		BorderLayout bl = new BorderLayout();
 		bl.setVgap(15);
 		JPanel detailPanel = new JPanel(bl);
 		detailPanel.setPreferredSize(new Dimension(300, 750));
@@ -85,9 +88,9 @@ public class InstanceWindow implements ActionListener {
 
 		// Browsing buttons
 
-		BrowsePanel browsePanel = new BrowsePanel("browse");
-		browsePanel.addActionListener(this);
-		detailPanel.add(browsePanel, BorderLayout.PAGE_START);
+		BrowsePanel browsePanel_ = new BrowsePanel("browse");
+		browsePanel_.addActionListener(this);
+		detailPanel.add(browsePanel_, BorderLayout.PAGE_START);
 
 		rightHandPanel_ = new AnnotationPanel();
 		detailPanel.add(rightHandPanel_, BorderLayout.CENTER);
@@ -98,8 +101,9 @@ public class InstanceWindow implements ActionListener {
 
 	private void showCurrentInstance() {
 		frame_.setTitle(title_ + " - " + current_.getCandidateLocator());
-		rightHandPanel_.setCurrentInstance(current_);
-		contextPanel_.setCurrentInstance(current_);
+		AnnotationRecord rec = current_.getAnnotationRecord(annotator_);
+		contextPanel_.setCurrentInstance(current_, rec);
+		rightHandPanel_.setCurrentAnnotation(rec);
 	}
 
 	private boolean confirmConflict(ConflictStatus conflicts) {
@@ -128,15 +132,9 @@ public class InstanceWindow implements ActionListener {
 		String[] cmd = e.getActionCommand().split(" ");
 		if(cmd[0].equals("browse")) {
 			if(saveAnnotations(false)) {
-				if(cmd[1].equals("prev")) {
-					currentIdx_--;
-					current_ = instances_.get(currentIdx_);
-					showCurrentInstance();
-				} else if(cmd[1].equals("next")) {
-					currentIdx_++;
-					current_ = instances_.get(currentIdx_);
-					showCurrentInstance();
-				}
+				int currentIdx = Integer.parseInt(cmd[1]);
+				current_ = instances_.get(currentIdx);
+				showCurrentInstance();
 			}
 		}
 	}

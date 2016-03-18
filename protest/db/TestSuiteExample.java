@@ -5,9 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class TestSuiteExample {
@@ -70,7 +71,7 @@ public class TestSuiteExample {
 
 			firstLine_ = anaphorSourcePosition_.getLine();
 			lastLine_ = anaphorSourcePosition_.getLine();
-			for(Position p : antecedentSourcePosition_) {
+			for(Position p : antecedentSourcePositions_) {
 				if(p.getLine() < firstLine_)
 					firstLine_ = p.getLine();
 				if(p.getLine() > lastLine_)
@@ -89,8 +90,8 @@ public class TestSuiteExample {
 			antecedentSourceHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			antecedentTargetHighlight_ = new ArrayList<int[]>(Collections.nCopies(nsent, new int[0]));
 			
-			anaphorSourceHighlight_.set(anaphorSource.getLine() - firstLine_,
-					new int[] { anaphorSource.getStart() });
+			anaphorSourceHighlight_.set(anaphorSourcePosition_.getLine() - firstLine_,
+					new int[] { anaphorSourcePosition_.getStart() });
 			
 
 			int[] buf = new int[100];
@@ -110,7 +111,7 @@ public class TestSuiteExample {
 				anaphorTargetHighlight_.set(line - firstLine_, Arrays.copyOf(buf, i));
 			}
 
-			if(!antecedentSource.isEmpty()) {
+			if(!antecedentSourcePositions_.isEmpty()) {
 				int line = antecedentSourcePositions_.get(0).getLine();
 				int i = 0;
 				for(Position p : antecedentSourcePositions_) {
@@ -336,7 +337,7 @@ public class TestSuiteExample {
 				rec.setTokenApproval(line, token, res.getString("annotation"));
 			}
 
-			for(AnnotationRecord rec : out)
+			for(AnnotationRecord rec : annotationRecords_.values())
 				rec.resetDirty();
 		} finally {
 			Database.close(stmt);
@@ -356,6 +357,10 @@ public class TestSuiteExample {
 	public boolean hasNext() {
 		load();
 		return currline_ < sourceSentences_.size() - 1;
+	}
+
+	public int getFirstLine() {
+		return firstLine_;
 	}
 
 	public int getIndex() {
@@ -378,6 +383,14 @@ public class TestSuiteExample {
 				antecedentTargetHighlight_.get(currline_));
 	}
 
+	public List<Position> getAnaphorTargetPositions() {
+		return Collections.unmodifiableList(anaphorTargetPositions_);
+	}
+
+	public List<Position> getAntecedentTargetPositions() {
+		return Collections.unmodifiableList(antecedentTargetPositions_);
+	}
+
 	public AnnotationRecord getAnnotationRecord(int annotator_id) {
 		AnnotationRecord rec = annotationRecords_.get(Integer.valueOf(annotator_id));
 		if(rec == null) {
@@ -385,6 +398,12 @@ public class TestSuiteExample {
 			annotationRecords_.put(Integer.valueOf(annotator_id), rec);
 		}
 		return rec;
+	}
+
+	public List<AnnotationRecord> getAnnotationRecords() {
+		ArrayList<AnnotationRecord> out = new ArrayList<AnnotationRecord>(annotationRecords_.values());
+		Collections.sort(out);
+		return out;
 	}
 
 	//Return True if pronoun example category requires antecedent agreement

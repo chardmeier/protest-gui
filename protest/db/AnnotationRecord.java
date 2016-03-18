@@ -7,9 +7,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
-public class AnnotationRecord {
+public class AnnotationRecord implements Comparable<AnnotationRecord> {
 	private TestSuiteExample example_;
 
 	private int candidate_id_;
@@ -21,12 +23,31 @@ public class AnnotationRecord {
 	private TreeSet<String> tags_ = new TreeSet<String>();
 	private HashMap<Position,String> approvedTokens_ = new HashMap<Position,String>();
 
+	private ConflictStatus conflictStatus_ = null;
 	private boolean dirty_ = false;
 
 	public AnnotationRecord(TestSuiteExample example, int candidate_id, int annotator_id) {
 		example_ = example;
 		candidate_id_ = candidate_id;
 		annotator_id_ = annotator_id;
+	}
+
+	private void setDirty() {
+		dirty_ = true;
+		conflictStatus_ = null;
+	}
+
+	protected void resetDirty() {
+		dirty_ = false;
+		conflictStatus_ = null;
+	}
+
+	public boolean needsSaving() {
+		return dirty_;
+	}
+
+	public TestSuiteExample getExample() {
+		return example_;
 	}
 
 	public String getAntecedentAnnotation() {
@@ -36,7 +57,7 @@ public class AnnotationRecord {
 	public void setAntecedentAnnotation(String annotation) {
 		if(!antecedentAnnotation_.equals(annotation)) {
 			antecedentAnnotation_ = annotation;
-			dirty_ = true;
+			setDirty();
 		}
 	}
 
@@ -47,7 +68,7 @@ public class AnnotationRecord {
 	public void setAnaphorAnnotation(String annotation) {
 		if(!anaphorAnnotation_.equals(annotation)) {
 			anaphorAnnotation_ = annotation;
-			dirty_ = true;
+			setDirty();
 		}
 	}
 
@@ -58,7 +79,7 @@ public class AnnotationRecord {
 	public void setRemarks(String remarks) {
 		if(!remarks_.equals(remarks)) {
 			remarks_ = remarks;
-			dirty_ = true;
+			setDirty();
 		}
 	}
 
@@ -68,19 +89,19 @@ public class AnnotationRecord {
 	}
 
 	public Collection<Position> getApprovedPositions() {
-		return Collections.immutableCollection(approvedTokens_.keySet());
+		return Collections.unmodifiableCollection(approvedTokens_.keySet());
 	}
 
 	public void setTokenApproval(int line, int token, String approved) {
 		String a = getTokenApproval(line, token);
 		if(a != null && !a.equals(approved)) {
 			approvedTokens_.put(new Position(line, token), approved);
-			dirty_ = true;
+			setDirty();
 		}
 	}
 	
 	public Set<String> getTags() {
-		return Collections.immutableSet(tags_);
+		return Collections.unmodifiableSet(tags_);
 	}
 
 	public void addTag(String tag) {
@@ -103,45 +124,51 @@ public class AnnotationRecord {
 		return result;
 	}
 	
-	public ConflictStatus checkAnnotationConflict() {
-		int anaphConflictType = ConflictStatus.NO_CONFLICT;
-		int antConflictType = ConflictStatus.NO_CONFLICT;
+	public ConflictStatus getConflictStatus() {
+		if(conflictStatus_ == null) {
+			int anaphConflictType = ConflictStatus.NO_CONFLICT;
+			int antConflictType = ConflictStatus.NO_CONFLICT;
 
-		String anaph_annotation = getAnaphorAnnotation();
-		String ant_annotation = getAntecedentAnnotation();
+			String anaph_annotation = getAnaphorAnnotation();
+			String ant_annotation = getAntecedentAnnotation();
 
-		Collection<Position> antecedentTarget = example_.getAntecedentTargetPositions();
-		Collection<Position> anaphorTarget = example_.getAnaphorTargetPositions();
-		Collection<Position> approved = getApprovedPositions();
+			Collection<Position> antecedentTarget = example_.getAntecedentTargetPositions();
+			Collection<Position> anaphorTarget = example_.getAnaphorTargetPositions();
+			Collection<Position> approved = getApprovedPositions();
 
-		boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget, approved);
-		boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget, approved);
+			boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget, approved);
+			boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget, approved);
 
-		// Pronoun annotation conflicts
-		if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
-			anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-		else if (anaph_annotation.equals("unset") && !tags_.isEmpty())
-			anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
-		else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
-			anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
+			// Pronoun annotation conflicts
+			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
+				anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
+			else if (anaph_annotation.equals("unset") && !tags_.isEmpty())
+				anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
+			else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
+				anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
 
-		// Antecedent annotation conflicts
-		if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())
-			antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-		else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
-			antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
+			// Antecedent annotation conflicts
+			if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())
+				antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
+			else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
+				antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
 
-		return new ConflictStatus(anaphConflictType, antConflictType);
+			conflictStatus_ = new ConflictStatus(anaphConflictType, antConflictType);
+		}
+
+		return conflictStatus_;
 	}
 
-	public void saveAnnotations(String conflictStatus) {
-		if(!dirty_)
+	public void saveAnnotations() {
+		if(!needsSaving())
 			return;
+
+		String conflictStatus = getConflictStatus().encode();
 
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
-			conn = db_.getConnection();
+			conn = example_.getDatabase().getConnection();
 			conn.setAutoCommit(false);
 
 			stmt = conn.prepareStatement(
@@ -175,28 +202,23 @@ public class AnnotationRecord {
 				stmt.execute();
 			}
 			
-			boolean hasTokenAnnotations = false;
-			
 			stmt.close();
 			stmt = conn.prepareStatement(
 				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
 				"values (?, ?, ?, ?, ?)");
 			stmt.setInt(1, candidate_id_);
 			stmt.setInt(2, annotator_id_);
-			for(int i = 0; i < approvedTokens_.size(); i++)
-				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
-					String app = approvedTokens_.get(i)[j];
-					if(app == null || app.isEmpty())
-						continue;
-					hasTokenAnnotations = true;
-					stmt.setInt(3, firstLine_ + i);
-					stmt.setInt(4, j);
-					stmt.setString(5, approvedTokens_.get(i)[j]);
-					stmt.execute();
-				}
+			for(Map.Entry<Position,String> e : approvedTokens_.entrySet()) {
+				Position pos = e.getKey();
+				String annot = e.getValue();
+				stmt.setInt(3, example_.getFirstLine() + pos.getLine());
+				stmt.setInt(4, pos.getStart());
+				stmt.setString(5, annot);
+				stmt.execute();
+			}
 
 			if(antecedentAnnotation_.equals("unset") && anaphorAnnotation_.equals("unset") &&
-				   tags_.isEmpty() && remarks_.isEmpty() && !hasTokenAnnotations) {
+				   tags_.isEmpty() && remarks_.isEmpty() && approvedTokens_.isEmpty()) {
 				conn.commit();
 				return;
 			}
@@ -228,6 +250,15 @@ public class AnnotationRecord {
 			Database.close(conn);
 		}
 
-		db_.fireDatabaseUpdate(this);
+		example_.getDatabase().fireDatabaseUpdate(this);
+	}
+
+	public int compareTo(AnnotationRecord o) {
+		if(candidate_id_ != o.candidate_id_)
+			return candidate_id_ < o.candidate_id_ ? -1 : 1;
+		else if(annotator_id_ != o.annotator_id_)
+			return annotator_id_ < o.annotator_id_ ? -1 : 1;
+		else
+			return 0;
 	}
 }

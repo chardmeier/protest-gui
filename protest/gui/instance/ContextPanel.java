@@ -1,5 +1,12 @@
 package protest.gui.instance;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.swing.JPanel;
 
 import org.w3c.dom.Element;
@@ -206,12 +213,12 @@ class ContextPanel extends JPanel {
 			int line = Integer.parseInt(cc[1]);
 			int pos = Integer.parseInt(cc[2]);
 			int state = toggleHighlight(panel, box, celem, Arrays.asList(antClasses));
-			current_.setTokenApproval(line, pos, states[state]);
+			currentAnnotation_.setTokenApproval(line, pos, states[state]);
 		} else if(cc[0].equals("ana")) {
 			int line = Integer.parseInt(cc[1]);
 			int pos = Integer.parseInt(cc[2]);
 			int state = toggleHighlight(panel, box, celem, Arrays.asList(anaClasses));
-			current_.setTokenApproval(line, pos, states[state]);
+			currentAnnotation_.setTokenApproval(line, pos, states[state]);
 		}
 	}
 

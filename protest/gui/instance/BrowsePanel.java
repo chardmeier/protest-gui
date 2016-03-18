@@ -2,19 +2,21 @@ package protest.gui.instance;
 
 import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class BrowsePanel extends JPanel implements ActionListener {
 	private JButton prevButton_;
 	private JButton nextButton_;
 	private JLabel idxField_;
 
-	private ActionListener listener_;
+	private ActionListener listener_ = null;
 	private String id_;
 
 	private int current_;
@@ -24,27 +26,23 @@ public class BrowsePanel extends JPanel implements ActionListener {
 		super(new BorderLayout());
 
 		id_ = id;
-		listener_ = listener;
-
-		current_ = 0;
-		total_ = nelements;
 
 		setMaximumSize(new Dimension(300, 20));
 
 		prevButton_ = new JButton("Previous");
 		prevButton_.setActionCommand("prev");
 		prevButton_.addActionListener(this);
-		browsePanel.add(prevButton_, BorderLayout.LINE_START);
+		add(prevButton_, BorderLayout.LINE_START);
 		
 		idxField_ = new JLabel();
 		idxField_.setPreferredSize(new Dimension(60, 20));
 		idxField_.setHorizontalAlignment(SwingConstants.CENTER);
-		browsePanel.add(idxField_, BorderLayout.CENTER);
+		add(idxField_, BorderLayout.CENTER);
 
 		nextButton_ = new JButton("Next");
 		nextButton_.setActionCommand("next");
 		nextButton_.addActionListener(this);
-		browsePanel.add(nextButton_, BorderLayout.LINE_END);
+		add(nextButton_, BorderLayout.LINE_END);
 	}
 
 	public void setTotal(int total) {

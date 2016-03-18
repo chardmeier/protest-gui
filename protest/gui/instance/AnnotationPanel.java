@@ -27,10 +27,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import protest.db.TestSuiteExample;
+import protest.db.AnnotationRecord;
 
 class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
-	private TestSuiteExample current_;
+	private AnnotationRecord current_;
 
 	private JList tagList_;
 	private DefaultListModel tagListModel_;
@@ -176,8 +176,8 @@ class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
 		return true;
 	}
 
-	public void setCurrentInstance(TestSuiteExample ex) {
-		current_ = ex;
+	public void setCurrentAnnotation(AnnotationRecord rec) {
+		current_ = rec;
 		displayAnnotations();
 		displayAntAgreeVisible();
 	}
@@ -218,7 +218,7 @@ class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
 		tagListModel_.clear();
 		for(String tag : current_.getTags())
 			tagListModel_.addElement(tag);
-		TreeSet<String> availableTags = new TreeSet<String>(current_.getDatabase().getTags());
+		TreeSet<String> availableTags = new TreeSet<String>(current_.getExample().getDatabase().getTags());
 		availableTags.addAll(current_.getTags()); // new tags may not have been saved to the DB yet
 		newTagModel_.removeAllElements();
 		newTagModel_.addElement("");
@@ -227,16 +227,14 @@ class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
 	}
 
 	private void displayAntAgreeVisible() {
-		boolean agree = current_.getAntecedentAgreementRequired();
-		if (agree==true) {
-			//annotationPanel_.setVisible(true);
+		boolean agree = current_.getExample().getAntecedentAgreementRequired();
+		if(agree) {
 			antButtonPanel_.setVisible(true);
 			antLabel_.setVisible(true);
 			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated<br>" +
 							  "(given antecedent head)?</div></html>");
 		}
 		else {
-			//annotationPanel_.setVisible(false);
 			antButtonPanel_.setVisible(false);
 			antLabel_.setVisible(false);
 			proLabel_.setText("<html><div style=\"text-align:center;\">Pronoun correctly translated?</div></html>");

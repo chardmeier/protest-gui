@@ -35,10 +35,11 @@ public class Position {
 		if(!(o instanceof Position))
 			return false;
 
-		return o.line_ == line_ && o.start_ == start_ && o.end_ == end_;
+		Position pos = (Position) o;
+		return pos.line_ == line_ && pos.start_ == start_ && pos.end_ == end_;
 	}
 
 	public int hashCode() {
-		return Arrays.asList(line, start, end).hashCode();
+		return Arrays.asList(line_, start_, end_).hashCode();
 	}
 }
