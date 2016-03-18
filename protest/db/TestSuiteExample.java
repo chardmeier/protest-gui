@@ -306,7 +306,7 @@ public class TestSuiteExample {
 			ResultSet res = stmt.executeQuery();
 			while(res.next()) {
 				int annotator_id = res.getInt("annotator_id");
-				AnnotationRecord rec = new AnnotationRecord(candidate_id_, annotator_id);
+				AnnotationRecord rec = new AnnotationRecord(this, candidate_id_, annotator_id);
 				rec.setAntecedentAnnotation(res.getString("ant_annotation"));
 				rec.setAnaphorAnnotation(res.getString("anaph_annotation"));
 				rec.setRemarks(res.getString("remarks"));
@@ -322,7 +322,7 @@ public class TestSuiteExample {
 				int annotator_id = res.getInt("annotator_id");
 				AnnotationRecord rec = annmap.get(Integer.valueOf(annotator_id));
 				if(rec == null) {
-					rec = new AnnotationRecord(candidate_id_, annotator_id);
+					rec = new AnnotationRecord(this, candidate_id_, annotator_id);
 					annmap.put(Integer.valueOf(annotator_id), rec);
 				}
 				rec.addTag(res.getString("tag"));
@@ -337,7 +337,7 @@ public class TestSuiteExample {
 				int annotator_id = res.getInt("annotator_id");
 				AnnotationRecord rec = annmap.get(Integer.valueOf(annotator_id));
 				if(rec == null) {
-					rec = new AnnotationRecord(candidate_id_, annotator_id);
+					rec = new AnnotationRecord(this, candidate_id_, annotator_id);
 					annmap.put(Integer.valueOf(annotator_id), rec);
 				}
 				int line = res.getInt("line") - firstLine_;
@@ -353,99 +353,6 @@ public class TestSuiteExample {
 		}
 
 		return new ArrayList(annmap.values());
-	}
-	public void saveAnnotations(int annotator, String conflictStatus) {
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		try {
-			conn = db_.getConnection();
-			conn.setAutoCommit(false);
-
-			stmt = conn.prepareStatement(
-				"delete from annotations where candidate=? and annotator_id=?");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			stmt.execute();
-			
-			stmt.close();
-			stmt = conn.prepareStatement(
-				"delete from token_annotations where candidate=? and annotator_id=?");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			stmt.execute();
-			
-			stmt.close();
-			stmt = conn.prepareStatement(
-				"delete from tag_annotations where candidate=? and annotator_id=?");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			stmt.execute();
-
-			stmt.close();
-			stmt = conn.prepareStatement(
-				"insert into tag_annotations (candidate, annotator_id, tag) " +
-				"values (?, ?, ?)");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			for(String tag : tags_) {
-				stmt.setString(3, tag);
-				stmt.execute();
-			}
-			
-			boolean hasTokenAnnotations = false;
-			
-			stmt.close();
-			stmt = conn.prepareStatement(
-				"insert into token_annotations (candidate, annotator_id, line, token, annotation) " +
-				"values (?, ?, ?, ?, ?)");
-			stmt.setInt(1, candidate_id_);
-			stmt.setInt(2, annotator);
-			for(int i = 0; i < approvedTokens_.size(); i++)
-				for(int j = 0; j < approvedTokens_.get(i).length; j++) {
-					String app = approvedTokens_.get(i)[j];
-					if(app == null || app.isEmpty())
-						continue;
-					hasTokenAnnotations = true;
-					stmt.setInt(3, firstLine_ + i);
-					stmt.setInt(4, j);
-					stmt.setString(5, approvedTokens_.get(i)[j]);
-					stmt.execute();
-				}
-
-			if(antecedentAnnotation_.equals("unset") && anaphorAnnotation_.equals("unset") &&
-				   tags_.isEmpty() && remarks_.isEmpty() && !hasTokenAnnotations) {
-				conn.commit();
-				return;
-			}
-			
-			stmt.close();
-			stmt = conn.prepareStatement(
-				"insert into annotations (candidate, ant_annotation, anaph_annotation, remarks, annotator_id, conflict_status) " +
-				"values (?, ?, ?, ?, ?, ?)");
-			stmt.setInt(1, candidate_id_);
-			stmt.setString(2, antecedentAnnotation_);
-			stmt.setString(3, anaphorAnnotation_);
-			stmt.setString(4, remarks_);
-			stmt.setInt(5, annotator);
-			stmt.setString(6, conflictStatus);
-			stmt.execute();
-
-			conn.commit();
-			dirty_ = false;
-		} catch(SQLException e) {
-			if(conn != null) {
-				try {
-					conn.rollback();
-				} catch(SQLException e2) {}
-			}
-			e.printStackTrace();
-			System.exit(1);
-		} finally {
-			Database.close(stmt);
-			Database.close(conn);
-		}
-
-		db_.fireDatabaseUpdate(this);
 	}
 
 	public void reset() {
@@ -513,46 +420,5 @@ public class TestSuiteExample {
 		}
 
 		return agree;
-	}
-	
-	private boolean checkIfTokensAnnotated(Collection<Position> all, Collection<Position> approved) {
-		boolean result = false;
-		for(Position p : all) {
-			for(Position q : approved) {
-				if ((p.getLine() == q.getLine()) && (p.getStart() == q.getStart()) && (p.getEnd() == q.getEnd())){
-					result = true;
-				}
-			}
-		}
-		return result;
-	}
-	
-	public ConflictStatus checkAnnotationConflict(AnnotationRecord rec) {
-		int anaphConflictType = ConflictStatus.NO_CONFLICT;
-		int antConflictType = ConflictStatus.NO_CONFLICT;
-
-		String anaph_annotation = getAnaphorAnnotation();
-		String ant_annotation = getAntecedentAnnotation();
-		// Get positions of highlighted tokens from: approvedTokens_
-		Collection<Position> approved = rec.getApprovedPositions();
-		// Compare
-		boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTargetPositions_, approved);
-		boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTargetPositions_, approved);
-
-		// Pronoun annotation conflicts
-		if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
-			anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-		else if (anaph_annotation.equals("unset") && !tags_.isEmpty())
-			anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
-		else if (!anaph_annotation.equals("ok") && anaphTokAnnotated == true)
-			anaphConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
-
-		// Antecedent annotation conflicts
-		if (ant_annotation.equals("ok") && antTokAnnotated == false && !antecedentTarget.isEmpty())
-			antConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
-		else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
-			antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
-
-		return new ConflictStatus(anaphConflictType, antConflictType);
 	}
 }
