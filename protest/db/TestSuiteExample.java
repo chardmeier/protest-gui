@@ -310,7 +310,6 @@ public class TestSuiteExample {
 				rec.setAntecedentAnnotation(res.getString("ant_annotation"));
 				rec.setAnaphorAnnotation(res.getString("anaph_annotation"));
 				rec.setRemarks(res.getString("remarks"));
-				annotationRecords_.put(Integer.valueOf(annotator_id), rec);
 			}
 			
 			stmt.close();
