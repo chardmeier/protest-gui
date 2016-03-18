@@ -28,9 +28,6 @@ import protest.db.TestSuiteExample;
 
 public class InstanceWindow implements ActionListener {
 	private JFrame frame_;
-	private JButton prevButton_;
-	private JButton nextButton_;
-	private JLabel idxField_;
 
 	private AbstractRightHandPanel rightHandPanel_;
 	private ContextPanel contextPanel_;
@@ -40,10 +37,9 @@ public class InstanceWindow implements ActionListener {
 
 	private List<TestSuiteExample> instances_;
 	private TestSuiteExample current_;
-	private int currentIdx_;
+	private AnnotationRecord currentAnnotation_;
 
 	private String title_;
-	private int annotator_;
 
 	public InstanceWindow(int annotator) {
 		annotator_ = annotator;
@@ -89,24 +85,9 @@ public class InstanceWindow implements ActionListener {
 
 		// Browsing buttons
 
-		JPanel browsePanel = new JPanel(new BorderLayout());
+		BrowsePanel browsePanel = new BrowsePanel("browse");
+		browsePanel.addActionListener(this);
 		detailPanel.add(browsePanel, BorderLayout.PAGE_START);
-		browsePanel.setMaximumSize(new Dimension(300, 20));
-
-		prevButton_ = new JButton("Previous");
-		prevButton_.setActionCommand("browse prev");
-		prevButton_.addActionListener(this);
-		browsePanel.add(prevButton_, BorderLayout.LINE_START);
-		
-		idxField_ = new JLabel();
-		idxField_.setPreferredSize(new Dimension(60, 20));
-		idxField_.setHorizontalAlignment(SwingConstants.CENTER);
-		browsePanel.add(idxField_, BorderLayout.CENTER);
-
-		nextButton_ = new JButton("Next");
-		nextButton_.setActionCommand("browse next");
-		nextButton_.addActionListener(this);
-		browsePanel.add(nextButton_, BorderLayout.LINE_END);
 
 		rightHandPanel_ = new AnnotationPanel();
 		detailPanel.add(rightHandPanel_, BorderLayout.CENTER);
@@ -117,9 +98,6 @@ public class InstanceWindow implements ActionListener {
 
 	private void showCurrentInstance() {
 		frame_.setTitle(title_ + " - " + current_.getCandidateLocator());
-		idxField_.setText(String.format("%d/%d", currentIdx_ + 1, instances_.size()));
-		prevButton_.setEnabled(currentIdx_ > 0);
-		nextButton_.setEnabled(currentIdx_ < instances_.size() - 1);
 		rightHandPanel_.setCurrentInstance(current_);
 		contextPanel_.setCurrentInstance(current_);
 	}
@@ -135,12 +113,12 @@ public class InstanceWindow implements ActionListener {
 	}
 
 	private boolean saveAnnotations(boolean force) {
-		if(current_ != null && current_.needsSaving()) {
-			ConflictStatus conflicts = current_.checkAnnotationConflict();
+		if(currentAnnotation_ != null && currentAnnotation_.needsSaving()) {
+			ConflictStatus conflicts = currentAnnotation_.getConflictStatus();
 			if(!force && !confirmConflict(conflicts)) 
 				return false;
 
-			current_.saveAnnotations(annotator_, conflicts.encode());
+			currentAnnotation_.saveAnnotations();
 		}
 
 		return true;
@@ -171,7 +149,9 @@ public class InstanceWindow implements ActionListener {
 		title_ = title;
 		instances_ = instances;
 		current_ = instances_.get(0);
-		currentIdx_ = 0;
+
+		browsePanel_.setTotal(instances_.size());
+
 		showCurrentInstance();
 	}
 
