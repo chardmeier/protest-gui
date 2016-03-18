@@ -18,7 +18,7 @@ public class AnnotationRecord {
 	private String antecedentAnnotation_ = "unset";
 	private String anaphorAnnotation_ = "unset";
 	private String remarks_ = "";
-	private Set<String> tags_ = new TreeSet<String>();
+	private TreeSet<String> tags_ = new TreeSet<String>();
 	private HashMap<Position,String> approvedTokens_ = new HashMap<Position,String>();
 
 	private boolean dirty_ = false;
