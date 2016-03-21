@@ -43,7 +43,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 
 		JPanel upperPanel = new JPanel(new BorderLayout());
 
-		BrowsePanel annotationBrowser_ = new BrowsePanel("annot");
+		annotationBrowser_ = new BrowsePanel("annot");
 		annotationBrowser_.addActionListener(this);
 		upperPanel.add(annotationBrowser_, BorderLayout.PAGE_START);
 
