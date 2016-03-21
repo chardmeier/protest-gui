@@ -94,11 +94,19 @@ class OverviewPanel extends JPanel implements ActionListener {
 			colModel.addColumn(new TableColumn(i + 1, 20, renderer, null));
 
 		DefaultTableModel annotationTableModel = new DefaultTableModel();
-		annotationTableModel.addColumn("correct?", new String[] { "antecedent", "pronoun" });
-		for(AnnotationRecord rec : annotationRecords_) {
-			annotationTableModel.addColumn(rec.getAnnotatorName(),
-					new String[] { rec.getAntecedentAnnotation(),
-						rec.getAnaphorAnnotation() });
+		if(current_.getAntecedentAgreementRequired()) {
+			annotationTableModel.addColumn("correct?", new String[] { "antecedent", "pronoun" });
+			for(AnnotationRecord rec : annotationRecords_) {
+				annotationTableModel.addColumn(rec.getAnnotatorName(),
+						new String[] { rec.getAntecedentAnnotation(),
+							rec.getAnaphorAnnotation() });
+			}
+		} else {
+			annotationTableModel.addColumn("correct?", new String[] { "pronoun" });
+			for(AnnotationRecord rec : annotationRecords_) {
+				annotationTableModel.addColumn(rec.getAnnotatorName(),
+						new String[] { rec.getAnaphorAnnotation() });
+			}
 		}
 		annotationTable_.setModel(annotationTableModel);
 		annotationTable_.setColumnModel(colModel);
