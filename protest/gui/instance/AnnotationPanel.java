@@ -29,7 +29,7 @@ import javax.swing.event.ListSelectionListener;
 
 import protest.db.AnnotationRecord;
 
-class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
+class AnnotationPanel extends JPanel implements ActionListener {
 	private AnnotationRecord current_;
 
 	private JList tagList_;
