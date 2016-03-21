@@ -13,16 +13,14 @@ import java.util.Observer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-
-//For message dialogs
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 
 import protest.db.AnnotationCategory;
 import protest.db.Database;
