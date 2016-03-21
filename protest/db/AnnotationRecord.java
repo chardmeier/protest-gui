@@ -50,6 +50,14 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 		return example_;
 	}
 
+	public int getAnnotatorID() {
+		return annotator_id_;
+	}
+
+	public String getAnnotatorName() {
+		return example_.getDatabase().getAnnotatorName(annotator_id_);
+	}
+
 	public String getAntecedentAnnotation() {
 		return antecedentAnnotation_;
 	}

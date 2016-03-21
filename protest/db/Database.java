@@ -61,6 +61,28 @@ public class Database extends Observable {
 		return dbfile_;
 	}
 
+	public String getAnnotatorName(int id) {
+		String name = null;
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = getConnection();
+			ps = conn.prepareStatement("select name from annotators where id=?");
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next())
+				name = rs.getString("name");
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			Database.close(ps);
+			Database.close(conn);
+		}
+
+		return name;
+	}
+
 	public List<AnnotationCategory> getCategories() {
 		return doGetCategories("");
 	}

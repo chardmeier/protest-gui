@@ -2,6 +2,7 @@ package protest.gui.instance;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
@@ -30,7 +31,7 @@ public class InstanceWindow implements ActionListener {
 	private JFrame frame_;
 
 	private BrowsePanel browsePanel_;
-	private AbstractRightHandPanel rightHandPanel_;
+	private Component rightHandPanel_;
 	private ContextPanel contextPanel_;
 
 	private JPanel instructionPanel_;

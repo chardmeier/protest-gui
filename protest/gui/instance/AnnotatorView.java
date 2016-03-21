@@ -36,10 +36,6 @@ public class AnnotatorView implements InstanceWindowView {
 		return true;
 	}
 
-	public int getDisplayedAnnotatorID() {
-		return annotator_id_;
-	}
-
 	public void setCurrentInstance(TestSuiteExample current) {
 		AnnotationRecord rec = current.getAnnotationRecord(annotator_id_);
 		annotationPanel_.setCurrentAnnotation(rec);
