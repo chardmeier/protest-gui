@@ -25,9 +25,7 @@ import protest.db.TestSuiteExample;
 class OverviewPanel extends JPanel implements ActionListener {
 	private BrowsePanel annotationBrowser_;
 	private JTable annotationTable_;
-	private DefaultTableModel annotationTableModel_;
 	private JTable tagTable_;
-	private DefaultTableModel tagTableModel_;
 	private JTextArea remarksField_;
 
 	private TestSuiteExample current_;
@@ -47,14 +45,12 @@ class OverviewPanel extends JPanel implements ActionListener {
 		annotationBrowser_.addActionListener(this);
 		upperPanel.add(annotationBrowser_, BorderLayout.PAGE_START);
 
-		annotationTableModel_ = new DefaultTableModel();
-		annotationTable_ = new JTable(annotationTableModel_);
+		annotationTable_ = new JTable();
 		annotationTable_.setPreferredSize(new Dimension(300, 180));
 		annotationTable_.setBorder(BorderFactory.createTitledBorder("Annotations:"));
 		upperPanel.add(new JScrollPane(annotationTable_), BorderLayout.CENTER);
 
-		tagTableModel_ = new DefaultTableModel();
-		tagTable_ = new JTable(tagTableModel_);
+		tagTable_ = new JTable();
 		tagTable_.setPreferredSize(new Dimension(300, 180));
 		tagTable_.setBorder(BorderFactory.createTitledBorder("Tags:"));
 		upperPanel.add(new JScrollPane(tagTable_), BorderLayout.PAGE_END);
@@ -84,21 +80,22 @@ class OverviewPanel extends JPanel implements ActionListener {
 		for(int i = 0; i < annotationRecords_.size(); i++)
 			colModel.addColumn(new TableColumn(i + 1, 20, renderer, null));
 
-		annotationTableModel_ = new DefaultTableModel();
-		annotationTableModel_.addColumn("correct?", new String[] { "antecedent", "pronoun" });
+		DefaultTableModel annotationTableModel = new DefaultTableModel();
+		annotationTableModel.addColumn("correct?", new String[] { "antecedent", "pronoun" });
 		for(AnnotationRecord rec : annotationRecords_) {
-			annotationTableModel_.addColumn(rec.getAnnotatorName(),
+			annotationTableModel.addColumn(rec.getAnnotatorName(),
 					new String[] { rec.getAntecedentAnnotation(),
 						rec.getAnaphorAnnotation() });
 		}
+		annotationTable_.setModel(annotationTableModel);
 		annotationTable_.setColumnModel(colModel);
 
 		TreeSet<String> allTags = new TreeSet<String>();
 		for(AnnotationRecord rec : annotationRecords_)
 			allTags.addAll(rec.getTags());
 
-		tagTableModel_ = new DefaultTableModel();
-		tagTableModel_.addColumn("Tag", allTags.toArray());
+		DefaultTableModel tagTableModel = new DefaultTableModel();
+		tagTableModel.addColumn("Tag", allTags.toArray());
 		for(AnnotationRecord rec : annotationRecords_) {
 			Set<String> recTags = rec.getTags();
 			ArrayList<String> ticks = new ArrayList<String>();
@@ -108,8 +105,9 @@ class OverviewPanel extends JPanel implements ActionListener {
 				else
 					ticks.add("");
 			}
-			tagTableModel_.addColumn(rec.getAnnotatorName(), ticks.toArray());
+			tagTableModel.addColumn(rec.getAnnotatorName(), ticks.toArray());
 		}
+		tagTable_.setModel(tagTableModel);
 		tagTable_.setColumnModel(colModel);
 
 		fireNavigationEvent();
