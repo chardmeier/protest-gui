@@ -1,5 +1,6 @@
 package protest.gui.instance;
 
+import java.awt.Component;
 import java.util.ArrayList;
 
 import protest.db.AnnotationRecord;
@@ -17,7 +18,7 @@ public class AnnotatorView implements InstanceWindowView {
 		navigationListeners_ = new ArrayList<NavigationListener>();
 	}
 
-	public AbstractRightHandPanel getRightHandPanel() {
+	public Component getRightHandPanel() {
 		return annotationPanel_;
 	}
 
