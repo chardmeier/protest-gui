@@ -61,7 +61,6 @@ class OverviewPanel extends JPanel implements ActionListener {
 		annotationAndTagPanel.add(annotationPanel, BorderLayout.CENTER);
 
 		tagTable_ = new JTable();
-		tagTable_.setShowGrid(true);
 		JScrollPane tagPane = new JScrollPane(tagTable_);
 		tagPane.setPreferredSize(new Dimension(300, 180));
 		tagPane.setBorder(BorderFactory.createTitledBorder("Tags:"));
