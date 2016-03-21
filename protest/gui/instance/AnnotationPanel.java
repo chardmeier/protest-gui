@@ -214,7 +214,6 @@ class AnnotationPanel extends AbstractRightHandPanel implements ActionListener {
 	}
 
 	private void displayTagList() {
-		System.err.println("Displaying tag list: " + current_.getTags().toString());
 		tagListModel_.clear();
 		for(String tag : current_.getTags())
 			tagListModel_.addElement(tag);
