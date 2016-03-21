@@ -53,7 +53,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 
 		tagTable_ = new JTable();
 		tagTable_.setPreferredSize(new Dimension(300, 180));
-		JScrollPane tagPane = new JScrollPane(tagTable);
+		JScrollPane tagPane = new JScrollPane(tagTable_);
 		tagPane.setBorder(BorderFactory.createTitledBorder("Tags:"));
 		upperPanel.add(tagPane, BorderLayout.PAGE_END);
 
@@ -111,6 +111,14 @@ class OverviewPanel extends JPanel implements ActionListener {
 		}
 		tagTable_.setModel(tagTableModel);
 		tagTable_.setColumnModel(colModel);
+
+		StringBuilder allRemarks = new StringBuilder();
+		for(AnnotationRecord rec : annotationRecords_) {
+			allRemarks.append("Annotator " + rec.getAnnotatorName() + "\n");
+			allRemarks.append(rec.getRemarks());
+			allRemarks.append("\n\n\n");
+		}
+		remarksField_.setText(allRemarks.toString());
 
 		fireNavigationEvent();
 	}
