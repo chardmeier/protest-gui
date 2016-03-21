@@ -30,6 +30,7 @@ import protest.db.TargetCorpus;
 import protest.gui.fileselector.DatabaseOpener;
 import protest.gui.instance.AnnotatorView;
 import protest.gui.instance.InstanceWindow;
+import protest.gui.instance.ResearcherView;
 import protest.gui.taskdef.TaskDefinitionWindow;
 
 public class ProtestGUI implements Runnable, ActionListener, Observer {
@@ -63,8 +64,6 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		instWindow_ = new InstanceWindow(new AnnotatorView(getAnnotatorID()));
-		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
    
 	public int getAnnotatorID() {
@@ -103,6 +102,9 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			importBatchButton.setActionCommand("import-batch");
 			importBatchButton.addActionListener(this);
 			toolbar.add(importBatchButton);
+
+			instWindow_ = new InstanceWindow(new ResearcherView());
+			taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 		} else {
 			String ann = String.format("Annotation batch for annotator %s", db_.getMetadata("annotator_name"));
 			JLabel annLabel = new JLabel(ann, JLabel.CENTER);
@@ -112,6 +114,8 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 							BorderFactory.createRaisedBevelBorder(),
 							BorderFactory.createLoweredBevelBorder())));
 			frame_.getContentPane().add(annLabel, BorderLayout.PAGE_START);
+
+			instWindow_ = new InstanceWindow(new AnnotatorView(getAnnotatorID()));
 		}
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
