@@ -47,13 +47,15 @@ class OverviewPanel extends JPanel implements ActionListener {
 
 		annotationTable_ = new JTable();
 		annotationTable_.setPreferredSize(new Dimension(300, 180));
-		annotationTable_.setBorder(BorderFactory.createTitledBorder("Annotations:"));
-		upperPanel.add(new JScrollPane(annotationTable_), BorderLayout.CENTER);
+		JScrollPane annotationPane = new JScrollPane(annotationTable_);
+		annotationPane.setBorder(BorderFactory.createTitledBorder("Annotations:"));
+		upperPanel.add(annotationPane, BorderLayout.CENTER);
 
 		tagTable_ = new JTable();
 		tagTable_.setPreferredSize(new Dimension(300, 180));
-		tagTable_.setBorder(BorderFactory.createTitledBorder("Tags:"));
-		upperPanel.add(new JScrollPane(tagTable_), BorderLayout.PAGE_END);
+		JScrollPane tagPane = new JScrollPane(tagTable);
+		tagPane.setBorder(BorderFactory.createTitledBorder("Tags:"));
+		upperPanel.add(tagPane, BorderLayout.PAGE_END);
 
 		remarksField_ = new JTextArea(10, 30);
 		remarksField_.setBorder(BorderFactory.createTitledBorder("Remarks:"));
