@@ -25,7 +25,7 @@ import protest.db.AnnotationRecord;
 import protest.db.TestSuiteExample;
 import protest.db.Sentence;
 
-class ContextPanel extends JPanel {
+class ContextPanel extends JPanel implements NavigationListener {
 	private TestSuiteExample current_;
 	private AnnotationRecord currentAnnotation_;
 
@@ -69,17 +69,8 @@ class ContextPanel extends JPanel {
 		return editable_;
 	}
 
-	public void setCurrentInstance(TestSuiteExample current) {
-		setCurrentInstance(current, null);
-	}
-
-	public void setCurrentInstance(TestSuiteExample current, AnnotationRecord rec) {
+	public void navigate(TestSuiteExample current, AnnotationRecord rec) {
 		current_ = current;
-		currentAnnotation_ = rec;
-		displayContext();
-	}
-
-	public void setCurrentAnnotation(AnnotationRecord rec) {
 		currentAnnotation_ = rec;
 		displayContext();
 	}

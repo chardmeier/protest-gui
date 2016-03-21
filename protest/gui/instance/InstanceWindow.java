@@ -42,10 +42,10 @@ public class InstanceWindow implements ActionListener {
 
 	private String title_;
 
-	private int annotator_;
+	private InstanceWindowView view_;
 
-	public InstanceWindow(int annotator) {
-		annotator_ = annotator;
+	public InstanceWindow(InstanceWindowView view) {
+		view_ = view;
 
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -71,13 +71,14 @@ public class InstanceWindow implements ActionListener {
 		instructionPanel_.setPreferredSize(new Dimension(1200, 60));
 		instructionPanel_.setLayout(new FlowLayout(FlowLayout.LEFT));
 		frame_.getContentPane().add(instructionPanel_, BorderLayout.PAGE_START);
-		instructionLabel_ = new JLabel("");
-		instructionLabel_.setText("<html><b>All pronouns:</b> mark whether the pronoun is correctly translated, and select the minimum number of tokens necessary for a correct translation.<br><b>Anaphoric pronouns only:</b> mark whether the antecedent head is correctly translated, and whether the pronoun translation is correct given the antecedent head.<br>Select the minimum number of tokens necessary for a correct translation of both antecedent and pronoun.</html>");
+		instructionLabel_ = new JLabel(view_.getInstructions());
 		instructionPanel_.add(instructionLabel_, BorderLayout.LINE_START);
 		
 		// Source and target context
 
 		contextPanel_ = new ContextPanel();
+		contextPanel_.setEditable(view_.allowTokenEditing());
+		view_.addNavigationListener(contextPanel_);
 		frame_.getContentPane().add(contextPanel_, BorderLayout.LINE_START);
 		
 		BorderLayout bl = new BorderLayout();
@@ -92,7 +93,7 @@ public class InstanceWindow implements ActionListener {
 		browsePanel_.addActionListener(this);
 		detailPanel.add(browsePanel_, BorderLayout.PAGE_START);
 
-		rightHandPanel_ = new AnnotationPanel();
+		rightHandPanel_ = view_.getRightHandPanel();
 		detailPanel.add(rightHandPanel_, BorderLayout.CENTER);
 
 		frame_.setLocationByPlatform(true);
@@ -101,9 +102,7 @@ public class InstanceWindow implements ActionListener {
 
 	private void showCurrentInstance() {
 		frame_.setTitle(title_ + " - " + current_.getCandidateLocator());
-		AnnotationRecord rec = current_.getAnnotationRecord(annotator_);
-		contextPanel_.setCurrentInstance(current_, rec);
-		rightHandPanel_.setCurrentAnnotation(rec);
+		view_.setCurrentInstance(current_);
 	}
 
 	private boolean confirmConflict(ConflictStatus conflicts) {

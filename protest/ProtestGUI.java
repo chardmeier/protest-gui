@@ -28,6 +28,7 @@ import protest.db.DatabaseException;
 import protest.db.PrecheckReport;
 import protest.db.TargetCorpus;
 import protest.gui.fileselector.DatabaseOpener;
+import protest.gui.instance.AnnotatorView;
 import protest.gui.instance.InstanceWindow;
 import protest.gui.taskdef.TaskDefinitionWindow;
 
@@ -62,7 +63,7 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		instWindow_ = new InstanceWindow(getAnnotatorID());
+		instWindow_ = new InstanceWindow(new AnnotatorView(getAnnotatorID()));
 		taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 	}
    
