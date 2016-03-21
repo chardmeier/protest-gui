@@ -63,6 +63,9 @@ public class TestSuiteExample {
 		if(loaded_)
 			return;
 
+		// set loaded_ to true now to avoid infinite loop when called during the loading process
+		loaded_ = true;
+
 		try {
 			anaphorSourcePosition_ = retrieveAnaphorSourcePosition();
 			anaphorTargetPositions_ = retrieveAnaphorTargetPositions();
@@ -147,7 +150,6 @@ public class TestSuiteExample {
 			System.exit(1);
 		}
 
-		loaded_ = true;
 		dirty_ = false;
 	}
 
