@@ -2,6 +2,7 @@ package protest.gui.instance;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -15,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -45,26 +47,35 @@ class OverviewPanel extends JPanel implements ActionListener {
 		annotationBrowser_.addActionListener(this);
 		upperPanel.add(annotationBrowser_, BorderLayout.PAGE_START);
 
+		JPanel annotationAndTagPanel = new JPanel(new BorderLayout());
+		upperPanel.add(annotationAndTagPanel, BorderLayout.CENTER);
+
+		JPanel annotationPanel = new JPanel();
 		annotationTable_ = new JTable();
-		annotationTable_.setPreferredSize(new Dimension(300, 180));
-		JScrollPane annotationPane = new JScrollPane(annotationTable_);
-		annotationPane.setBorder(BorderFactory.createTitledBorder("Annotations:"));
-		upperPanel.add(annotationPane, BorderLayout.CENTER);
+		annotationPanel.add(annotationTable_);
+		Border annotationBorder = BorderFactory.createTitledBorder("Annotations:");
+		annotationPanel.setBorder(annotationBorder);
+		Insets ins = annotationBorder.getBorderInsets(annotationTable_);
+		annotationTable_.setPreferredSize(new Dimension(300 - ins.left - ins.right,
+					2 * annotationTable_.getRowHeight() + 1));
+		annotationAndTagPanel.add(annotationPanel, BorderLayout.CENTER);
 
 		tagTable_ = new JTable();
-		tagTable_.setPreferredSize(new Dimension(300, 180));
+		tagTable_.setShowGrid(true);
 		JScrollPane tagPane = new JScrollPane(tagTable_);
+		tagPane.setPreferredSize(new Dimension(300, 180));
 		tagPane.setBorder(BorderFactory.createTitledBorder("Tags:"));
-		upperPanel.add(tagPane, BorderLayout.PAGE_END);
+		annotationAndTagPanel.add(tagPane, BorderLayout.PAGE_END);
 
 		remarksField_ = new JTextArea(10, 30);
 		remarksField_.setBorder(BorderFactory.createTitledBorder("Remarks:"));
 		remarksField_.setEditable(false);
 		remarksField_.setLineWrap(true);
 		remarksField_.setWrapStyleWord(true);
+		remarksField_.setPreferredSize(new Dimension(300, 180));
 
 		this.add(upperPanel, BorderLayout.PAGE_START);
-		this.add(remarksField_, BorderLayout.CENTER);
+		this.add(new JScrollPane(remarksField_), BorderLayout.CENTER);
 	}
 
 	public void setCurrentInstance(TestSuiteExample current) {
