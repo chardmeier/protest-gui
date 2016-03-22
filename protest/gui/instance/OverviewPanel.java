@@ -149,7 +149,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 
 		StringBuilder allRemarks = new StringBuilder();
 		for(AnnotationRecord rec : annotationRecords_) {
-			allRemarks.append("Annotator " + rec.getAnnotatorName() + "\n");
+			allRemarks.append("Annotator " + rec.getAnnotatorName() + ":\n\n");
 			allRemarks.append(rec.getRemarks());
 			allRemarks.append("\n\n\n");
 		}
