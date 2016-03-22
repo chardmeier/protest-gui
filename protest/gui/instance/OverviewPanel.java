@@ -1,6 +1,7 @@
 package protest.gui.instance;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -19,12 +20,15 @@ import javax.swing.JTextArea;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
 import protest.db.AnnotationRecord;
 import protest.db.TestSuiteExample;
 
 class OverviewPanel extends JPanel implements ActionListener {
+	private final static Color HEADER_COLOR = new Color(235, 235, 235);
+
 	private BrowsePanel annotationBrowser_;
 	private JTable annotationTable_;
 	private JTable tagTable_;
@@ -53,7 +57,9 @@ class OverviewPanel extends JPanel implements ActionListener {
 		JPanel annotationPanel = new JPanel(new BorderLayout());
 		annotationTable_ = new JTable();
 		annotationTable_.setAutoCreateColumnsFromModel(false);
-		annotationPanel.add(annotationTable_.getTableHeader(), BorderLayout.PAGE_START);
+		JTableHeader annotationHeader = annotationTable_.getTableHeader();
+		annotationHeader.setBackground(HEADER_COLOR);
+		annotationPanel.add(annotationHeader, BorderLayout.PAGE_START);
 		annotationPanel.add(annotationTable_, BorderLayout.CENTER);
 		Border annotationBorder = BorderFactory.createTitledBorder("Annotations:");
 		annotationPanel.setBorder(annotationBorder);
@@ -64,6 +70,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 
 		tagTable_ = new JTable();
 		tagTable_.setAutoCreateColumnsFromModel(false);
+		tagTable_.getTableHeader().setBackground(HEADER_COLOR);
 		JScrollPane tagPane = new JScrollPane(tagTable_);
 		tagPane.setPreferredSize(new Dimension(300, 180));
 		tagPane.setBorder(BorderFactory.createTitledBorder("Tags:"));
