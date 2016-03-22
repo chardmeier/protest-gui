@@ -50,9 +50,11 @@ class OverviewPanel extends JPanel implements ActionListener {
 		JPanel annotationAndTagPanel = new JPanel(new BorderLayout());
 		upperPanel.add(annotationAndTagPanel, BorderLayout.CENTER);
 
-		JPanel annotationPanel = new JPanel();
+		JPanel annotationPanel = new JPanel(new BorderLayout());
 		annotationTable_ = new JTable();
-		annotationPanel.add(annotationTable_);
+		annotationTable_.setAutoCreateColumnsFromModel(false);
+		annotationPanel.add(annotationTable_.getTableHeader(), BorderLayout.PAGE_START);
+		annotationPanel.add(annotationTable_, BorderLayout.CENTER);
 		Border annotationBorder = BorderFactory.createTitledBorder("Annotations:");
 		annotationPanel.setBorder(annotationBorder);
 		Insets ins = annotationBorder.getBorderInsets(annotationTable_);
@@ -61,6 +63,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 		annotationAndTagPanel.add(annotationPanel, BorderLayout.CENTER);
 
 		tagTable_ = new JTable();
+		tagTable_.setAutoCreateColumnsFromModel(false);
 		JScrollPane tagPane = new JScrollPane(tagTable_);
 		tagPane.setPreferredSize(new Dimension(300, 180));
 		tagPane.setBorder(BorderFactory.createTitledBorder("Tags:"));
@@ -88,9 +91,14 @@ class OverviewPanel extends JPanel implements ActionListener {
 
 		DefaultTableColumnModel colModel = new DefaultTableColumnModel();
 		TickCellRenderer renderer = new TickCellRenderer();
-		colModel.addColumn(new TableColumn(0, 75));
-		for(int i = 0; i < annotationRecords_.size(); i++)
-			colModel.addColumn(new TableColumn(i + 1, 20, renderer, null));
+		TableColumn annotatorColumn = new TableColumn(0, 75);
+		annotatorColumn.setHeaderValue("");
+		colModel.addColumn(annotatorColumn);
+		for(int i = 0; i < annotationRecords_.size(); i++) {
+			TableColumn col = new TableColumn(i + 1, 20, renderer, null);
+			col.setHeaderValue(annotationRecords_.get(i).getAnnotatorName());
+			colModel.addColumn(col);
+		}
 
 		DefaultTableModel annotationTableModel = new DefaultTableModel();
 		if(current_.getAntecedentAgreementRequired()) {
@@ -109,6 +117,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 		}
 		annotationTable_.setModel(annotationTableModel);
 		annotationTable_.setColumnModel(colModel);
+		annotationTable_.getTableHeader().repaint();
 
 		TreeSet<String> allTags = new TreeSet<String>();
 		for(AnnotationRecord rec : annotationRecords_)
@@ -129,6 +138,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 		}
 		tagTable_.setModel(tagTableModel);
 		tagTable_.setColumnModel(colModel);
+		tagTable_.getTableHeader().repaint();
 
 		StringBuilder allRemarks = new StringBuilder();
 		for(AnnotationRecord rec : annotationRecords_) {
