@@ -8,9 +8,16 @@ public class ConflictStatus {
 	public static final int OK_BUT_NO_TOKENS = 1;
 	public static final int TOKENS_BUT_NOT_OK = 2;
 	public static final int TAGS_BUT_UNSET = 3;
+	public static final int BAD_TRANSLATION_BUT_ANNOTATED = 4;
+	public static final int INCORRECT_ALIGNMENT_BUT_ANNOTATED = 5;
+	public static final int NONCOMPOSITIONAL_BUT_TOKENS_HIGHLIGHTED = 6;
+	public static final int CONFLICTING_TAGS = 7;
 
 	private static final List<String> ANAPH_TYPES =
-		Arrays.asList("ana_ok", "ana_notokens", "ana_unset", "ana_tagsonly");
+		Arrays.asList("ana_ok", "ana_notokens", "ana_unset", "ana_tagsonly",
+				"ana_bad_translation_annot",
+				"ana_incorrect_alignment_annot",
+				"ana_noncompositional_highlight");
 	private static final List<String> ANT_TYPES =
 		Arrays.asList("ant_ok", "ant_notokens", "ant_unset");
 
@@ -52,6 +59,18 @@ public class ConflictStatus {
 				break;
 			case TAGS_BUT_UNSET:
 				conflictMessage += "PRONOUN: Tags assigned, but pronoun translation still unset.\n";
+				break;
+			case BAD_TRANSLATION_BUT_ANNOTATED:
+				conflictMessage += "Assigned bad_translation tag, but annotated example.\n";
+				break;
+			case INCORRECT_ALIGNMENT_BUT_ANNOTATED:
+				conflictMessage += "Assigned incorrect_word_alignment tag, but annotated example.\n";
+				break;
+			case NONCOMPOSITIONAL_BUT_TOKENS_HIGHLIGHTED:
+				conflictMessage += "Assigned noncompositional_translation tag, but highlighted tokens.\n";
+				break;
+			case CONFLICTING_TAGS:
+				conflictMessage += "Conflicting tags assigned.\n";
 				break;
 			default:
 				conflictMessage += "PRONOUN: Conflicting annotations.\n";

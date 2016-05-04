@@ -133,10 +133,10 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 	}
 	
 	public ConflictStatus getConflictStatus() {
-		if(conflictStatus_ == null) {
-			int anaphConflictType = ConflictStatus.NO_CONFLICT;
-			int antConflictType = ConflictStatus.NO_CONFLICT;
-
+		int anaphConflictType = ConflictStatus.NO_CONFLICT;
+		int antConflictType = ConflictStatus.NO_CONFLICT;
+		// The while loop is used instead of an if clause to allow easy breaking
+		while(conflictStatus_ == null) {
 			String anaph_annotation = getAnaphorAnnotation();
 			String ant_annotation = getAntecedentAnnotation();
 
@@ -147,6 +147,43 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 			boolean antTokAnnotated = checkIfTokensAnnotated(antecedentTarget, approved);
 			boolean anaphTokAnnotated = checkIfTokensAnnotated(anaphorTarget, approved);
 
+			// Tag/annotation conflict
+			boolean bad_translation = tags_.contains("bad_translation");
+			boolean incorrect_word_alignment = tags_.contains("incorrect_word_alignment");
+			boolean noncompositional_translation = tags_.contains("noncompositional_translation");
+
+			int nchecktags = 0;
+			if(bad_translation)
+				nchecktags++;
+			if(incorrect_word_alignment)
+				nchecktags++;
+			if(noncompositional_translation)
+				nchecktags++;
+			if(nchecktags > 1) {
+				anaphConflictType = ConflictStatus.CONFLICTING_TAGS;
+				break;
+			}
+
+			// We don't distinguish between anaphor and antecedent for the tag checks
+			if(bad_translation) {
+				if(!anaph_annotation.equals("unset") || anaphTokAnnotated ||
+						!ant_annotation.equals("unset") || antTokAnnotated)
+					anaphConflictType = ConflictStatus.BAD_TRANSLATION_BUT_ANNOTATED;
+				break;
+			} else if(incorrect_word_alignment) {
+				if(!anaph_annotation.equals("unset") || anaphTokAnnotated ||
+						!ant_annotation.equals("unset") || antTokAnnotated)
+					anaphConflictType = ConflictStatus.INCORRECT_ALIGNMENT_BUT_ANNOTATED;
+				break;
+			} else if(noncompositional_translation) {
+				if(anaph_annotation.equals("unset"))
+					anaphConflictType = ConflictStatus.TAGS_BUT_UNSET;
+				else if(anaphTokAnnotated || antTokAnnotated)
+					anaphConflictType = ConflictStatus.NONCOMPOSITIONAL_BUT_TOKENS_HIGHLIGHTED;
+
+				break;
+			}
+			
 			// Pronoun annotation conflicts
 			if(anaph_annotation.equals("ok") && anaphTokAnnotated == false && !anaphorTarget.isEmpty())
 				anaphConflictType = ConflictStatus.OK_BUT_NO_TOKENS;
@@ -161,9 +198,11 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 			else if (!ant_annotation.equals("ok") && antTokAnnotated == true)
 				antConflictType = ConflictStatus.TOKENS_BUT_NOT_OK;
 
-			conflictStatus_ = new ConflictStatus(anaphConflictType, antConflictType);
+			// Never repeat this loop!
+			break;
 		}
 
+		conflictStatus_ = new ConflictStatus(anaphConflictType, antConflictType);
 		return conflictStatus_;
 	}
 
