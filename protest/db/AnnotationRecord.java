@@ -113,22 +113,27 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 	}
 
 	public void addTag(String tag) {
-		tags_.add(tag);
+		if(tags_.add(tag))
+			setDirty();
 	}
 
 	public void removeTag(String tag) {
-		tags_.remove(tag);
+		if(tags_.remove(tag))
+			setDirty();
 	}
 	
 	private boolean checkIfTokensAnnotated(Collection<Position> all, Collection<Position> approved) {
+		// Note: The "approved" positions are indexed per example, the "all" positions are indexed
+		// per document.
 		boolean result = false;
-		for(Position p : all) {
-			for(Position q : approved) {
-				if ((p.getLine() == q.getLine()) && (p.getStart() == q.getStart()) && (p.getEnd() == q.getEnd())){
+		for(Position p : all)
+			for(Position q : approved)
+				if(		(p.getLine() - example_.getFirstLine() == q.getLine()) &&
+						(p.getStart() == q.getStart()) &&
+						(p.getEnd() == q.getEnd())) {
 					result = true;
+					break;
 				}
-			}
-		}
 		return result;
 	}
 	

@@ -27,7 +27,7 @@ import protest.db.AnnotationRecord;
 import protest.db.ConflictStatus;
 import protest.db.TestSuiteExample;
 
-public class InstanceWindow implements ActionListener {
+public class InstanceWindow implements ActionListener, NavigationListener {
 	private JFrame frame_;
 
 	private BrowsePanel browsePanel_;
@@ -47,6 +47,7 @@ public class InstanceWindow implements ActionListener {
 
 	public InstanceWindow(InstanceWindowView view) {
 		view_ = view;
+		view_.addNavigationListener(this);
 
 		frame_ = new JFrame("PROTEST Pronoun Test Suite");
 		frame_.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -101,9 +102,10 @@ public class InstanceWindow implements ActionListener {
 		frame_.pack();
 	}
 
-	private void showCurrentInstance() {
+	public void navigate(TestSuiteExample example, AnnotationRecord rec) {
+		current_ = example;
+		currentAnnotation_ = rec;
 		frame_.setTitle(title_ + " - " + current_.getCandidateLocator());
-		view_.setCurrentInstance(current_);
 	}
 
 	private boolean confirmConflict(ConflictStatus conflicts) {
@@ -133,8 +135,8 @@ public class InstanceWindow implements ActionListener {
 		if(cmd[0].equals("browse")) {
 			if(saveAnnotations(false)) {
 				int currentIdx = Integer.parseInt(cmd[1]);
-				current_ = instances_.get(currentIdx);
-				showCurrentInstance();
+				TestSuiteExample browseto = instances_.get(currentIdx);
+				view_.setCurrentInstance(browseto);
 			}
 		}
 	}
@@ -146,11 +148,10 @@ public class InstanceWindow implements ActionListener {
 
 		title_ = title;
 		instances_ = instances;
-		current_ = instances_.get(0);
 
 		browsePanel_.setTotal(instances_.size());
 
-		showCurrentInstance();
+		view_.setCurrentInstance(instances_.get(0));
 	}
 
 	public void setVisible(boolean visible) {
