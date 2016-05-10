@@ -103,7 +103,11 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 	public void setTokenApproval(int line, int token, String approved) {
 		String a = getTokenApproval(line, token);
 		if(a != null && !a.equals(approved)) {
-			approvedTokens_.put(new Position(line, token), approved);
+			Position pos = new Position(line, token);
+			if(approved.isEmpty())
+				approvedTokens_.remove(pos);
+			else
+				approvedTokens_.put(pos, approved);
 			setDirty();
 		}
 	}
@@ -138,10 +142,13 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 	}
 	
 	public ConflictStatus getConflictStatus() {
+		if(conflictStatus_ != null)
+			return conflictStatus_;
+
 		int anaphConflictType = ConflictStatus.NO_CONFLICT;
 		int antConflictType = ConflictStatus.NO_CONFLICT;
-		// The while loop is used instead of an if clause to allow easy breaking
-		while(conflictStatus_ == null) {
+		// The loop is used instead of an if clause to allow easy breaking
+		for(;;) {
 			String anaph_annotation = getAnaphorAnnotation();
 			String ant_annotation = getAntecedentAnnotation();
 
@@ -208,6 +215,7 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 		}
 
 		conflictStatus_ = new ConflictStatus(anaphConflictType, antConflictType);
+
 		return conflictStatus_;
 	}
 
