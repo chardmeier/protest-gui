@@ -17,7 +17,8 @@ public class ConflictStatus {
 		Arrays.asList("ana_ok", "ana_notokens", "ana_unset", "ana_tagsonly",
 				"ana_bad_translation_annot",
 				"ana_incorrect_alignment_annot",
-				"ana_noncompositional_highlight");
+				"ana_noncompositional_highlight",
+				"ana_conflicting_tags");
 	private static final List<String> ANT_TYPES =
 		Arrays.asList("ant_ok", "ant_notokens", "ant_unset");
 
