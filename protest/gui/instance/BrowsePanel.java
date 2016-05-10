@@ -1,6 +1,5 @@
 package protest.gui.instance;
 
-import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -16,7 +15,7 @@ public class BrowsePanel extends JPanel implements ActionListener {
 	private JButton nextButton_;
 	private JLabel idxField_;
 
-	private ActionListener listener_ = null;
+	private BrowsingListener listener_ = null;
 	private String id_;
 
 	private int current_;
@@ -51,26 +50,23 @@ public class BrowsePanel extends JPanel implements ActionListener {
 		update();
 	}
 
-	public synchronized void addActionListener(ActionListener l) {
-		listener_ = AWTEventMulticaster.add(listener_, l);
-	}
-
-	public synchronized void removeActionListener(ActionListener l) {
-		listener_ = AWTEventMulticaster.remove(listener_, l);
+	public void setBrowsingListener(BrowsingListener l) {
+		listener_ = l;
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		int target = 0;
+
 		String cmd = e.getActionCommand();
 		if(cmd.equals("prev"))
-			current_--;
+			target = current_ - 1;
 		else if(cmd.equals("next"))
-			current_++;
+			target = current_ + 1;
 
-		update();
-
-		String outcmd = String.format("%s %d", id_, current_);
-		if(listener_ != null)
-			listener_.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, outcmd));
+		if(listener_ == null || listener_.browseTo(id_, target)) {
+			current_ = target;
+			update();
+		}
 	}
 
 	private void update() {

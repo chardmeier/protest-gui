@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +24,7 @@ import javax.swing.table.TableColumn;
 import protest.db.AnnotationRecord;
 import protest.db.TestSuiteExample;
 
-class OverviewPanel extends JPanel implements ActionListener {
+class OverviewPanel extends JPanel implements BrowsingListener {
 	private final static Color HEADER_COLOR = new Color(235, 235, 235);
 
 	private BrowsePanel annotationBrowser_;
@@ -48,7 +46,7 @@ class OverviewPanel extends JPanel implements ActionListener {
 		JPanel upperPanel = new JPanel(new BorderLayout());
 
 		annotationBrowser_ = new BrowsePanel("annot");
-		annotationBrowser_.addActionListener(this);
+		annotationBrowser_.setBrowsingListener(this);
 		upperPanel.add(annotationBrowser_, BorderLayout.PAGE_START);
 
 		JPanel annotationAndTagPanel = new JPanel(new BorderLayout());
@@ -158,13 +156,13 @@ class OverviewPanel extends JPanel implements ActionListener {
 		fireNavigationEvent();
 	}
 
-	public void actionPerformed(ActionEvent e) {
-		String[] cmd = e.getActionCommand().split(" ");
-		if(cmd[0].equals("annot")) {
-			int idx = Integer.parseInt(cmd[1]);
-			currentAnnotation_ = annotationRecords_.get(idx);
-			fireNavigationEvent();
-		}
+	public boolean browseTo(String id, int target) {
+		if(!id.equals("annot"))
+			throw new IllegalArgumentException("Unexpected browse event from " + id);
+
+		currentAnnotation_ = annotationRecords_.get(target);
+		fireNavigationEvent();
+		return true;
 	}
 
 	public void addNavigationListener(NavigationListener l) {

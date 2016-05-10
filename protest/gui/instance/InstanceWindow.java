@@ -6,8 +6,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ import protest.db.AnnotationRecord;
 import protest.db.ConflictStatus;
 import protest.db.TestSuiteExample;
 
-public class InstanceWindow implements ActionListener, NavigationListener {
+public class InstanceWindow implements BrowsingListener, NavigationListener {
 	private JFrame frame_;
 
 	private BrowsePanel browsePanel_;
@@ -92,7 +90,7 @@ public class InstanceWindow implements ActionListener, NavigationListener {
 		// Browsing buttons
 
 		browsePanel_ = new BrowsePanel("browse");
-		browsePanel_.addActionListener(this);
+		browsePanel_.setBrowsingListener(this);
 		detailPanel.add(browsePanel_, BorderLayout.PAGE_START);
 
 		rightHandPanel_ = view_.getRightHandPanel();
@@ -130,15 +128,16 @@ public class InstanceWindow implements ActionListener, NavigationListener {
 		return true;
 	}
 
-	public void actionPerformed(ActionEvent e) {
-		String[] cmd = e.getActionCommand().split(" ");
-		if(cmd[0].equals("browse")) {
-			if(saveAnnotations(false)) {
-				int currentIdx = Integer.parseInt(cmd[1]);
-				TestSuiteExample browseto = instances_.get(currentIdx);
-				view_.setCurrentInstance(browseto);
-			}
-		}
+	public boolean browseTo(String id, int target) {
+		if(!id.equals("browse"))
+			throw new IllegalArgumentException("Unexcepted browsing event from " + id);
+		if(saveAnnotations(false)) {
+			TestSuiteExample browseto = instances_.get(target);
+			view_.setCurrentInstance(browseto);
+			return true;
+		} else
+			return false;
+
 	}
 
 	public void setData(String title, List<TestSuiteExample> instances) {
