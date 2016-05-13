@@ -278,12 +278,15 @@ There are a number of scenarios which give rise to warnings about conflicting an
   \item All pronouns:
   \begin{itemize}
     \item Pronoun is marked as correct, but no tokens are selected in the translation output
-    \item Tokens are selected in the translation output of the pronoun, but the pronoun is not marked as correct
+    \item Tokens are selected in the translation of the pronoun, but the pronoun is not marked as correct
+    \item Example is marked with the \tag{bad\_translation} tag but annotations are provided
+    \item Example is marked with the \tag{incorrect\_word\_alignment} tag but annotations are provided
+    \item Pronoun translation is marked with the \tag{noncompositional\_translation} tag but tokens are selected in the translation of the pronoun
   \end{itemize}
   \item Anaphoric pronouns only:
   \begin{itemize}
     \item Antecedent is marked as correct, but no tokens are selected in the translation output
-    \item Tokens are selected in the translation output of the antecedent head, but the antecedent head is not marked as correct 
+    \item Tokens are selected in the translation of the antecedent head, but the antecedent head is not marked as correct 
   \end{itemize}
 \end{itemize}
 
