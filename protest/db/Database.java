@@ -53,8 +53,7 @@ public class Database extends Observable {
 	}
 
 	public Connection getConnection() throws SQLException {
-		//return ConnectionLoggingProxy.wrap(db_.getConnection());
-		return db_.getConnection();
+		return ConnectionLoggingProxy.wrap(db_.getConnection());
 	}
 
 	public String getName() {
@@ -558,8 +557,7 @@ public class Database extends Observable {
 		Statement stmt = null;
 
 		try {
-			//conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
-			conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
+			conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
 
 			HashMap<String,String> mastermd = getMetadata();
 			HashMap<String,String> annmd = getMetadata(conn);
@@ -623,8 +621,7 @@ public class Database extends Observable {
 		Statement stmt = null;
 
 		try {
-			//conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
-			conn = DriverManager.getConnection("jdbc:sqlite:" + infile);
+			conn = ConnectionLoggingProxy.wrap(DriverManager.getConnection("jdbc:sqlite:" + infile));
 			stmt = conn.createStatement();
 
 			stmt.execute("attach database \"" + dbfile_ + "\" as master");
