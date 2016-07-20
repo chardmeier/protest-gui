@@ -455,7 +455,7 @@ public class Database extends Observable {
 			String andTaskNo = " and t.task_no in " + taskInList + " ";
 
 			// meta_data
-			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_version', 'PROTEST 1.0')");
+			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_version', 'PROTEST 1.1')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) values ('file_type', 'annotation_batch')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) " +
 					"select 'time_created', datetime('now')");
@@ -520,6 +520,11 @@ public class Database extends Observable {
 			stmt.execute("insert into main.sentences " +
 					"select s.* from master.sentences as s, main.corpora as c "+
 					"where s.corpus=c.id");
+
+			// tag_annotations
+			stmt.execute("insert into main.tag_annotations " +
+					"select a.* from master.tag_annotations as a, master.annotation_tasks as t " +
+					"where a.candidate=t.candidate" + andTaskNo);
 
 			// token_annotations
 			stmt.execute("insert into main.token_annotations " +
