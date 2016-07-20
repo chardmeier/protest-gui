@@ -704,8 +704,8 @@ public class Database extends Observable {
 
 	public static void main(String[] args) throws DatabaseException, SQLException {
 		Database db = new Database(args[0]);
-		db.createAnnotationBatch(args[0] + ".batchMiryam", 1, new int[] { 1 });
-		db.createAnnotationBatch(args[0] + ".batchMarie", 2, new int[] { 1 });
+		db.createAnnotationBatch(args[0] + ".batchMiryam", 1, new int[] { 4 });
+		db.createAnnotationBatch(args[0] + ".batchMarie", 2, new int[] { 4 });
 	}
 }
 
