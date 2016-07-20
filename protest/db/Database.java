@@ -532,7 +532,6 @@ public class Database extends Observable {
 					"where t.candidate=c.id and tr.example_no=c.example_no and tr.tgtcorpus=c.tgtcorpus " + andTaskNo);
 
 			conn.commit();
-			Database.close(conn);
 		} catch(SQLException e) {
 			if(conn != null) {
 				try {
