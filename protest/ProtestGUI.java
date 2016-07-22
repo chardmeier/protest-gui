@@ -44,11 +44,6 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 	private JFrame frame_;
 	private ArrayList<JButton> catButtons_;
 
-	public ProtestGUI() {
-		String dbname = new DatabaseOpener().open();
-		init(dbname);
-	}
-
 	public ProtestGUI(String dbfile) {
 		init(dbfile);
 	}
@@ -246,8 +241,12 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 		ProtestGUI gui;
 		if(args.length == 1)
 			gui = new ProtestGUI(args[0]);
-		else
-			gui = new ProtestGUI();
+		else {
+			String dbname = new DatabaseOpener().open();
+			if(dbname == null)
+				return; // cancelled by user
+			gui = new ProtestGUI(dbname);
+		}
 
 		SwingUtilities.invokeLater(gui);
 	}
