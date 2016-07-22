@@ -238,16 +238,16 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			System.exit(1);
 		}
 
-		ProtestGUI gui;
+		String dbname;
 		if(args.length == 1)
-			gui = new ProtestGUI(args[0]);
+			dbname = args[0];
 		else {
-			String dbname = new DatabaseOpener().open();
+			dbname = new DatabaseOpener().open();
 			if(dbname == null)
 				return; // cancelled by user
-			gui = new ProtestGUI(dbname);
 		}
 
+		ProtestGUI gui = new ProtestGUI(dbname);
 		SwingUtilities.invokeLater(gui);
 	}
 }
