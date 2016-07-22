@@ -48,7 +48,10 @@ public class Database extends Observable {
 
 		String version = getMetadata("file_version");
 		if(!version.equals(FILE_VERSION)) {
-			throw new DatabaseException("File version " + version + " not supported.");
+			if(version.isEmpty())
+				throw new DatabaseException("Not a PROTEST GUI file.");
+			else
+				throw new DatabaseException("File version " + version + " not supported.");
 		}
 	}
 
@@ -261,7 +264,10 @@ public class Database extends Observable {
 		PreparedStatement ps = null;
 
 		try {
-			conn = getConnection();
+			// Use a non-logging connection because this may be called on files that aren't
+			// sqlite databases and we don't want to produce lengthy stack traces on the
+			// console in that case.
+			conn = db_.getConnection();
 
 			ps = conn.prepareStatement("select tag_value from meta_data where tag=?");
 			ps.setString(1, tag);
@@ -272,7 +278,7 @@ public class Database extends Observable {
 			else
 				return rs.getString("tag_value");
 		} catch(SQLException e) {
-			e.printStackTrace();
+			System.err.println("Error reading metadata from " + dbfile_);
 		} finally {
 			Database.close(ps);
 			Database.close(conn);

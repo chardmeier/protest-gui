@@ -56,7 +56,6 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 		} catch(DatabaseException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(),
 					"Error opening file", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
 			System.exit(1);
 		}
 	}
