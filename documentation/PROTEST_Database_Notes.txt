@@ -1,0 +1,33 @@
+Current PROTEST version: 1.1
+
+Database schema: See accompanying PROTEST_Database_Diagram.pdf file. The diagram contains links between tables where those links may be non-obvious, e.g. between the “id” field of the “pro_candidates” table and the “candidate” field of the following tables: “annotations”, “token_annotations”, “tag_annotations” and “annotation_tasks”.
+
+Description of each table:
+
+meta_data - can be used to store any meta data relevant to the annotation database. The pre-populated values for the “master” database indicate the version (“file_version”) and that the database is of type “master” (“file_type”). For “annotation_batch” databases, generated from the master database and distributed to human annotators, the meta data includes the database version (“file_version”), the “file_type”: “annotation_batch”, a date-time stamp indicating when the annotation batch was generated (“time_created”), and the name and id of the annotator.
+
+corpora - contains a list of corpora uploaded into PROTEST. A corpus may be either the original source language, a reference translation, or an MT translation. This is indicated by the “srctgt” field: 0 = original source; 1 = reference / MT translation.
+
+sentences - contains the sentences belonging to each corpus. Each sentence is represented by a number corresponding to its order in the corpus, and its text.
+
+documents - indicates where document boundaries lie in a corpus. For example, the DiscoMT2015.test set is a single corpus comprising 12 documents. Document boundaries are indicated in terms of sentence numbers using the “start” and “end” fields.
+
+categories - contains a list of pronoun categories corresponding to pronoun function (anaphoric, event, pleonastic, addressee reference) and other sub categorisations. E.g. “anaphoric_intra_subject_it” for instances of anaphoric “it” in which the antecedent appears in the same sentence as the pronoun, and for which the pronoun is in the subject position. The “antagreement” field indicates whether pronoun-antecedent agreement should hold in the translation (i.e. for anaphoric pronouns).
+
+pro_candidates - contains the pronoun instances for annotation. The DiscoMT2015.test set comprises 250 pronoun examples, each with its own “example_no”. For the output of each MT system loaded into PROTEST, a pronoun candidate (represented by a unique “id”) will be added to the table for each of the 250 examples. A pronoun candidate is represented in terms of the source (original) and target (translation) corpus, the corresponding “example_no”, the sentence number (“line”), the source pronoun text and index in the sentence, its category (see “categories” table), and a “sequence_no” (a randomised integer that reflects the order in which the pronoun candidate for a given system will be displayed to the annotator).
+
+pro_antecedents - contains the antecedent information for each pronoun candidate (for anaphoric pronouns only). An entry in this table may be matched to the corresponding pronoun candidate using the combined information from the following fields: “srccorpus”, “tgtcorpus”, and “example_no”. Each antecedent is defined by the following: “ant_no” (a pronoun may have multiple antecedents, each is given a number), “line” (sentence number), “srcstartpos” (index of the first antecedent token), “srcendpos” (index of the last token), “srchead” (antecedent head word), “srcheadpos” (index of the head word), and “srcantheadindex” (antecedent-text internal index position). 
+
+translations - contains the translation of each pronoun candidate / antecedent head. A translation is represented by the following fields: “tgtcorpus” (id of the target translation corpus), “example_no” (pronoun example), “ant_no” (“null” if the pronoun, otherwise corresponds to the “ant_no” value in “pro_antecedents”), “line” (sentence number), “tgtpos” (index of token in the translated sentence).
+
+annotators - contains a list of annotator names and ids
+
+annotations - contains the annotator judgements on pronoun translation quality. Each annotation is uniquely referenced using a combination of the following fields: “candidate” (“id” in “pro_candidates” table) and “annotator_id”. For each annotation the annotator provides judgements (“ok”, “bad”, “unsure”) on pronoun translation quality (“anaph_annotation”) and, in the case of anaphoric pronouns, the antecedent translation quality (“ant_annotation”). Annotators may optionally provide notes in the “remarks” field. Annotations that do not meet the conditions outlined in the annotation guidelines are automatically assigned a “conflict_status” value via the GUI.
+
+token_annotations - contains the token-level annotations for each pronoun candidate instance. In addition to providing judgements on the quality of a translation, annotators are asked to highlight those tokens in the aligned translation that correspond to the source pronoun / antecedent head. Again each annotation is uniquely referenced using a combination of the following fields: “candidate” (“id” in “pro_candidates” table) and “annotator_id”. A token annotation is represented by the sentence number (“line”), sentence-internal index (“token”).
+
+tag_annotations - additional tags may be assigned to annotations, indicating for example “bad_translation” or “incorrect_word_alignment”, etc. A tag is linked to an annotation via the “candidate” number (corresponding to the “id” in “pro_candidates”), and the “annotator_id” (as in the case of inter-annotator agreement tasks, the same pronoun candidate instance may be given to more than one annotator). A small set of tags is provided via the PROTEST GUI, but annotators may also add their own.
+
+annotation_tasks - each pronoun candidate is assigned to a “task”, allowing for the distribution of work to multiple annotators, and for the creation of batches for the purposes of computing inter-annotator agreement.
+
+task_definition - contains a list of tasks. Multiple tasks can belong to a single “taskset”, and each has a descriptive “label”.
