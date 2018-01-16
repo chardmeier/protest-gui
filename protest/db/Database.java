@@ -152,6 +152,34 @@ public class Database extends Observable {
 		return catlist;
 	}
 
+	public TestSuiteExample getExampleByCandidateID(int id) {
+		TestSuiteExample ex = null;
+		Connection conn = null;
+		PreparedStatement ps = null;
+
+		try {
+			conn = getConnection();
+			ps = conn.prepareStatement("select srccorpus, tgtcorpus, example_no from pro_candidates where id=?");
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next()) {
+				int srccorpus = rs.getInt("srccorpus");
+				int tgtcorpus = rs.getInt("tgtcorpus");
+				int example_no = rs.getInt("example_no");
+				ex = new TestSuiteExample(this, srccorpus, tgtcorpus, example_no);
+			}
+			rs.close();
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			Database.close(ps);
+			Database.close(conn);
+		}
+
+		return ex;
+	}
+
 	public List<TargetCorpus> getTargetCorpora() {
 		ArrayList<TargetCorpus> crplist = new ArrayList<TargetCorpus>();
 

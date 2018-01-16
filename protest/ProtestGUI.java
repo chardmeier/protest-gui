@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.FlowLayout;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -27,6 +28,7 @@ import protest.db.Database;
 import protest.db.DatabaseException;
 import protest.db.PrecheckReport;
 import protest.db.TargetCorpus;
+import protest.db.TestSuiteExample;
 import protest.gui.fileselector.DatabaseOpener;
 import protest.gui.instance.AnnotatorView;
 import protest.gui.instance.InstanceWindow;
@@ -96,6 +98,11 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			importBatchButton.setActionCommand("import-batch");
 			importBatchButton.addActionListener(this);
 			toolbar.add(importBatchButton);
+
+			JButton candIdButton = new JButton("Candidate ID");
+			candIdButton.setActionCommand("show-cand-id");
+			candIdButton.addActionListener(this);
+			toolbar.add(candIdButton);
 
 			instWindow_ = new InstanceWindow(new ResearcherView());
 			taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
@@ -173,12 +180,26 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			createAnnotationBatch();
 		else if(cmd.equals("import-batch"))
 			importAnnotationBatch();
+		else if(cmd.equals("show-cand-id"))
+			showExampleByCandidateID();
 		else if(cmd.startsWith("display")) {
 			String[] idx = cmd.split(" ");
 			currentCategory_ = Integer.parseInt(idx[1]);
 			int grp = Integer.parseInt(idx[2]);
 
 			instWindow_.setData(categories_.get(currentCategory_).getLabel(), categories_.get(currentCategory_).getExamples(grp));
+			instWindow_.setVisible(true);
+		}
+	}
+
+	private void showExampleByCandidateID() {
+		int candId = Integer.parseInt(JOptionPane.showInputDialog("Candidate ID"));
+		TestSuiteExample ex = db_.getExampleByCandidateID(candId);
+		if(ex == null)
+			JOptionPane.showMessageDialog(null, "Candidate " + Integer.toString(candId) + " not found.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+		else {
+			instWindow_.setData("Search result", Arrays.asList(ex));
 			instWindow_.setVisible(true);
 		}
 	}
