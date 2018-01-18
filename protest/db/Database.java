@@ -487,9 +487,12 @@ public class Database extends Observable {
 					"where t.task_no in " + taskInList);
 
 			// annotations
-			stmt.execute("insert into main.annotations " +
+			ps = conn.prepareStatement("insert into main.annotations " +
 					"select a.* from master.annotations as a, master.annotation_tasks as t " +
-					"where a.candidate=t.candidate" + andTaskNo);
+					"where a.candidate=t.candidate and a.annotator_id=? and " + andTaskNo);
+			ps_to_close.add(ps);
+			ps.setInt(1, annotator);
+			ps.execute();
 
 			// annotators
 			ps = conn.prepareStatement("insert into main.annotators " +
@@ -714,8 +717,9 @@ public class Database extends Observable {
 
 	public static void main(String[] args) throws DatabaseException, SQLException {
 		Database db = new Database(args[0]);
-		db.createAnnotationBatch(args[0] + ".batchMiryam", 1, new int[] { 4 });
-		db.createAnnotationBatch(args[0] + ".batchMarie", 2, new int[] { 4 });
+		// db.createAnnotationBatch(args[0] + ".batchMiryam", 1, new int[] { 4 });
+		// db.createAnnotationBatch(args[0] + ".batchMarie", 2, new int[] { 4 });
+		db.createAnnotationBatch(args[0] + ".batchAdjudication", 3, new int[] { 7 });
 	}
 }
 
