@@ -489,7 +489,7 @@ public class Database extends Observable {
 			// annotations
 			ps = conn.prepareStatement("insert into main.annotations " +
 					"select a.* from master.annotations as a, master.annotation_tasks as t " +
-					"where a.candidate=t.candidate and a.annotator_id=? and " + andTaskNo);
+					"where a.candidate=t.candidate and a.annotator_id=? " + andTaskNo);
 			ps_to_close.add(ps);
 			ps.setInt(1, annotator);
 			ps.execute();
