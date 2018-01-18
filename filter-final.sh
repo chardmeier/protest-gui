@@ -20,8 +20,8 @@ sqlite3 $filtered <<EOF
 -- Annotator 1 and 2 are the original annotations, annotator 3 is the adjudicated
 -- annotation of those examples where annotator 1 and 2 disagreed.
 -- Where both annotators agree in their main annotations, we arbitrarily take the
--- tag and token annotations from annotator 1 and delete the annotations of
--- annotator 2, so the highest-numbered annotator always prevails.
+-- tag and token annotations from annotator 2 and delete the annotations of
+-- annotator 1, so the highest-numbered annotator always prevails.
 
 delete from annotations where id in (
 	select a.id from annotations as a, annotations as b
