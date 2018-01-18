@@ -533,12 +533,18 @@ public class Database extends Observable {
 			// tag_annotations
 			stmt.execute("insert into main.tag_annotations " +
 					"select a.* from master.tag_annotations as a, master.annotation_tasks as t " +
-					"where a.candidate=t.candidate" + andTaskNo);
+					"where a.candidate=t.candidate and a.annotator_id=?" + andTaskNo);
+			ps_to_close.add(ps);
+			ps.setInt(1, annotator);
+			ps.execute();
 
 			// token_annotations
-			stmt.execute("insert into main.token_annotations " +
+			ps = conn.prepareStatment("insert into main.token_annotations " +
 					"select a.* from master.token_annotations as a, master.annotation_tasks as t " +
-					"where a.candidate=t.candidate" + andTaskNo);
+					"where a.candidate=t.candidate and a.annotator_id=?" + andTaskNo);
+			ps_to_close.add(ps);
+			ps.setInt(1, annotator);
+			ps.execute();
 
 			// translations
 			stmt.execute("insert into main.translations " +
