@@ -109,7 +109,7 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			exampleNoButton.addActionListener(this);
 			toolbar.add(exampleNoButton);
 
-			instWindow_ = new InstanceWindow(new ResearcherView());
+			instWindow_ = new InstanceWindow(new ResearcherView(-1));
 			taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 		} else {
 			String ann = String.format("Annotation batch for annotator %s", db_.getMetadata("annotator_name"));

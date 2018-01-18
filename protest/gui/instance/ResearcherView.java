@@ -7,8 +7,8 @@ import protest.db.TestSuiteExample;
 public class ResearcherView implements InstanceWindowView {
 	private OverviewPanel overviewPanel_;
 
-	public ResearcherView() {
-		overviewPanel_ = new OverviewPanel();
+	public ResearcherView(int annotator_id) {
+		overviewPanel_ = new OverviewPanel(annotator_id);
 	}
 
 	public Component getRightHandPanel() {
