@@ -64,6 +64,9 @@ public class Database extends Observable {
 	}
 
 	public String getAnnotatorName(int id) {
+		if(id == -1)
+			return "MASTER";
+
 		String name = null;
 		Connection conn = null;
 		PreparedStatement ps = null;
