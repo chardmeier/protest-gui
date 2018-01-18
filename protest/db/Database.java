@@ -180,6 +180,33 @@ public class Database extends Observable {
 		return ex;
 	}
 
+	public List<TestSuiteExample> getExamplesByExampleNo(int example_no) {
+		ArrayList<TestSuiteExample> out = new ArrayList<TestSuiteExample>();
+		Connection conn = null;
+		PreparedStatement ps = null;
+
+		try {
+			conn = getConnection();
+			ps = conn.prepareStatement("select srccorpus, tgtcorpus from pro_candidates where example_no=?");
+			ps.setInt(1, example_no);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				int srccorpus = rs.getInt("srccorpus");
+				int tgtcorpus = rs.getInt("tgtcorpus");
+				out.add(new TestSuiteExample(this, srccorpus, tgtcorpus, example_no));
+			}
+			rs.close();
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			Database.close(ps);
+			Database.close(conn);
+		}
+
+		return out;
+	}
+
 	public List<TargetCorpus> getTargetCorpora() {
 		ArrayList<TargetCorpus> crplist = new ArrayList<TargetCorpus>();
 

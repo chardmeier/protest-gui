@@ -104,6 +104,11 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			candIdButton.addActionListener(this);
 			toolbar.add(candIdButton);
 
+			JButton exampleNoButton = new JButton("Example No");
+			exampleNoButton.setActionCommand("show-example-no");
+			exampleNoButton.addActionListener(this);
+			toolbar.add(exampleNoButton);
+
 			instWindow_ = new InstanceWindow(new ResearcherView());
 			taskDefinitionWindow_ = new TaskDefinitionWindow(db_);
 		} else {
@@ -182,6 +187,8 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 			importAnnotationBatch();
 		else if(cmd.equals("show-cand-id"))
 			showExampleByCandidateID();
+		else if(cmd.equals("show-example-no"))
+			showExamplesByExampleNo();
 		else if(cmd.startsWith("display")) {
 			String[] idx = cmd.split(" ");
 			currentCategory_ = Integer.parseInt(idx[1]);
@@ -200,6 +207,18 @@ public class ProtestGUI implements Runnable, ActionListener, Observer {
 					"Error", JOptionPane.ERROR_MESSAGE);
 		else {
 			instWindow_.setData("Search result", Arrays.asList(ex));
+			instWindow_.setVisible(true);
+		}
+	}
+
+	private void showExamplesByExampleNo() {
+		int exampleNo = Integer.parseInt(JOptionPane.showInputDialog("Example number"));
+		List<TestSuiteExample> ex = db_.getExamplesByExampleNo(exampleNo);
+		if(ex.isEmpty())
+			JOptionPane.showMessageDialog(null, "No examples found for example no " + Integer.toString(exampleNo),
+					"Error", JOptionPane.ERROR_MESSAGE);
+		else {
+			instWindow_.setData("Search result", ex);
 			instWindow_.setVisible(true);
 		}
 	}
