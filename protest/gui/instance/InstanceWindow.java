@@ -118,9 +118,12 @@ public class InstanceWindow implements BrowsingListener, NavigationListener {
 
 	private boolean saveAnnotations(boolean force) {
 		if(currentAnnotation_ != null && currentAnnotation_.needsSaving()) {
-			ConflictStatus conflicts = currentAnnotation_.getConflictStatus();
-			if(!force && !confirmConflict(conflicts)) 
-				return false;
+			if(currentAnnotation_.getAnnotatorID() != -1) {
+				// no conflict checks for master user
+				ConflictStatus conflicts = currentAnnotation_.getConflictStatus();
+				if(!force && !confirmConflict(conflicts)) 
+					return false;
+			}
 
 			currentAnnotation_.saveAnnotations();
 		}
