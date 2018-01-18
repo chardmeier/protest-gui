@@ -539,7 +539,7 @@ public class Database extends Observable {
 			ps.execute();
 
 			// token_annotations
-			ps = conn.prepareStatment("insert into main.token_annotations " +
+			ps = conn.prepareStatement("insert into main.token_annotations " +
 					"select a.* from master.token_annotations as a, master.annotation_tasks as t " +
 					"where a.candidate=t.candidate and a.annotator_id=?" + andTaskNo);
 			ps_to_close.add(ps);
