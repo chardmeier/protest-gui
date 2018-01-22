@@ -109,16 +109,24 @@ public class InstanceWindow implements BrowsingListener, NavigationListener {
 	}
 
 	private boolean saveAnnotations(boolean force) {
-		if(currentAnnotation_ != null && currentAnnotation_.needsSaving()) {
-			if(currentAnnotation_.getAnnotatorID() != -1) {
-				// no conflict checks for master user
-				ConflictStatus conflicts = currentAnnotation_.getConflictStatus();
-				if(!force && !confirmConflict(conflicts)) 
-					return false;
-			}
+		if(current_ == null)
+			return true;
 
-			currentAnnotation_.saveAnnotations();
+		List<AnnotationRecord> dirty = current_.getModifiedAnnotationRecords();
+
+		if(!force) {
+			for (AnnotationRecord rec : dirty) {
+				if (rec.getAnnotatorID() != -1) {
+					// no conflict checks for master user
+					ConflictStatus conflicts = rec.getConflictStatus();
+					if (!confirmConflict(conflicts))
+						return false;
+				}
+			}
 		}
+
+		for(AnnotationRecord rec : dirty)
+			rec.saveAnnotations();
 
 		return true;
 	}

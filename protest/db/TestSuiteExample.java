@@ -26,7 +26,6 @@ public class TestSuiteExample {
 	private int lastLine_;
 
 	private boolean loaded_;
-	private boolean dirty_;
 
 	private Position anaphorSourcePosition_;
 	private List<Position> anaphorTargetPositions_;
@@ -51,7 +50,6 @@ public class TestSuiteExample {
 		tgtcorpus_ = tgtcorpus;
 		example_no_ = example_no;
 		loaded_ = false;
-		dirty_ = false;
 		currline_ = -1;
 	}
 
@@ -149,8 +147,6 @@ public class TestSuiteExample {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		dirty_ = false;
 	}
 
 	private Position retrieveAnaphorSourcePosition() throws SQLException {
@@ -290,8 +286,13 @@ public class TestSuiteExample {
 		return out;
 	}
 
-	public boolean needsSaving() {
-		return dirty_;
+	public List<AnnotationRecord> getModifiedAnnotationRecords() {
+		ArrayList<AnnotationRecord> dirty = new ArrayList<AnnotationRecord>();
+		if(annotationRecords_ != null)
+			for(AnnotationRecord rec : annotationRecords_.values())
+				if(rec.needsSaving())
+					dirty.add(rec);
+		return dirty;
 	}
 
 	private void loadAnnotations() throws SQLException {
