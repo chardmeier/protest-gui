@@ -145,6 +145,12 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 		if(conflictStatus_ != null)
 			return conflictStatus_;
 
+		if(annotator_id_ == -1) {
+			// master annotator never creates a conflict
+			conflictStatus_ = new ConflictStatus(ConflictStatus.NO_CONFLICT, ConflictStatus.NO_CONFLICT);
+			return conflictStatus_;
+		}
+
 		int anaphConflictType = ConflictStatus.NO_CONFLICT;
 		int antConflictType = ConflictStatus.NO_CONFLICT;
 		// The loop is used instead of an if clause to allow easy breaking
