@@ -589,7 +589,7 @@ public class Database extends Observable {
 					"where s.corpus=c.id");
 
 			// tag_annotations
-			stmt.execute("insert into main.tag_annotations " +
+			ps = conn.prepareStatement("insert into main.tag_annotations " +
 					"select a.* from master.tag_annotations as a, master.annotation_tasks as t " +
 					"where a.candidate=t.candidate and a.annotator_id=?" + andTaskNo);
 			ps_to_close.add(ps);
