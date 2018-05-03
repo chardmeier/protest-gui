@@ -115,9 +115,8 @@ public class InstanceWindow implements BrowsingListener, NavigationListener {
 		List<AnnotationRecord> dirty = current_.getModifiedAnnotationRecords();
 
 		if(!force) {
-			for (AnnotationRecord rec : dirty) {
-				if (rec.getAnnotatorID() != -1) {
-					// no conflict checks for master user
+			for(AnnotationRecord rec : dirty) {
+				if(rec.needsConflictChecks()) {
 					ConflictStatus conflicts = rec.getConflictStatus();
 					if (!confirmConflict(conflicts))
 						return false;

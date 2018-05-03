@@ -525,6 +525,8 @@ public class Database extends Observable {
 					"select 'time_created', datetime('now')");
 			stmt.execute("insert into main.meta_data (tag, tag_value) " +
 					"select tag, tag_value from master.meta_data where tag in ('master_id', 'master_description')");
+			stmt.execute("insert into main.meta_data (tag, tag_value) " +
+					"select tag, tag_value from master.meta_data where tag like 'config:%'");
 
 			PreparedStatement ps;
 

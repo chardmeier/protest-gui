@@ -46,6 +46,16 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 		return dirty_;
 	}
 
+	public boolean needsConflictChecks() {
+		if(annotator_id_ == -1)
+			return false;
+
+		if(example_.getDatabase().getMetadata("config:conflict_checks").equals("disabled"))
+			return false;
+
+		return true;
+	}
+
 	public TestSuiteExample getExample() {
 		return example_;
 	}
