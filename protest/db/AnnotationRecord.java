@@ -155,8 +155,7 @@ public class AnnotationRecord implements Comparable<AnnotationRecord> {
 		if(conflictStatus_ != null)
 			return conflictStatus_;
 
-		if(annotator_id_ == -1) {
-			// master annotator never creates a conflict
+		if(!needsConflictChecks()) {
 			conflictStatus_ = new ConflictStatus(ConflictStatus.NO_CONFLICT, ConflictStatus.NO_CONFLICT);
 			return conflictStatus_;
 		}
