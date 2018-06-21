@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import javax.sql.DataSource;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -428,6 +430,7 @@ public class Database extends Observable {
 					"where task_no=-1 and candidate in " +
 						"(select candidate from annotation_tasks where task_no=-1 order by random() limit ?)");
 			ps_to_close.add(ps_assign);
+
 			for(int corpus : tgtcorpora) {
 				ps_select.setInt(1, corpus);
 				for(int cat : categories) {
@@ -449,8 +452,11 @@ public class Database extends Observable {
 					if(ntasks > 0 && cnt > 0) {
 						int nx = (int) Math.ceil(((double) cnt) / ((double) ntasks));
 						ps_assign.setInt(2, nx);
+						// start with a random offset so that rounding errors get distributed evenly
+						int start_offset = ThreadLocalRandom.current().nextInt(0, ntasks);
 						for(int i = 0; i < ntasks; i++) {
-							ps_assign.setInt(1, Integer.valueOf(task_ids[i]));
+							int idx = (i + start_offset) % ntasks;
+							ps_assign.setInt(1, Integer.valueOf(task_ids[idx]));
 							ps_assign.execute();
 						}
 					}
